@@ -9,12 +9,12 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import viVN from "antd/locale/vi_VN";
-import { ConfigProvider } from "antd";
 
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import { ProConfigProvider, viVNIntl } from "@ant-design/pro-components";
+import { ConfigProvider } from "antd";
+import viVN from "antd/locale/vi_VN";
 
 // set ngôn ngữ cho dayjs
 dayjs.locale("vi");
@@ -53,11 +53,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <ProConfigProvider dark={true} intl={viVNIntl}>
-      <Outlet />
-    </ProConfigProvider>
+    <ConfigProvider locale={viVN}>
+      <ProConfigProvider dark={true} intl={viVNIntl}>
+        <Outlet />
+      </ProConfigProvider>
+    </ConfigProvider>
   );
 }
+
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = "Oops!";
