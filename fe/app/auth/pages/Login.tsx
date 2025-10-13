@@ -41,7 +41,8 @@ const LoginPage = () => {
         backgroundImageUrl="https://mdn.alipayobjects.com/huamei_gcee1x/afts/img/A*y0ZTS6WLwvgAAAAAAAAAAAAADml6AQ/fmt.webp"
        
         backgroundVideoUrl="https://gw.alipayobjects.com/v/huamei_gcee1x/afts/video/jXRBRK_VAwoAAAAAAAAAAAAAK4eUAQBr"
-        title="Đăng nhập"
+        title={loginType === "account" ? "Đăng nhập" : "Quên mật khẩu"}
+        
         containerStyle={{
           backgroundColor: "rgba(0, 0, 0,0.65)",
           backdropFilter: "blur(4px)",
@@ -57,50 +58,20 @@ const LoginPage = () => {
               flexDirection: "column",
             }}
           >
-           
+            <Divider plain>
+              <span
+                style={{
+                  color: token.colorTextPlaceholder,
+                  fontWeight: "normal",
+                  fontSize: 14,
+                }}
+              >
+                其他登录方式
+              </span>
+            </Divider>
             <Space align="center" size={24}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flexDirection: "column",
-                  height: 40,
-                  width: 40,
-                  border: "1px solid " + token.colorPrimaryBorder,
-                  borderRadius: "50%",
-                }}
-              >
-                <AlipayOutlined style={{ ...iconStyles, color: "#1677FF" }} />
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flexDirection: "column",
-                  height: 40,
-                  width: 40,
-                  border: "1px solid " + token.colorPrimaryBorder,
-                  borderRadius: "50%",
-                }}
-              >
-                <TaobaoOutlined style={{ ...iconStyles, color: "#FF6A10" }} />
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flexDirection: "column",
-                  height: 40,
-                  width: 40,
-                  border: "1px solid " + token.colorPrimaryBorder,
-                  borderRadius: "50%",
-                }}
-              >
-                <WeiboOutlined style={{ ...iconStyles, color: "#1890ff" }} />
-              </div>
+             
+             
             </Space>
           </div>
         }
@@ -175,18 +146,9 @@ const LoginPage = () => {
               }}
               name="mobile"
               placeholder={"Nhập email"}
-              rules={[
-                {
-                  required: true,
-                  message: "请输入手机号！",
-                },
-                {
-                  pattern: /^1\d{10}$/,
-                  message: "手机号格式错误！",
-                },
-              ]}
+             
             />
-            <ProFormCaptcha
+            {/* <ProFormCaptcha
               fieldProps={{
                 size: "large",
                 prefix: (
@@ -201,24 +163,13 @@ const LoginPage = () => {
               captchaProps={{
                 size: "large",
               }}
-              placeholder={"请输入验证码"}
-              captchaTextRender={(timing, count) => {
-                if (timing) {
-                  return `${count} ${"获取验证码"}`;
-                }
-                return "获取验证码";
-              }}
+              placeholder={"Nhập mã"}
+              
               name="captcha"
-              rules={[
-                {
-                  required: true,
-                  message: "请输入验证码！",
-                },
-              ]}
               onGetCaptcha={async () => {
                 message.success("获取验证码成功！验证码为：1234");
               }}
-            />
+            /> */}
           </>
         )}
         <div
