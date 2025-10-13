@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 
-@ApiTags('Auth') // group trong Swagger
+@ApiTags('Auth') 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
