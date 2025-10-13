@@ -9,6 +9,16 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import viVN from "antd/locale/vi_VN";
+import { ConfigProvider } from "antd";
+
+import dayjs from "dayjs";
+import "dayjs/locale/vi";
+import { ProConfigProvider, viVNIntl } from "@ant-design/pro-components";
+
+// set ngôn ngữ cho dayjs
+dayjs.locale("vi");
+
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -42,7 +52,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <ProConfigProvider dark={true} intl={viVNIntl}>
+      <Outlet />
+    </ProConfigProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
