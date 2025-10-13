@@ -1,49 +1,114 @@
-import { ProForm, ProFormText } from "@ant-design/pro-components";
-import { Card, message } from "antd";
+import { LockOutlined, UserOutlined } from "@ant-design/icons";
+import { LoginFormPage, ProFormText } from "@ant-design/pro-components";
+import { Button, Form, message, theme } from "antd";
+import { useNavigate } from "react-router";
 import { register } from "../../../services/auth";
 
-export default function RegisterPage() {
-  const onFinish = async (values: any) => {
+const RegisterPage = () => {
+  const { token } = theme.useToken();
+  const [form] = Form.useForm();
+  const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const handleSubmit = async (values: any) => {
     try {
-      await register(values);
-      message.success("Đăng ký thành công, hãy đăng nhập!");
+      const res = await register(values);
+  
+      if (res?.id) {
+        // nếu response có id => thành công
+        messageApi.success("Đăng ký thành công!");
+        form.resetFields();
+      } else {
+        // fallback nếu BE trả về object khác
+        messageApi.success("Thao tác thành công!");
+      }
     } catch (err: any) {
-      message.error(err.response?.data?.message || "Đăng ký thất bại");
+      // nếu có response lỗi
+      const errorMsg =
+        err.response?.data?.message || "Đã xảy ra lỗi, vui lòng thử lại!";
+        messageApi.error(errorMsg);
     }
   };
+  
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", marginTop: 50 }}>
-      <Card title="Đăng ký tài khoản" style={{ width: 400 }}>
-        <ProForm onFinish={onFinish} submitter={{ searchConfig: { submitText: "Đăng ký" } }}>
-          <ProFormText
-            name="name"
-            label="Tên"
-            placeholder="Nhập tên của bạn"
-            rules={[{ required: true, message: "Vui lòng nhập tên" }]}
-          />
-          <ProFormText
-            name="email"
-            label="Email"
-            placeholder="example@email.com"
-            rules={[
-              { required: true, message: "Vui lòng nhập email" },
-              { type: "email", message: "Email không hợp lệ" },
-            ]}
-          />
-          <ProFormText.Password
-            name="password"
-            label="Mật khẩu"
-            placeholder="Nhập mật khẩu"
-            rules={[{ required: true, min: 6, message: "Ít nhất 6 ký tự" }]}
-          />
-          <ProFormText
-            name="avatar"
-            label="Avatar (URL)"
-            placeholder="https://i.pravatar.cc/150"
-          />
-        </ProForm>
-      </Card>
+    <div
+      style={{
+        backgroundColor: "white",
+        height: "100vh",
+      }}
+    >
+      {contextHolder}
+      <LoginFormPage
+        form={form}
+        backgroundImageUrl="https://mdn.alipayobjects.com/huamei_gcee1x/afts/img/A*y0ZTS6WLwvgAAAAAAAAAAAAADml6AQ/fmt.webp"
+        backgroundVideoUrl="https://gw.alipayobjects.com/v/huamei_gcee1x/afts/video/jXRBRK_VAwoAAAAAAAAAAAAAK4eUAQBr"
+        title="Đăng ký"
+        subTitle="Tạo tài khoản mới để quản lý dự án"
+        onFinish={handleSubmit}
+        submitter={{ searchConfig: { submitText: "Đăng ký" } }}
+        containerStyle={{
+          backgroundColor: "rgba(0, 0, 0,0.65)",
+          backdropFilter: "blur(4px)",
+        }}
+      >
+        <ProFormText
+          name="email"
+          fieldProps={{
+            size: "large",
+            prefix: <UserOutlined style={{ color: token.colorText }} />,
+          }}
+          placeholder="Nhập email"
+          rules={[
+            { required: true, message: "Vui lòng nhập email" },
+            { type: "email", message: "Email không hợp lệ" },
+          ]}
+        />
+
+        <ProFormText.Password
+          name="password"
+          fieldProps={{
+            size: "large",
+            prefix: <LockOutlined style={{ color: token.colorText }} />,
+          }}
+          placeholder="Nhập mật khẩu"
+          rules={[
+            { required: true, message: "Vui lòng nhập mật khẩu" },
+            { min: 6, message: "Mật khẩu phải ít nhất 6 ký tự" },
+          ]}
+        />
+
+        <ProFormText.Password
+          name="confirmPassword"
+          fieldProps={{
+            size: "large",
+            prefix: <LockOutlined style={{ color: token.colorText }} />,
+          }}
+          placeholder="Nhập lại mật khẩu"
+          rules={[
+            { required: true, message: "Vui lòng nhập lại mật khẩu" },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                if (!value || getFieldValue("password") === value) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(
+                  new Error("Mật khẩu nhập lại không khớp!")
+                );
+              },
+            }),
+          ]}
+        />
+
+        {/* nút chuyển qua trang đăng nhập */}
+        <div style={{ marginTop: 16, textAlign: "center" }}>
+          <Button type="link" onClick={() => navigate("/login")}>
+            Đã có tài khoản? Đăng nhập
+          </Button>
+        </div>
+      </LoginFormPage>
     </div>
   );
-}
+};
+
+export default RegisterPage;
