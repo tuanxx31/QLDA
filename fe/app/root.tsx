@@ -14,6 +14,7 @@ import { ConfigProvider } from "antd";
 
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
+import { ProConfigProvider, viVNIntl } from "@ant-design/pro-components";
 
 // set ngôn ngữ cho dayjs
 dayjs.locale("vi");
@@ -52,9 +53,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <ConfigProvider locale={viVN}>
+    <ProConfigProvider dark={true} intl={viVNIntl}>
       <Outlet />
-    </ConfigProvider>
+    </ProConfigProvider>
   );
 }
 
