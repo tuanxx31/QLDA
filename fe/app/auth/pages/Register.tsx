@@ -18,6 +18,7 @@ const RegisterPage = () => {
         // nếu response có id => thành công
         messageApi.success("Đăng ký thành công!");
         form.resetFields();
+        navigate(`/login?register=true&email=${values.email}&password=${values.password}`);
       } else {
         // fallback nếu BE trả về object khác
         messageApi.success("Thao tác thành công!");
