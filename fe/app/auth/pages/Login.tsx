@@ -32,44 +32,22 @@ const LoginPage = () => {
   return (
     <div
       style={{
+      
         backgroundColor: "white",
         height: "100vh",
       }}
     >
       <LoginFormPage
         backgroundImageUrl="https://mdn.alipayobjects.com/huamei_gcee1x/afts/img/A*y0ZTS6WLwvgAAAAAAAAAAAAADml6AQ/fmt.webp"
-        logo="https://github.githubassets.com/favicons/favicon.png"
+       
         backgroundVideoUrl="https://gw.alipayobjects.com/v/huamei_gcee1x/afts/video/jXRBRK_VAwoAAAAAAAAAAAAAK4eUAQBr"
-        title="Github"
+        title="Đăng nhập"
         containerStyle={{
           backgroundColor: "rgba(0, 0, 0,0.65)",
           backdropFilter: "blur(4px)",
         }}
-        subTitle="全球最大的代码托管平台"
-        activityConfig={{
-          style: {
-            boxShadow: "0px 0px 8px rgba(0, 0, 0, 0.2)",
-            color: token.colorTextHeading,
-            borderRadius: 8,
-            backgroundColor: "rgba(255,255,255,0.25)",
-            backdropFilter: "blur(4px)",
-          },
-          title: "活动标题，可配置图片",
-          subTitle: "活动介绍说明文字",
-          action: (
-            <Button
-              size="large"
-              style={{
-                borderRadius: 20,
-                background: token.colorBgElevated,
-                color: token.colorPrimary,
-                width: 120,
-              }}
-            >
-              去看看
-            </Button>
-          ),
-        }}
+        
+        
         actions={
           <div
             style={{
@@ -79,17 +57,7 @@ const LoginPage = () => {
               flexDirection: "column",
             }}
           >
-            <Divider plain>
-              <span
-                style={{
-                  color: token.colorTextPlaceholder,
-                  fontWeight: "normal",
-                  fontSize: 14,
-                }}
-              >
-                其他登录方式
-              </span>
-            </Divider>
+           
             <Space align="center" size={24}>
               <div
                 style={{
@@ -142,8 +110,8 @@ const LoginPage = () => {
           activeKey={loginType}
           onChange={(activeKey) => setLoginType(activeKey as LoginType)}
         >
-          <Tabs.TabPane key={"account"} tab={"账号密码登录"} />
-          <Tabs.TabPane key={"phone"} tab={"手机号登录"} />
+          <Tabs.TabPane key={"account"} tab={"Đăng nhập"} />
+          <Tabs.TabPane key={"phone"} tab={"Quên mật khẩu"} />
         </Tabs>
         {loginType === "account" && (
           <>
@@ -160,11 +128,11 @@ const LoginPage = () => {
                   />
                 ),
               }}
-              placeholder={"用户名: admin or user"}
+              placeholder={"Nhập email"}
               rules={[
                 {
                   required: true,
-                  message: "请输入用户名!",
+                  message: "Nhập email!",
                 },
               ]}
             />
@@ -181,11 +149,11 @@ const LoginPage = () => {
                   />
                 ),
               }}
-              placeholder={"密码: ant.design"}
+              placeholder={"Nhập password"}
               rules={[
                 {
                   required: true,
-                  message: "请输入密码！",
+                  message: "Nhập password!",
                 },
               ]}
             />
@@ -206,7 +174,7 @@ const LoginPage = () => {
                 ),
               }}
               name="mobile"
-              placeholder={"手机号"}
+              placeholder={"Nhập email"}
               rules={[
                 {
                   required: true,
@@ -259,15 +227,9 @@ const LoginPage = () => {
           }}
         >
           <ProFormCheckbox noStyle name="autoLogin">
-            自动登录
+            Nhớ tài khoản
           </ProFormCheckbox>
-          <a
-            style={{
-              float: "right",
-            }}
-          >
-            忘记密码
-          </a>
+        
         </div>
       </LoginFormPage>
     </div>
