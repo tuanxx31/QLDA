@@ -1,8 +1,7 @@
-import { useNavigate } from "react-router";
 import type { Route } from "./+types/home";
 import { useEffect } from "react";
-import { Button, Flex } from 'antd';
-import React from 'react';
+import ButtonLogOut from "../components/ButtonLogOut";
+import { useNavigate } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -12,7 +11,6 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-
   const navigate = useNavigate(); 
 
   useEffect(() => {
@@ -23,15 +21,9 @@ export default function Home() {
     }
   }, []); 
 
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    navigate("/login");
-  }
 
   return <>
   <div>Home</div>
-  <Button type="primary" danger onClick={handleLogout} >
-      Đăng xuất
-    </Button>
+  <ButtonLogOut />
   </> ;
 }
