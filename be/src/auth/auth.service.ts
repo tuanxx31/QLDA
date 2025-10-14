@@ -39,7 +39,6 @@ export class AuthService {
       throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
     }
 
-    // payload để đưa vào JWT
     const payload = { sub: user.id, email: user.email };
 
     return {

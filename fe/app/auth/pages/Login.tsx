@@ -4,7 +4,7 @@ import {
   ProFormCheckbox,
   ProFormText,
 } from "@ant-design/pro-components";
-import { Divider, Space, Tabs, message, theme } from "antd";
+import { Button, Divider, Space, Tabs, message, theme } from "antd";
 import type { CSSProperties } from "react";
 import { useCallback, useState } from "react";
 import { login } from "../../../services/auth";
@@ -189,6 +189,11 @@ const LoginPage = () => {
           <ProFormCheckbox noStyle name="autoLogin">
             Nhớ tài khoản
           </ProFormCheckbox>
+        </div>
+        <div style={{ marginTop: 16, textAlign: "center" }}>
+          <Button type="link" onClick={() => navigate("/register")}>
+            Chưa có tài khoản? Đăng ký
+          </Button>
         </div>
       </LoginFormPage>
     </div>

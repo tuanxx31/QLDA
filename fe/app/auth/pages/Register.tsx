@@ -15,16 +15,13 @@ const RegisterPage = () => {
       const res = await register(values);
   
       if (res?.id) {
-        // nếu response có id => thành công
         messageApi.success("Đăng ký thành công!");
         form.resetFields();
         navigate(`/login?register=true&email=${values.email}&password=${values.password}`);
       } else {
-        // fallback nếu BE trả về object khác
         messageApi.success("Thao tác thành công!");
       }
     } catch (err: any) {
-      // nếu có response lỗi
       const errorMsg =
         err.response?.data?.message || "Đã xảy ra lỗi, vui lòng thử lại!";
         messageApi.error(errorMsg);
