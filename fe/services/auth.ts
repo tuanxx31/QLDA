@@ -18,6 +18,12 @@ export async function register(data: RegisterDto) {
 }
 
 export async function login(data: LoginDto) {
-  const res = await api.post("/auth/login", data);
-  return res.data; // { access_token, user }
+  try{
+    const res = await api.post("/auth/login", data);
+    return res.data; // { access_token, user }
+  }catch(err){
+    console.log("err", err);
+    return null;
+  }
+  
 }

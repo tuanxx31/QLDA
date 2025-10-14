@@ -17,18 +17,19 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
   );
 
-// Response Interceptor: xử lý lỗi chung
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // token sai hoặc hết hạn → logout
-      localStorage.removeItem("token");
-      // nếu FE bạn có react-router v7 thì redirect về login
-      window.location.href = "/login";
+      localStorage.removeItem("access_token");
+
+      if (!window.location.pathname.includes("login")||!window.location.pathname.includes("register")) {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }
 );
+
 
 export default api;

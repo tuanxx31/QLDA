@@ -1,22 +1,14 @@
-import {
-  AlipayOutlined,
-  LockOutlined,
-  MobileOutlined,
-  TaobaoOutlined,
-  UserOutlined,
-  WeiboOutlined,
-} from "@ant-design/icons";
+import { LockOutlined, MobileOutlined, UserOutlined } from "@ant-design/icons";
 import {
   LoginFormPage,
-  ProConfigProvider,
-  ProFormCaptcha,
   ProFormCheckbox,
   ProFormText,
 } from "@ant-design/pro-components";
-import { Button, Divider, Space, Tabs, message, theme } from "antd";
+import { Divider, Space, Tabs, message, theme } from "antd";
 import type { CSSProperties } from "react";
-import { useState } from "react";
-
+import { useCallback, useState } from "react";
+import { login } from "../../../services/auth";
+import { useNavigate } from "react-router";
 type LoginType = "phone" | "account";
 
 const iconStyles: CSSProperties = {
@@ -27,28 +19,49 @@ const iconStyles: CSSProperties = {
 };
 
 const LoginPage = () => {
-  const [loginType, setLoginType] = useState<LoginType>("phone");
+  const [loginType, setLoginType] = useState<LoginType>("account");
+  const [loading, setLoading] = useState(false);
   const { token } = theme.useToken();
+  const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const handleSubmit = async (values: any) => {
+    try {
+      const res = await login(values);
+      if (res?.access_token) {
+        messageApi.success("Đăng nhập thành công");
+        localStorage.setItem("access_token", res.access_token);
+        navigate("/");
+        return true;
+      }
+      messageApi.error(res?.message || "Đăng nhập thất bại");
+      return false;
+    } catch (err: any) {
+      messageApi.error(err?.response?.data?.message || "Có lỗi khi đăng nhập");
+      // return false;
+    }
+  };
+
   return (
     <div
       style={{
-      
         backgroundColor: "white",
         height: "100vh",
       }}
     >
+      {contextHolder}
       <LoginFormPage
         backgroundImageUrl="https://mdn.alipayobjects.com/huamei_gcee1x/afts/img/A*y0ZTS6WLwvgAAAAAAAAAAAAADml6AQ/fmt.webp"
-       
         backgroundVideoUrl="https://gw.alipayobjects.com/v/huamei_gcee1x/afts/video/jXRBRK_VAwoAAAAAAAAAAAAAK4eUAQBr"
         title={loginType === "account" ? "Đăng nhập" : "Quên mật khẩu"}
-        
         containerStyle={{
           backgroundColor: "rgba(0, 0, 0,0.65)",
           backdropFilter: "blur(4px)",
         }}
-        
-        
+        onFinish={handleSubmit}
+        submitter={{
+          submitButtonProps: { loading },
+        }}
         actions={
           <div
             style={{
@@ -66,13 +79,10 @@ const LoginPage = () => {
                   fontSize: 14,
                 }}
               >
-                其他登录方式
+                Quản lý dự án cho sinh viên
               </span>
             </Divider>
-            <Space align="center" size={24}>
-             
-             
-            </Space>
+            <Space align="center" size={24}></Space>
           </div>
         }
       >
@@ -146,7 +156,6 @@ const LoginPage = () => {
               }}
               name="mobile"
               placeholder={"Nhập email"}
-             
             />
             {/* <ProFormCaptcha
               fieldProps={{
@@ -180,7 +189,6 @@ const LoginPage = () => {
           <ProFormCheckbox noStyle name="autoLogin">
             Nhớ tài khoản
           </ProFormCheckbox>
-        
         </div>
       </LoginFormPage>
     </div>
