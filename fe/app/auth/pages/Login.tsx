@@ -1,22 +1,14 @@
-import {
-  AlipayOutlined,
-  LockOutlined,
-  MobileOutlined,
-  TaobaoOutlined,
-  UserOutlined,
-  WeiboOutlined,
-} from "@ant-design/icons";
+import { LockOutlined, MobileOutlined, UserOutlined } from "@ant-design/icons";
 import {
   LoginFormPage,
-  ProConfigProvider,
-  ProFormCaptcha,
   ProFormCheckbox,
   ProFormText,
 } from "@ant-design/pro-components";
-import { Button, Divider, Space, Tabs, message, theme } from "antd";
+import { Divider, Space, Tabs, message, theme } from "antd";
 import type { CSSProperties } from "react";
-import { useState } from "react";
-
+import { useCallback, useState } from "react";
+import { login } from "../../../services/auth";
+import { useNavigate } from "react-router";
 type LoginType = "phone" | "account";
 
 const iconStyles: CSSProperties = {
@@ -27,27 +19,49 @@ const iconStyles: CSSProperties = {
 };
 
 const LoginPage = () => {
-  const [loginType, setLoginType] = useState<LoginType>("phone");
+  const [loginType, setLoginType] = useState<LoginType>("account");
+  const [loading, setLoading] = useState(false);
   const { token } = theme.useToken();
+  const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const handleSubmit = async (values: any) => {
+    try {
+      const res = await login(values);
+      if (res?.access_token) {
+        messageApi.success("Đăng nhập thành công");
+        localStorage.setItem("access_token", res.access_token);
+        navigate("/");
+        return true;
+      }
+      messageApi.error(res?.message || "Đăng nhập thất bại");
+      return false;
+    } catch (err: any) {
+      messageApi.error(err?.response?.data?.message || "Có lỗi khi đăng nhập");
+      // return false;
+    }
+  };
+
   return (
     <div
       style={{
-      
         backgroundColor: "white",
         height: "100vh",
       }}
     >
+      {contextHolder}
       <LoginFormPage
         backgroundImageUrl="https://mdn.alipayobjects.com/huamei_gcee1x/afts/img/A*y0ZTS6WLwvgAAAAAAAAAAAAADml6AQ/fmt.webp"
-       
         backgroundVideoUrl="https://gw.alipayobjects.com/v/huamei_gcee1x/afts/video/jXRBRK_VAwoAAAAAAAAAAAAAK4eUAQBr"
-        title="Đăng nhập"
+        title={loginType === "account" ? "Đăng nhập" : "Quên mật khẩu"}
         containerStyle={{
           backgroundColor: "rgba(0, 0, 0,0.65)",
           backdropFilter: "blur(4px)",
         }}
-        
-        
+        onFinish={handleSubmit}
+        submitter={{
+          submitButtonProps: { loading },
+        }}
         actions={
           <div
             style={{
@@ -57,51 +71,18 @@ const LoginPage = () => {
               flexDirection: "column",
             }}
           >
-           
-            <Space align="center" size={24}>
-              <div
+            <Divider plain>
+              <span
                 style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flexDirection: "column",
-                  height: 40,
-                  width: 40,
-                  border: "1px solid " + token.colorPrimaryBorder,
-                  borderRadius: "50%",
+                  color: token.colorTextPlaceholder,
+                  fontWeight: "normal",
+                  fontSize: 14,
                 }}
               >
-                <AlipayOutlined style={{ ...iconStyles, color: "#1677FF" }} />
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flexDirection: "column",
-                  height: 40,
-                  width: 40,
-                  border: "1px solid " + token.colorPrimaryBorder,
-                  borderRadius: "50%",
-                }}
-              >
-                <TaobaoOutlined style={{ ...iconStyles, color: "#FF6A10" }} />
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flexDirection: "column",
-                  height: 40,
-                  width: 40,
-                  border: "1px solid " + token.colorPrimaryBorder,
-                  borderRadius: "50%",
-                }}
-              >
-                <WeiboOutlined style={{ ...iconStyles, color: "#1890ff" }} />
-              </div>
-            </Space>
+                Quản lý dự án cho sinh viên
+              </span>
+            </Divider>
+            <Space align="center" size={24}></Space>
           </div>
         }
       >
@@ -175,18 +156,8 @@ const LoginPage = () => {
               }}
               name="mobile"
               placeholder={"Nhập email"}
-              rules={[
-                {
-                  required: true,
-                  message: "请输入手机号！",
-                },
-                {
-                  pattern: /^1\d{10}$/,
-                  message: "手机号格式错误！",
-                },
-              ]}
             />
-            <ProFormCaptcha
+            {/* <ProFormCaptcha
               fieldProps={{
                 size: "large",
                 prefix: (
@@ -201,24 +172,13 @@ const LoginPage = () => {
               captchaProps={{
                 size: "large",
               }}
-              placeholder={"请输入验证码"}
-              captchaTextRender={(timing, count) => {
-                if (timing) {
-                  return `${count} ${"获取验证码"}`;
-                }
-                return "获取验证码";
-              }}
+              placeholder={"Nhập mã"}
+              
               name="captcha"
-              rules={[
-                {
-                  required: true,
-                  message: "请输入验证码！",
-                },
-              ]}
               onGetCaptcha={async () => {
                 message.success("获取验证码成功！验证码为：1234");
               }}
-            />
+            /> */}
           </>
         )}
         <div
@@ -229,7 +189,6 @@ const LoginPage = () => {
           <ProFormCheckbox noStyle name="autoLogin">
             Nhớ tài khoản
           </ProFormCheckbox>
-        
         </div>
       </LoginFormPage>
     </div>
