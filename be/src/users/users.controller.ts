@@ -1,16 +1,20 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Request } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { AuthGuard } from '@nestjs/passport';
-import { Req } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiTags('Users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('profile')
-  @UseGuards(AuthGuard())
-  getProfile(@Req() req: Request) {
-    console.log(req);
-    // return this.usersService.getProfile(req.user.id);
+  // @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Lấy thông tin profile của user hiện tại' })
+  @ApiResponse({ status: 200, description: 'Profile retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  getProfile(@Request() req: any) {
+    console.log('User from JWT:', req);
+    return this.usersService.getProfile(req.user.id as number);
   }
 }
