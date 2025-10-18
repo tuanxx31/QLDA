@@ -1,5 +1,4 @@
 import {
-  GitHubBanner,
   Refine,
   type AuthProvider,
   Authenticated,
@@ -17,7 +16,8 @@ import {
   DashboardOutlined,
 } from "@ant-design/icons";
 import viVN from "antd/locale/vi_VN";
-import dataProvider from "@refinedev/simple-rest";
+import { appDataProvider } from "./utils/provider";
+
 import routerProvider, {
   NavigateToResource,
   CatchAllNavigate,
@@ -25,7 +25,7 @@ import routerProvider, {
   DocumentTitleHandler,
 } from "@refinedev/react-router";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router";
-import { App as AntdApp, ConfigProvider } from "antd";
+import { App as AntdApp, ConfigProvider, message } from "antd";
 
 import "@ant-design/v5-patch-for-react-19";
 import "@refinedev/antd/dist/reset.css";
@@ -33,21 +33,13 @@ import "@refinedev/antd/dist/reset.css";
 import { PostList, PostEdit, PostShow } from "../src/pages/posts";
 import { DashboardPage } from "../src/pages/dashboard";
 import { API_URL } from "./utils/helper";
+import { authService, type LoginRequest, type RegisterRequest } from "./services/auth";
 
 console.log("API_URL", API_URL);
 
-
-/**
- *  mock auth credentials to simulate authentication
- */
-const authCredentials = {
-  email: "demo@refine.dev",
-  password: "demodemo",
-};
-
 const App: React.FC = () => {
   const authProvider: AuthProvider = {
-    login: async ({ providerName, email }) => {
+    login: async ({ providerName, email, password }) => {
       console.log("providerName", providerName);
       
       if (providerName === "google") {
@@ -64,73 +56,117 @@ const App: React.FC = () => {
         };
       }
 
-      if (email === authCredentials.email) {
-        localStorage.setItem("email", email);
-        return {
-          success: true,
-          redirectTo: "/",
-        };
+      // Đăng nhập với email/password thông qua API
+      if (email && password) {
+        try {
+          const loginData: LoginRequest = { email, password };
+          const response = await authService.login(loginData);
+          
+          // Lưu token vào localStorage
+          authService.saveAuthData(response.access_token);
+          
+          // Hiển thị toast thành công
+          message.success("Đăng nhập thành công!");
+          
+          return {
+            success: true,
+            redirectTo: "/",
+          };
+        } catch (error: any) {
+          const errorMessage = error.response?.data?.message || "Đăng nhập thất bại";
+          
+          // Hiển thị toast lỗi
+          message.error(errorMessage);
+          
+          return {
+            success: false,
+            error: {
+              message: errorMessage,
+              name: "Login failed",
+            },
+          };
+        }
       }
 
-
-
-
+      // Hiển thị toast cho trường hợp thiếu thông tin
+      message.warning("Vui lòng nhập email và mật khẩu");
+      
       return {
         success: false,
         error: {
-          message: "Login failed",
-          name: "Invalid email or password",
+          message: "Vui lòng nhập email và mật khẩu",
+          name: "Missing credentials",
         },
       };
     },
     register: async (params) => {
-      if (params.email === authCredentials.email && params.password) {
-        localStorage.setItem("email", params.email);
+      try {
+        const registerData: RegisterRequest = {
+          name: params.name || params.email.split('@')[0], // Sử dụng email làm tên nếu không có tên
+          email: params.email,
+          password: params.password,
+          avatar: params.avatar,
+        };
+        
+        const user = await authService.register(registerData);
+        
+        // Hiển thị toast đăng ký thành công
+        message.success("Đăng ký tài khoản thành công!");
+        
+        // Sau khi đăng ký thành công, tự động đăng nhập
+        const loginData: LoginRequest = { 
+          email: params.email, 
+          password: params.password 
+        };
+        const loginResponse = await authService.login(loginData);
+        
+        // Lưu token và thông tin user
+        authService.saveAuthData(loginResponse.access_token, user);
+        
         return {
           success: true,
           redirectTo: "/",
         };
-      }
-      return {
-        success: false,
-        error: {
-          message: "Register failed",
-          name: "Invalid email or password",
-        },
-      };
-    },
-    updatePassword: async (params) => {
-      if (params.password === authCredentials.password) {
-        //we can update password here
+      } catch (error: any) {
+        const errorMessage = error.response?.data?.message || "Đăng ký thất bại";
+        
+        // Hiển thị toast lỗi
+        // message.error(errorMessage);
+        
         return {
-          success: true,
+          success: false,
+          error: {
+            message: errorMessage,
+            name: "Register failed",
+          },
         };
       }
+    },
+    updatePassword: async (params) => {
+      // TODO: Implement update password with API
+      message.info("Chức năng đổi mật khẩu chưa được triển khai");
       return {
         success: false,
         error: {
-          message: "Update password failed",
-          name: "Invalid password",
+          message: "Chức năng đổi mật khẩu chưa được triển khai",
+          name: "Not implemented",
         },
       };
     },
     forgotPassword: async (params) => {
-      if (params.email === authCredentials.email) {
-        //we can send email with reset password link here
-        return {
-          success: true,
-        };
-      }
+      // TODO: Implement forgot password with API
+      message.info("Chức năng quên mật khẩu chưa được triển khai");
       return {
         success: false,
         error: {
-          message: "Forgot password failed",
-          name: "Invalid email",
+          message: "Chức năng quên mật khẩu chưa được triển khai",
+          name: "Not implemented",
         },
       };
     },
     logout: async () => {
-      localStorage.removeItem("email");
+      authService.logout();
+      message.success("Đăng xuất thành công!");
       return {
         success: true,
         redirectTo: "/login",
@@ -138,6 +174,11 @@ const App: React.FC = () => {
     },
     onError: async (error) => {
       if (error.response?.status === 401) {
+        // Chỉ hiển thị toast nếu không đang ở trang login
+        const currentPath = window.location.pathname;
+        if (currentPath !== "/login") {
+          message.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+        }
         return {
           logout: true,
         };
@@ -145,27 +186,42 @@ const App: React.FC = () => {
 
       return { error };
     },
-    check: async () =>
-      localStorage.getItem("email")
-        ? {
-            authenticated: true,
-          }
-        : {
-            authenticated: false,
-            error: {
-              message: "Check failed",
-              name: "Not authenticated",
-            },
-            logout: true,
-            redirectTo: "/login",
+    check: async () => {
+      const isAuthenticated = authService.isAuthenticated();
+      if (isAuthenticated) {
+        return {
+          authenticated: true,
+        };
+      } else {
+        // Không hiển thị toast cho trường hợp này vì có thể gây spam
+        // khi user chưa đăng nhập và truy cập trang
+        return {
+          authenticated: false,
+          error: {
+            message: "Check failed",
+            name: "Not authenticated",
           },
+          logout: true,
+          redirectTo: "/login",
+        };
+      }
+    },
     getPermissions: async (params) => params?.permissions,
-    getIdentity: async () => ({
-      id: 1,
-      name: "Jane Doe",
-      avatar:
-        "https://unsplash.com/photos/IWLOvomUmWU/download?force=true&w=640",
-    }),
+    getIdentity: async () => {
+      const user = authService.getUser();
+      if (user) {
+        return {
+          id: user.id,
+          name: user.name,
+          avatar: user.avatar || "https://unsplash.com/photos/IWLOvomUmWU/download?force=true&w=640",
+        };
+      }
+      return {
+        id: 1,
+        name: "User",
+        avatar: "https://unsplash.com/photos/IWLOvomUmWU/download?force=true&w=640",
+      };
+    },
   };
 
   return (
@@ -174,7 +230,7 @@ const App: React.FC = () => {
         <AntdApp>
           <Refine
             authProvider={authProvider}
-            dataProvider={dataProvider(API_URL)}
+            dataProvider={appDataProvider(API_URL)}
             routerProvider={routerProvider}
             resources={[
               {
@@ -232,11 +288,6 @@ const App: React.FC = () => {
                   element={
                     <AuthPage
                       type="login"
-                      formProps={{
-                        initialValues: {
-                          ...authCredentials,
-                        },
-                      }}
                       providers={[
                         {
                           name: "google",
@@ -250,18 +301,18 @@ const App: React.FC = () => {
                             />
                           ),
                         },
-                        {
-                          name: "github",
-                          label: "Sign in with GitHub",
-                          icon: (
-                            <GithubOutlined
-                              style={{
-                                fontSize: 24,
-                                lineHeight: 0,
-                              }}
-                            />
-                          ),
-                        },
+                        // {
+                        //   name: "github",
+                        //   label: "Sign in with GitHub",
+                        //   icon: (
+                        //     <GithubOutlined
+                        //       style={{
+                        //         fontSize: 24,
+                        //         lineHeight: 0,
+                        //       }}
+                        //     />
+                        //   ),
+                        // },
                       ]}
                     />
                   }
@@ -272,30 +323,18 @@ const App: React.FC = () => {
                     <AuthPage
                       type="register"
                       providers={[
-                        {
-                          name: "google",
-                          label: "Sign in with Google",
-                          icon: (
-                            <GoogleOutlined
-                              style={{
-                                fontSize: 24,
-                                lineHeight: 0,
-                              }}
-                            />
-                          ),
-                        },
-                        {
-                          name: "github",
-                          label: "Sign in with GitHub",
-                          icon: (
-                            <GithubOutlined
-                              style={{
-                                fontSize: 24,
-                                lineHeight: 0,
-                              }}
-                            />
-                          ),
-                        },
+                        // {
+                        //   name: "google",
+                        //   label: "Sign in with Google",
+                        //   icon: (
+                        //     <GoogleOutlined
+                        //       style={{
+                        //         fontSize: 24,
+                        //         lineHeight: 0,
+                        //       }}
+                        //     />
+                        //   ),
+                        // },
                       ]}
                     />
                   }

@@ -19,9 +19,11 @@ export const appDataProvider = (
 > => ({
   
   getList: async ({ resource, pagination, filters, sorters, meta }) => {
-    const url = `${apiUrl}/${resource}`;
+    const url = `/${resource}`;
 
-    const { current = 1, pageSize = 10, mode = "server" } = pagination ?? {};
+    const current = (pagination as any)?.current ?? 1;
+    const pageSize = (pagination as any)?.pageSize ?? 10;
+    const mode = (pagination as any)?.mode ?? "server";
 
     const { headers: headersFromMeta, method } = meta ?? {};
     const requestMethod = (method as MethodTypes) ?? "get";
@@ -73,7 +75,7 @@ export const appDataProvider = (
     const requestMethod = (method as MethodTypes) ?? "get";
 
     const { data } = await httpClient[requestMethod](
-      `${apiUrl}/${resource}?${stringify({ id: ids })}`,
+      `/${resource}?${stringify({ id: ids })}`,
       { headers }
     );
 
@@ -83,7 +85,7 @@ export const appDataProvider = (
   },
 
   create: async ({ resource, variables, meta }) => {
-    const url = `${apiUrl}/${resource}`;
+    const url = `/${resource}`;
 
     const { headers, method } = meta ?? {};
     const requestMethod = (method as MethodTypesWithBody) ?? "post";
@@ -98,7 +100,7 @@ export const appDataProvider = (
   },
 
   update: async ({ resource, id, variables, meta }) => {
-    const url = `${apiUrl}/${resource}/${id}`;
+    const url = `/${resource}/${id}`;
 
     const { headers, method } = meta ?? {};
     const requestMethod = (method as MethodTypesWithBody) ?? "patch";
@@ -113,7 +115,7 @@ export const appDataProvider = (
   },
 
   getOne: async ({ resource, id, meta }) => {
-    const url = `${apiUrl}/${resource}/${id}`;
+    const url = `/${resource}/${id}`;
 
     const { headers, method } = meta ?? {};
     const requestMethod = (method as MethodTypes) ?? "get";
@@ -126,7 +128,7 @@ export const appDataProvider = (
   },
 
   deleteOne: async ({ resource, id, variables, meta }) => {
-    const url = `${apiUrl}/${resource}/${id}`;
+    const url = `/${resource}/${id}`;
 
     const { headers, method } = meta ?? {};
     const requestMethod = (method as MethodTypesWithBody) ?? "delete";
