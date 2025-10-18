@@ -12,6 +12,10 @@ export class UsersService {
     private userRepository: Repository<User>,
   ) {}
 
+  getProfile(id: number) {
+    return this.userRepository.findOneBy({ id });
+  }
+
   create(data: Partial<User>) {
     const newUser = this.userRepository.create(data);
     return this.userRepository.save(newUser);

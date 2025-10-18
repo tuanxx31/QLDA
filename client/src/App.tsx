@@ -56,16 +56,13 @@ const App: React.FC = () => {
         };
       }
 
-      // Đăng nhập với email/password thông qua API
       if (email && password) {
         try {
           const loginData: LoginRequest = { email, password };
           const response = await authService.login(loginData);
           
-          // Lưu token vào localStorage
           authService.saveAuthData(response.access_token);
           
-          // Hiển thị toast thành công
           message.success("Đăng nhập thành công!");
           
           return {
@@ -74,9 +71,6 @@ const App: React.FC = () => {
           };
         } catch (error: any) {
           const errorMessage = error.response?.data?.message || "Đăng nhập thất bại";
-          
-          // Hiển thị toast lỗi
-          // message.error(errorMessage);
           
           return {
             success: false,
@@ -88,7 +82,6 @@ const App: React.FC = () => {
         }
       }
 
-      // Hiển thị toast cho trường hợp thiếu thông tin
       message.warning("Vui lòng nhập email và mật khẩu");
       
       return {
@@ -102,7 +95,7 @@ const App: React.FC = () => {
     register: async (params) => {
       try {
         const registerData: RegisterRequest = {
-          name: params.name || params.email.split('@')[0], // Sử dụng email làm tên nếu không có tên
+          name: params.name || params.email.split('@')[0],
           email: params.email,
           password: params.password,
           avatar: params.avatar,
@@ -110,17 +103,14 @@ const App: React.FC = () => {
         
         const user = await authService.register(registerData);
         
-        // Hiển thị toast đăng ký thành công
         message.success("Đăng ký tài khoản thành công!");
         
-        // Sau khi đăng ký thành công, tự động đăng nhập
         const loginData: LoginRequest = { 
           email: params.email, 
           password: params.password 
         };
         const loginResponse = await authService.login(loginData);
         
-        // Lưu token và thông tin user
         authService.saveAuthData(loginResponse.access_token, user);
         
         return {
@@ -129,9 +119,6 @@ const App: React.FC = () => {
         };
       } catch (error: any) {
         const errorMessage = error.response?.data?.message || "Đăng ký thất bại";
-        
-        // Hiển thị toast lỗi
-        // message.error(errorMessage);
         
         return {
           success: false,
@@ -143,7 +130,6 @@ const App: React.FC = () => {
       }
     },
     updatePassword: async (params) => {
-      // TODO: Implement update password with API
       message.info("Chức năng đổi mật khẩu chưa được triển khai");
       return {
         success: false,
@@ -154,7 +140,6 @@ const App: React.FC = () => {
       };
     },
     forgotPassword: async (params) => {
-      // TODO: Implement forgot password with API
       message.info("Chức năng quên mật khẩu chưa được triển khai");
       return {
         success: false,
@@ -174,7 +159,6 @@ const App: React.FC = () => {
     },
     onError: async (error) => {
       if (error.response?.status === 401) {
-        // Chỉ hiển thị toast nếu không đang ở trang login
         const currentPath = window.location.pathname;
         if (currentPath !== "/login") {
           message.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
@@ -193,8 +177,6 @@ const App: React.FC = () => {
           authenticated: true,
         };
       } else {
-        // Không hiển thị toast cho trường hợp này vì có thể gây spam
-        // khi user chưa đăng nhập và truy cập trang
         return {
           authenticated: false,
           error: {
