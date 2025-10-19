@@ -4,6 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserProfileDto } from './dto/user-profile.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class UsersService {
@@ -12,8 +14,13 @@ export class UsersService {
     private userRepository: Repository<User>,
   ) {}
 
-  getProfile(id: number) {
-    return this.userRepository.findOneBy({ id });
+  async getProfile(id: number): Promise<UserProfileDto | null> {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) return null;
+
+    return plainToInstance(UserProfileDto, user, {
+      excludeExtraneousValues: true,
+    });
   }
 
   create(data: Partial<User>) {

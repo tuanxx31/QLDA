@@ -21,10 +21,14 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(registerUserDto.password, 10);
 
-    return this.usersService.create({
+    await this.usersService.create({
       ...registerUserDto,
       password: hashedPassword,
     });
+
+    return {
+      message: 'Đăng ký thành công',
+    };
   }
 
   async login(loginUserDto: LoginUserDto) {
