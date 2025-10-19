@@ -7,7 +7,7 @@ import {
 import { Button, Divider, Space, Tabs, message, theme } from "antd";
 import type { CSSProperties } from "react";
 import { useCallback, useState } from "react";
-import { login } from "../../../services/auth";
+import { login } from "../../../services/auth.service";
 import { useNavigate } from "react-router";
 type LoginType = "phone" | "account";
 

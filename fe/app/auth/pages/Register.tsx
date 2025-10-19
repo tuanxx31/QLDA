@@ -2,7 +2,7 @@ import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { LoginFormPage, ProFormText } from "@ant-design/pro-components";
 import { Button, Form, message, theme } from "antd";
 import { useNavigate } from "react-router";
-import { register } from "../../../services/auth";
+import { register } from "../../../services/auth.service";
 
 const RegisterPage = () => {
   const { token } = theme.useToken();
