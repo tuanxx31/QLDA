@@ -14,7 +14,7 @@ export class User {
   @Column({ nullable: true })
   password: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true , default: 'https://i.pravatar.cc/150' })
   avatar: string;
 
   @Column({ nullable: true })

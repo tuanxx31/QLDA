@@ -9,3 +9,12 @@ export interface IPost {
   status: "published" | "draft" | "rejected";
   category: { id: number };
 }
+export interface IUser {
+  id: number;
+  name: string;
+  email: string;
+  avatar: string;
+  studentCode: string;
+  department: string;
+  createdAt: Date;
+}

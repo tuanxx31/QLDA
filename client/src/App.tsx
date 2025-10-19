@@ -1,8 +1,4 @@
-import {
-  Refine,
-  type AuthProvider,
-  Authenticated,
-} from "@refinedev/core";
+import { Refine, type AuthProvider, Authenticated } from "@refinedev/core";
 import {
   useNotificationProvider,
   ThemedLayout,
@@ -33,7 +29,12 @@ import "@refinedev/antd/dist/reset.css";
 import { PostList, PostEdit, PostShow } from "../src/pages/posts";
 import { DashboardPage } from "../src/pages/dashboard";
 import { API_URL } from "./utils/helper";
-import { authService, type LoginRequest, type RegisterRequest } from "./services/auth";
+import {
+  authService,
+  type LoginRequest,
+  type RegisterRequest,
+} from "./services/auth";
+import { ProfileSettings, SettingsView } from "./pages/settings";
 
 console.log("API_URL", API_URL);
 
@@ -41,7 +42,7 @@ const App: React.FC = () => {
   const authProvider: AuthProvider = {
     login: async ({ providerName, email, password }) => {
       console.log("providerName", providerName);
-      
+
       if (providerName === "google") {
         window.location.href = "https://accounts.google.com/o/oauth2/v2/auth";
         return {
@@ -60,18 +61,19 @@ const App: React.FC = () => {
         try {
           const loginData: LoginRequest = { email, password };
           const response = await authService.login(loginData);
-          
+
           authService.saveAuthData(response.access_token);
-          
+
           message.success("Đăng nhập thành công!");
-          
+
           return {
             success: true,
             redirectTo: "/",
           };
         } catch (error: any) {
-          const errorMessage = error.response?.data?.message || "Đăng nhập thất bại";
-          
+          const errorMessage =
+            error.response?.data?.message || "Đăng nhập thất bại";
+
           return {
             success: false,
             error: {
@@ -83,7 +85,7 @@ const App: React.FC = () => {
       }
 
       message.warning("Vui lòng nhập email và mật khẩu");
-      
+
       return {
         success: false,
         error: {
@@ -95,31 +97,32 @@ const App: React.FC = () => {
     register: async (params) => {
       try {
         const registerData: RegisterRequest = {
-          name: params.name || params.email.split('@')[0],
+          name: params.name || params.email.split("@")[0],
           email: params.email,
           password: params.password,
           avatar: params.avatar,
         };
-        
+
         const user = await authService.register(registerData);
-        
+
         message.success("Đăng ký tài khoản thành công!");
-        
-        const loginData: LoginRequest = { 
-          email: params.email, 
-          password: params.password 
+
+        const loginData: LoginRequest = {
+          email: params.email,
+          password: params.password,
         };
         const loginResponse = await authService.login(loginData);
-        
+
         authService.saveAuthData(loginResponse.access_token, user);
-        
+
         return {
           success: true,
           redirectTo: "/",
         };
       } catch (error: any) {
-        const errorMessage = error.response?.data?.message || "Đăng ký thất bại";
-        
+        const errorMessage =
+          error.response?.data?.message || "Đăng ký thất bại";
+
         return {
           success: false,
           error: {
@@ -195,13 +198,16 @@ const App: React.FC = () => {
         return {
           id: user.id,
           name: user.name,
-          avatar: user.avatar || "https://unsplash.com/photos/IWLOvomUmWU/download?force=true&w=640",
+          avatar:
+            user.avatar ||
+            "https://unsplash.com/photos/IWLOvomUmWU/download?force=true&w=640",
         };
       }
       return {
         id: 1,
         name: "User",
-        avatar: "https://unsplash.com/photos/IWLOvomUmWU/download?force=true&w=640",
+        avatar:
+          "https://unsplash.com/photos/IWLOvomUmWU/download?force=true&w=640",
       };
     },
   };
@@ -250,7 +256,10 @@ const App: React.FC = () => {
                 }
               >
                 <Route index element={<DashboardPage />} />
-
+                <Route path="/settings">
+                  <Route index element={<SettingsView />} />
+                  <Route path="profile" element={<ProfileSettings />} />
+                </Route>
                 <Route path="/posts">
                   <Route index element={<PostList />} />
                   <Route path="edit/:id" element={<PostEdit />} />
@@ -304,20 +313,22 @@ const App: React.FC = () => {
                   element={
                     <AuthPage
                       type="register"
-                      providers={[
-                        // {
-                        //   name: "google",
-                        //   label: "Sign in with Google",
-                        //   icon: (
-                        //     <GoogleOutlined
-                        //       style={{
-                        //         fontSize: 24,
-                        //         lineHeight: 0,
-                        //       }}
-                        //     />
-                        //   ),
-                        // },
-                      ]}
+                      providers={
+                        [
+                          // {
+                          //   name: "google",
+                          //   label: "Sign in with Google",
+                          //   icon: (
+                          //     <GoogleOutlined
+                          //       style={{
+                          //         fontSize: 24,
+                          //         lineHeight: 0,
+                          //       }}
+                          //     />
+                          //   ),
+                          // },
+                        ]
+                      }
                     />
                   }
                 />
