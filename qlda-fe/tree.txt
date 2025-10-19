@@ -1,0 +1,67 @@
+📂 src/
+├── 📄 main.tsx                 # Điểm vào ứng dụng
+├── 📄 App.tsx                  # Router chính
+│
+├── 📂 assets/                  # Ảnh, icon, logo
+│   └── logo.svg
+│
+├── 📂 components/              # Các component tái sử dụng
+│   ├── ButtonLogout.tsx
+│   ├── Loading.tsx
+│   └── EmptyState.tsx
+│
+├── 📂 layouts/                 # Layout tổng thể
+│   ├── AppLayout.tsx           # Layout có sidebar, header (ProLayout)
+│   ├── AuthLayout.tsx          # Layout cho trang đăng nhập/đăng ký
+│   └── index.ts                # export layout chung
+│
+├── 📂 pages/                   # Các trang chính (mỗi module 1 thư mục)
+│   ├── auth/
+│   │   ├── Login.tsx
+│   │   ├── Register.tsx
+│   │   └── ForgotPassword.tsx
+│   ├── dashboard/
+│   │   └── index.tsx
+│   ├── projects/
+│   │   ├── ProjectList.tsx
+│   │   ├── ProjectDetail.tsx
+│   │   └── KanbanBoard.tsx
+│   ├── groups/
+│   │   └── GroupList.tsx
+│   ├── tasks/
+│   │   └── TaskDetail.tsx
+│   └── profile/
+│       └── ProfilePage.tsx
+│
+├── 📂 services/                # Nơi gọi API
+│   ├── api.ts                  # axios instance
+│   ├── auth.service.ts
+│   ├── user.service.ts
+│   ├── project.service.ts
+│   └── group.service.ts
+│
+├── 📂 hooks/                   # Custom hooks (React Query, Auth, v.v.)
+│   ├── useAuth.ts
+│   ├── useProjects.ts
+│   └── useDebounce.ts
+│
+├── 📂 context/                 # React Context toàn cục (Auth, Theme)
+│   ├── AuthContext.tsx
+│   └── ThemeContext.tsx
+│
+├── 📂 utils/                   # Hàm tiện ích chung
+│   ├── axios.ts
+│   ├── formatDate.ts
+│   ├── handleError.ts
+│   └── constants.ts
+│
+├── 📂 types/                   # Interface / type cho dữ liệu
+│   ├── user.ts
+│   ├── project.ts
+│   ├── task.ts
+│   └── group.ts
+│
+└── 📂 styles/
+    ├── global.css
+    ├── auth.css
+    └── dashboard.css

@@ -15,10 +15,11 @@ import "dayjs/locale/vi";
 import { ProConfigProvider, viVNIntl } from "@ant-design/pro-components";
 import { ConfigProvider } from "antd";
 import viVN from "antd/locale/vi_VN";
+import AuthProvider from "react-auth-kit";
+import createAuthStore from "react-auth-kit/store/createAuthStore";
 
 // set ngôn ngữ cho dayjs
 dayjs.locale("vi");
-
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -53,14 +54,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <ConfigProvider locale={viVN}>
-      <ProConfigProvider dark={true} intl={viVNIntl}>
-        <Outlet />
-      </ProConfigProvider>
-    </ConfigProvider>
+
+      <ConfigProvider locale={viVN}>
+        <ProConfigProvider dark={true} intl={viVNIntl}>
+          <Outlet />
+        </ProConfigProvider>
+      </ConfigProvider>
   );
 }
-
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = "Oops!";
