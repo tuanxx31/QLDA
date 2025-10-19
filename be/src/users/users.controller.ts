@@ -17,6 +17,6 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   getProfile(@Request() req: any): Promise<UserProfileDto | null> {
     console.log('User from JWT:', req?.user);
-    return this.usersService.getProfile(req.user.id as number);
+    return this.usersService.getProfile(req.user.sub as number);
   }
 }

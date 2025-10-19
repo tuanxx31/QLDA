@@ -5,11 +5,13 @@ import {
   ErrorComponent,
   AuthPage,
   RefineThemes,
+  ThemedTitle,
 } from "@refinedev/antd";
 import {
   GoogleOutlined,
   GithubOutlined,
   DashboardOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import viVN from "antd/locale/vi_VN";
 import { appDataProvider } from "./utils/provider";
@@ -34,7 +36,9 @@ import {
   type LoginRequest,
   type RegisterRequest,
 } from "./services/auth";
-import { ProfileSettings, SettingsView } from "./pages/settings";
+import { SettingsView } from "./pages/settings";
+import ProfileSettings from "./pages/settings/profile";
+import Title from "antd/es/skeleton/Title";
 
 console.log("API_URL", API_URL);
 
@@ -235,6 +239,14 @@ const App: React.FC = () => {
                 show: "/posts/show/:id",
                 edit: "/posts/edit/:id",
               },
+              {
+                name: "settings",
+                list: "/settings/profile", // ← Trang profile
+                meta: {
+                  label: "Cài đặt",
+                  icon: <SettingOutlined  spin={false} />, // anh có thể đổi icon bên dưới
+                },
+              },
             ]}
             notificationProvider={useNotificationProvider}
             options={{
@@ -249,7 +261,30 @@ const App: React.FC = () => {
                     key="authenticated-routes"
                     fallback={<CatchAllNavigate to="/login" />}
                   >
-                    <ThemedLayout>
+                    <ThemedLayout
+                      Title={({ collapsed }) => (
+                        <ThemedTitle
+                          collapsed={collapsed}
+                          // icon hiển thị bên trái (khi menu mở)
+                          icon={
+                            <DashboardOutlined style={{ color: "#1677ff" }} />
+                          }
+                          // text hiển thị khi menu chưa collapse
+                          text={
+                            <span
+                              style={{
+                                fontWeight: 700,
+                                color: "#1677ff",
+                                fontSize: 18,
+                                letterSpacing: 0.5,
+                              }}
+                            >
+                              Quản lý dự án
+                            </span>
+                          }
+                        />
+                      )}
+                    >
                       <Outlet />
                     </ThemedLayout>
                   </Authenticated>

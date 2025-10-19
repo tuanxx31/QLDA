@@ -14,8 +14,12 @@ export class User {
   @Column({ nullable: true })
   password: string;
 
-  @Column({ nullable: true , default: 'https://i.pravatar.cc/150' })
+  @Column({
+    nullable: true,
+    default: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+  })
   avatar: string;
+  
 
   @Column({ nullable: true })
   studentCode: string;

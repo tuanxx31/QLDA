@@ -17,7 +17,6 @@ export class UsersService {
   async getProfile(id: number): Promise<UserProfileDto | null> {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) return null;
-
     return plainToInstance(UserProfileDto, user, {
       excludeExtraneousValues: true,
     });
