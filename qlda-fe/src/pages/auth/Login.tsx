@@ -1,18 +1,18 @@
 import { LoginFormPage, ProFormText } from "@ant-design/pro-components";
 import { message } from "antd";
 import { api } from "@/services/api";
-import { useAuth } from "@/context/AuthContext";
+import useAuth from "@/hooks/useAuth";
 
 export default function Login() {
   const { login } = useAuth();
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: { email: string; password: string }) => {
     try {
       const res = await api.post("/auth/login", values);
-      login(res.data.access_token);
+      login(res.data.access_token, res.data.user);
       message.success("Đăng nhập thành công!");
       window.location.href = "/dashboard";
-    } catch (err: any) {
+    } catch (err : any) {
       message.error(err.response?.data?.message || "Sai tài khoản hoặc mật khẩu!");
     }
   };

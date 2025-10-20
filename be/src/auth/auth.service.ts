@@ -5,6 +5,7 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import _ from 'lodash';
 
 @Injectable()
 export class AuthService {
@@ -33,7 +34,6 @@ export class AuthService {
 
   async login(loginUserDto: LoginUserDto) {
     const user = await this.usersService.findOneByEmail(loginUserDto.email);
-
     if (!user) {
       throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
     }
@@ -44,9 +44,11 @@ export class AuthService {
     }
 
     const payload = { sub: user.id, email: user.email };
+    const userWithoutPassword = _.omit(user, ['password']);
 
     return {
       access_token: await this.jwtService.signAsync(payload),
+      user: userWithoutPassword,
     };
   }
 }

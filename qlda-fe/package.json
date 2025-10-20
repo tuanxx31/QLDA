@@ -16,6 +16,8 @@
     "@tanstack/react-query": "^5.90.5",
     "antd": "^5.27.5",
     "axios": "^1.12.2",
+    "install": "^0.13.0",
+    "npm": "^11.6.2",
     "react": "^19.1.1",
     "react-auth-kit": "^4.0.2-alpha.11",
     "react-dom": "^19.1.1",
