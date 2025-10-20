@@ -14,3 +14,17 @@ export interface LoginResponse {
 }
 
 export type UserProfile = User;
+
+export interface UpdateUserDto {
+  name: string;
+  email: string;
+  avatar: string;
+  studentCode: string;
+  department: string;
+}
+
+export interface ChangePasswordDto {
+  password: string;
+  newPassword: string;
+  confirmPassword: string;
+}

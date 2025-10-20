@@ -2,7 +2,6 @@ import { PageContainer, ProLayout } from "@ant-design/pro-components";
 import { Outlet, useNavigate } from "react-router-dom";
 import {
   DashboardOutlined,
-  UserOutlined,
   SettingOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
@@ -11,20 +10,16 @@ import useAuth from "@/hooks/useAuth";
 export default function AppLayout() {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  // Giả lập thông tin user (sau này có thể lấy từ API hoặc context)
-  // const user = {
-  //   name: "Nguyễn Văn A",
-  //   avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=A",
-  // };
+
   const { authUser: user } = useAuth();
 
   const menuItems: MenuProps["items"] = [
-    {
-      key: "profile",
-      label: "Hồ sơ cá nhân",
-      icon: <UserOutlined />,
-      onClick: () => navigate("/profile"),
-    },
+    // {
+    //   key: "profile",
+    //   label: "Hồ sơ cá nhân",
+    //   icon: <UserOutlined />,
+    //   onClick: () => navigate("/profile"),
+    // },
     {
       key: "settings",
       label: "Cài đặt",
@@ -59,7 +54,7 @@ export default function AppLayout() {
             name: "Bảng điều khiển",
             icon: <DashboardOutlined />,
           },
-          { path: "/profile", name: "Hồ sơ cá nhân", icon: <UserOutlined /> },
+          // { path: "/profile", name: "Hồ sơ cá nhân", icon: <UserOutlined /> },
         ],
       }}
       // ✅ Hiển thị avatar + tên người dùng bên phải header

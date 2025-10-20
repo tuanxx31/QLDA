@@ -2,35 +2,37 @@
 import axios from "axios";
 import { API_BASE } from "@/utils/constants";
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_BASE,
   timeout: 10000,
 });
 
-// Hàm để inject Authorization header (token)
-export const attachAuthToken = (authHeader: string | null) => {
-  api.interceptors.request.use((config) => {
-    if (authHeader) {
-      config.headers.Authorization = authHeader;
-    }
-    return config;
-  });
+// 👇 Dùng DEFAULT HEADER, KHÔNG tạo interceptor cho request
+export const setAuthHeader = (authHeader: string | null) => {
+  if (authHeader) {
+    console.log("[SET AUTH HEADER]", authHeader);
+    api.defaults.headers.common.Authorization = authHeader;
+  } else {
+    delete api.defaults.headers.common.Authorization;
+    console.log("[REMOVE AUTH HEADER]");
+  }
 };
 
-// Response interceptor (xử lý lỗi 401)
+
+// Response interceptor: 401 → về login
 api.interceptors.response.use(
-  (response) => response,
+  (res) => res,
   (error) => {
     if (
       error.response?.status === 401 &&
       window.location.pathname !== "/login" &&
       window.location.pathname !== "/register"
     ) {
-      localStorage.removeItem("token_auth"); // có thể thay bằng clearAuth() nếu dùng react-auth-kit hoàn chỉnh
-      window.location.href = "/login";
+      // Đồng bộ với react-auth-kit: xoá tất cả storage liên quan nếu có
+      localStorage.removeItem("token_auth");
+      localStorage.removeItem("token"); // phòng hờ nếu từng dùng name khác
+      window.location.assign("/login");
     }
     return Promise.reject(error);
   }
 );
-
-export { api };

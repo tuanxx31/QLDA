@@ -1,5 +1,5 @@
 import { api } from "./api";
-import type { LoginResponse } from "@/types/user.type";
+import type {  LoginResponse } from "@/types/user.type";
 
 export interface LoginParams {
     email: string;
@@ -10,3 +10,4 @@ export const login = async ({email, password}: LoginParams): Promise<LoginRespon
     const response = await api.post("/auth/login", { email, password });
     return response.data;
 };
+

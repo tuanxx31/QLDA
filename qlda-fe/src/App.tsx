@@ -6,16 +6,18 @@ import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
 import Dashboard from "@/pages/dashboard";
-import ProfilePage from "./pages/profile/ProfilePage";
 import PrivateOutlet from "@/components/PrivateRoute";
-import { attachAuthToken } from "./services/api";
 import { useEffect } from "react";
 import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+import SettingsPage from "./pages/settings";
+import '@ant-design/v5-patch-for-react-19';
+import { setAuthHeader } from "./services/api";
+
 export default function App() {
   const authHeader = useAuthHeader();
 
   useEffect(() => {
-    attachAuthToken(authHeader);
+    setAuthHeader(authHeader);
   }, [authHeader]);
 
   return (
@@ -31,7 +33,8 @@ export default function App() {
           <Route path="/" element={<AppLayout />}>
             <Route index element={<Navigate to="/dashboard" />} />
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="profile" element={<ProfilePage />} />
+            {/* <Route path="profile" element={<ProfilePage />} /> */}
+            <Route path="settings" element={<SettingsPage />} />
           </Route>
         </Route>
       </Routes>
