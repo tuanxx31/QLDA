@@ -2,7 +2,7 @@ import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
 import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
-import type { User } from '@/types/user';
+import type { User } from '@/types/user.type';
 import { useNavigate } from 'react-router-dom';
 const useAuth = () => {
   const signIn = useSignIn();

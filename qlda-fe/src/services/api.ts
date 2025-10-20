@@ -1,26 +1,32 @@
+// src/utils/api.ts
 import axios from "axios";
+import { API_BASE } from "@/utils/constants";
 
-// 🧱 Tạo axios instance
 const api = axios.create({
-  baseURL: "http://localhost:3000", // 👉 đổi thành URL backend thật của bạn
+  baseURL: API_BASE,
   timeout: 10000,
 });
 
-// 🧠 Gắn token vào header nếu có
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// Hàm để inject Authorization header (token)
+export const attachAuthToken = (authHeader: string | null) => {
+  api.interceptors.request.use((config) => {
+    if (authHeader) {
+      config.headers.Authorization = authHeader;
+    }
+    return config;
+  });
+};
 
-// 🚫 Nếu token hết hạn → logout
+// Response interceptor (xử lý lỗi 401)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("access_token");
+    if (
+      error.response?.status === 401 &&
+      window.location.pathname !== "/login" &&
+      window.location.pathname !== "/register"
+    ) {
+      localStorage.removeItem("token_auth"); // có thể thay bằng clearAuth() nếu dùng react-auth-kit hoàn chỉnh
       window.location.href = "/login";
     }
     return Promise.reject(error);

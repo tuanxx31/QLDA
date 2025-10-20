@@ -6,9 +6,10 @@ export default function ButtonLogout() {
   return (
     <Button
       type="text"
+      color="danger"
+      variant="dashed"
       icon={<LogoutOutlined />}
       onClick={() => logout()}
-      style={{ color: "#555" }}
     >
       Đăng xuất
     </Button>

@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }: Props) => {
   return (
     <Provider
     store={createAuthStore('localstorage', {
-      authName:'_auth',
+      authName:'token',
       cookieDomain : window.location.hostname,
       cookieSecure : window.location.protocol === 'https:',
     })}
