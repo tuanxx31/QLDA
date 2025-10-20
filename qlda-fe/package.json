@@ -13,14 +13,13 @@
     "@ant-design/pro-components": "^2.8.10",
     "@ant-design/pro-form": "^2.32.0",
     "@ant-design/pro-layout": "^7.22.7",
-    "@refinedev/antd": "^6.0.2",
-    "@refinedev/core": "^5.0.4",
-    "@refinedev/react-router": "^2.0.2",
     "@tanstack/react-query": "^5.90.5",
     "antd": "^5.27.5",
     "axios": "^1.12.2",
     "react": "^19.1.1",
+    "react-auth-kit": "^4.0.2-alpha.11",
     "react-dom": "^19.1.1",
+    "react-hook-form": "^7.65.0",
     "react-router-dom": "^7.9.4"
   },
   "devDependencies": {
