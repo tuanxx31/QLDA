@@ -2,7 +2,6 @@ import { api } from "./api";
 import type { ChangePasswordDto, UpdateUserDto, UserProfile } from "@/types/user.type";
 
 export const getUserProfile = async (): Promise<UserProfile>   => {
-  console.log("auth header", api.defaults.headers.common.Authorization);
   const response = await api.get("/users/profile");
   return response.data;
 };

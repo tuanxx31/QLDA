@@ -66,9 +66,6 @@ export class GroupsService {
       order: { joinedAt: 'DESC' },
     });
     
-    console.log("💡 Memberships found:", memberships);
-
-  
     return memberships.map((m) => ({
       id: m.group.id,
       name: m.group.name,
@@ -192,7 +189,6 @@ export class GroupsService {
     const exist = await this.groupMemberRepo.findOne({
       where: { group: { id: groupId }, user: { id: memberUser.id } },
     });
-    console.log("💡 Exist:", exist);
     if (exist)
       throw new BadRequestException('Người dùng đã ở trong nhóm hoặc đang chờ duyệt');
 
