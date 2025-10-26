@@ -7,16 +7,29 @@ export const api = axios.create({
   timeout: 10000,
 });
 
-// 👇 Dùng DEFAULT HEADER, KHÔNG tạo interceptor cho request
-export const setAuthHeader = (authHeader: string | null) => {
-  if (authHeader) {
-    console.log("[SET AUTH HEADER]", authHeader);
-    api.defaults.headers.common.Authorization = authHeader;
-  } else {
-    delete api.defaults.headers.common.Authorization;
-    console.log("[REMOVE AUTH HEADER]");
+// // 👇 Dùng DEFAULT HEADER, KHÔNG tạo interceptor cho request
+// export const setAuthHeader = (authHeader: string | null) => {
+//   if (authHeader) {
+//     console.log("[SET AUTH HEADER]", authHeader);
+//     api.defaults.headers.common.Authorization = authHeader;
+//   } else {
+//     delete api.defaults.headers.common.Authorization;
+//     console.log("[REMOVE AUTH HEADER]");
+//   }
+// };
+
+api.interceptors.request.use((config) => {
+  const inputToken = localStorage.getItem("token_auth") || "";
+  const regex = /(ey[A-Za-z0-9._-]+)/;
+  const match = inputToken.match(regex);
+  const token = match?.[1];   // dùng optional chaining
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-};
+  return config;
+});
+
 
 
 // Response interceptor: 401 → về login

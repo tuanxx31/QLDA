@@ -9,5 +9,16 @@ export interface Group {
       email: string;
     };
     createdAt: string;
+    members: GroupMember[];
   }
   
+
+export interface GroupMember {
+    id: string;
+    name: string;
+    email: string;
+    avatar: string;
+    role: string;
+    status: string;
+    joinedAt: string;
+}
