@@ -30,12 +30,10 @@ import {
     @CreateDateColumn({ name: 'joined_at' })
     joinedAt: Date;
   
-    // 🔗 Quan hệ tới Group
     @ManyToOne(() => Group, (group) => group.members, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'group_id' })
     group: Group;
   
-    // 🔗 Quan hệ tới User
     @ManyToOne(() => User, (user) => user.memberships, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     user: User;

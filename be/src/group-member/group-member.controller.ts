@@ -1,34 +1,52 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { GroupMemberService } from './group-member.service';
-import { CreateGroupMemberDto } from './dto/create-group-member.dto';
-import { UpdateGroupMemberDto } from './dto/update-group-member.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { LeaveGroupDto } from './dto/leave-group.dto';
 
-@Controller('group-member')
+@ApiTags('Group Members')
+@Controller('group-members')
+@UseGuards(AuthGuard)
+@ApiBearerAuth('jwt')
 export class GroupMemberController {
   constructor(private readonly groupMemberService: GroupMemberService) {}
 
-  @Post()
-  create(@Body() createGroupMemberDto: CreateGroupMemberDto) {
-    return this.groupMemberService.create(createGroupMemberDto);
+  @Get(':groupId')
+  @ApiOperation({ summary: 'Lấy danh sách thành viên của nhóm' })
+  async findAll(@Param('groupId') groupId: string) {
+    return await this.groupMemberService.findAllByGroup(groupId);
   }
 
-  @Get()
-  findAll() {
-    return this.groupMemberService.findAll();
+  @Post('leave')
+  @ApiOperation({ summary: 'Rời khỏi nhóm' })
+  async leaveGroup(@Request() req: any, @Body() dto: LeaveGroupDto) {
+    return await this.groupMemberService.leaveGroup(req.user.sub as string, dto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.groupMemberService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateGroupMemberDto: UpdateGroupMemberDto) {
-    return this.groupMemberService.update(+id, updateGroupMemberDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.groupMemberService.remove(+id);
+  @Delete(':groupId/:userId')
+  @ApiOperation({ summary: 'Xóa thành viên khỏi nhóm (chỉ leader)' })
+  async removeMember(
+    @Param('groupId') groupId: string,
+    @Param('userId') userId: string,
+    @Request() req: any,
+  ) {
+    return await this.groupMemberService.removeMember(
+      req.user.sub as string,
+      groupId,
+      userId,
+    );
   }
 }

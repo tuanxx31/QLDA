@@ -11,17 +11,17 @@ import {
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn('uuid') // 👉 nên dùng uuid để dễ liên kết trong hệ thống lớn
+  @PrimaryGeneratedColumn('uuid') 
   id: string;
 
   @Column({ nullable: true })
   name: string;
 
   @Column({ unique: true })
-  email: string; // 👉 nên unique vì dùng để login
+  email: string; 
 
-  @Column({ nullable: true, select: false })
-  password: string; // 👉 không nên tự động select ra để bảo mật
+  @Column({ nullable: false })
+  password: string; 
 
   @Column({
     nullable: true,
@@ -30,18 +30,17 @@ export class User {
   avatar: string;
 
   @Column({ nullable: true })
-  studentCode: string; // Mã sinh viên
+  studentCode: string; 
 
   @Column({ nullable: true })
-  department: string; // Khoa / Bộ môn
+  department: string; 
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-
-  // 🔗 Quan hệ với bảng Group và GroupMember
+  
   @OneToMany(() => Group, (group) => group.leader)
   ownedGroups: Group[];
 
