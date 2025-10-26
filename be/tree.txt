@@ -1,0 +1,66 @@
+```markdown
+. 📂 be
+├── 📄 README.md
+├── 📄 eslint.config.mjs
+├── 📄 nest-cli.json
+├── 📄 package-lock.json
+├── 📄 package.json
+└── 📂 src/
+│  ├── 📄 app.controller.spec.ts
+│  ├── 📄 app.controller.ts
+│  ├── 📄 app.module.ts
+│  ├── 📄 app.service.ts
+│  └── 📂 auth/
+│    ├── 📄 auth.controller.spec.ts
+│    ├── 📄 auth.controller.ts
+│    ├── 📄 auth.guard.ts
+│    ├── 📄 auth.module.ts
+│    ├── 📄 auth.service.spec.ts
+│    ├── 📄 auth.service.ts
+│    ├── 📄 constants.ts
+│    └── 📂 dto/
+│      ├── 📄 login-user.dto.ts
+│      ├── 📄 register-user.dto.ts
+│  └── 📂 group-member/
+│    └── 📂 dto/
+│      ├── 📄 create-group-member.dto.ts
+│      ├── 📄 update-group-member.dto.ts
+│    └── 📂 entities/
+│      ├── 📄 group-member.entity.ts
+│    ├── 📄 group-member.controller.spec.ts
+│    ├── 📄 group-member.controller.ts
+│    ├── 📄 group-member.module.ts
+│    ├── 📄 group-member.service.spec.ts
+│    ├── 📄 group-member.service.ts
+│  └── 📂 groups/
+│    └── 📂 dto/
+│      ├── 📄 create-group.dto.ts
+│      ├── 📄 update-group.dto.ts
+│    └── 📂 entities/
+│      ├── 📄 group.entity.ts
+│    ├── 📄 groups.controller.spec.ts
+│    ├── 📄 groups.controller.ts
+│    ├── 📄 groups.module.ts
+│    ├── 📄 groups.service.spec.ts
+│    ├── 📄 groups.service.ts
+│  ├── 📄 main.ts
+│  └── 📂 users/
+│    └── 📂 dto/
+│      ├── 📄 create-user.dto.ts
+│      ├── 📄 update-password.dto.ts
+│      ├── 📄 update-user.dto.ts
+│      ├── 📄 user-profile.dto.ts
+│    └── 📂 entities/
+│      ├── 📄 user.entity.ts
+│    ├── 📄 users.controller.spec.ts
+│    ├── 📄 users.controller.ts
+│    ├── 📄 users.module.ts
+│    ├── 📄 users.service.spec.ts
+│    ├── 📄 users.service.ts
+└── 📂 test/
+│  ├── 📄 app.e2e-spec.ts
+│  ├── 📄 jest-e2e.json
+├── 📄 tree.txt
+├── 📄 tsconfig.build.json
+└── 📄 tsconfig.json
+```
