@@ -23,7 +23,7 @@ import { GroupMember } from 'src/group-member/entities/group-member.entity';
     description: string;
   
     @Column({ unique: true, length: 10 })
-    code: string; // mã mời nhóm (VD: ABCD1234)
+    inviteCode: string; 
   
     @ManyToOne(() => User, (user) => user.ownedGroups, {
       onDelete: 'CASCADE',

@@ -32,10 +32,10 @@ export class GroupsService {
     const leader = await this.userRepo.findOne({ where: { id: userId } });
     if (!leader) throw new NotFoundException('Không tìm thấy người dùng');
 
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     const group = this.groupRepo.create({
       ...createGroupDto,
-      code,
+      inviteCode,
       leader,
     });
 
@@ -63,7 +63,7 @@ export class GroupsService {
       id: m.group.id,
       name: m.group.name,
       description: m.group.description,
-      code: m.group.code,
+      inviteCode: m.group.inviteCode,
       leader: {
         id: m.group.leader.id,
         name: m.group.leader.name,
@@ -95,7 +95,7 @@ export class GroupsService {
       id: group.id,
       name: group.name,
       description: group.description,
-      code: group.code,
+      inviteCode: group.inviteCode,
       leader: {
         id: group.leader.id,
         name: group.leader.name,
@@ -134,10 +134,9 @@ export class GroupsService {
     return { message: 'Đã giải tán nhóm' };
   }
 
-  // 🟢 6. Tham gia nhóm bằng mã mời
   async joinByCode(userId: string, dto: JoinGroupDto) {
-    const { code } = dto;
-    const group = await this.groupRepo.findOne({ where: { code } });
+    const { inviteCode } = dto;
+    const group = await this.groupRepo.findOne({ where: { inviteCode } });
     if (!group) throw new NotFoundException('Mã nhóm không hợp lệ');
 
     const exist = await this.groupMemberRepo.findOne({
