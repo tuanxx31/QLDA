@@ -19,7 +19,7 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   getProfile(@Request() req: any): Promise<UserProfileDto | null> {
     console.log('User from JWT:', req?.user);
-    return this.usersService.getProfile(req.user.sub as number);
+    return this.usersService.getProfile(req.user.sub as string);
   }
 
   @Put('profile')
@@ -29,7 +29,7 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Profile updated successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async updateProfile(@Request() req: any, @Body() dto: UpdateUserDto): Promise<{ message: string }> {
-    return await this.usersService.updateProfile(req.user.sub as number, dto);
+    return await this.usersService.updateProfile(req.user.sub as string, dto);
   }
 
 
@@ -40,7 +40,7 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Password updated successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async updatePassword(@Request() req: any, @Body() dto: UpdatePasswordDto): Promise<{ message: string }> {
-    return await this.usersService.updatePassword(req.user.sub as number, dto);
+    return await this.usersService.updatePassword(req.user.sub as string, dto);
   }
 
 
@@ -51,6 +51,6 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async deleteUser(@Request() req: any): Promise<{ message: string }> {
-    return await this.usersService.remove(req.user.sub as number);
+    return await this.usersService.remove(req.user.sub as string);
   }
 }

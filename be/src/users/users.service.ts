@@ -20,7 +20,7 @@ export class UsersService {
     private userRepository: Repository<User>,
   ) {}
 
-  async updatePassword(id: number, dto: UpdatePasswordDto): Promise<{ message: string }> {
+  async updatePassword(id: string, dto: UpdatePasswordDto): Promise<{ message: string }> {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -34,12 +34,12 @@ export class UsersService {
     return { message: 'Mật khẩu đã được cập nhật thành công' };
   }
   
-  async updateProfile(id: number, dto: UpdateUserDto): Promise<{ message: string }> {
+  async updateProfile(id: string, dto: UpdateUserDto): Promise<{ message: string }> {
     await this.userRepository.update(id, dto);
     return { message: 'Thông tin profile đã được cập nhật thành công' };
   }
 
-  async getProfile(id: number): Promise<UserProfileDto | null> {
+  async getProfile(id: string): Promise<UserProfileDto | null> {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) return null;
     return plainToInstance(UserProfileDto, user, {
@@ -64,12 +64,12 @@ export class UsersService {
     return user;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto) {
     await this.userRepository.update(id, updateUserDto);
     return this.userRepository.findOneBy({ id });
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     const user = await this.userRepository.findOneBy({ id });
     if (user) {
       await this.userRepository.delete({ id });

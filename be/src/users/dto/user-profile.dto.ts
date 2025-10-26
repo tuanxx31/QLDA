@@ -1,7 +1,7 @@
 import { Expose } from 'class-transformer';
 
 export class UserProfileDto {
-  @Expose() id: number;
+  @Expose() id: string;
   @Expose() name: string;
   @Expose() email: string;
   @Expose() avatar: string;
