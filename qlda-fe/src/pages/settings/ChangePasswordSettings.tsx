@@ -5,7 +5,7 @@ import ProForm, { ProFormText } from "@ant-design/pro-form";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const ChangePassword = () => {
+const ChangePasswordSettings = () => {
   const { message } = App.useApp();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -67,4 +67,4 @@ const ChangePassword = () => {
     </ProForm>
   );
 };
-export default ChangePassword;
+export default ChangePasswordSettings;

@@ -15,3 +15,8 @@ export const changePassword = async (dto: ChangePasswordDto): Promise<{ message:
   const response = await api.put("/users/change-password", dto);
   return response.data;
 }
+
+export const deleteUser = async (): Promise<{ message: string }> => {
+  const response = await api.delete("/users/delete");
+  return response.data;
+}

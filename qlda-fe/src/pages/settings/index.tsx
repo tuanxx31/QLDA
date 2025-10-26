@@ -1,6 +1,7 @@
 import { Tabs } from "antd";
 import ProfileSettings from "./ProfileSettings";
-import ChangePassword from "./ChangePassword";
+import ChangePasswordSettings from "./ChangePasswordSettings";
+import SercuritySettings from "./SercuritySettings";
 
 
 export default function SettingsPage() {
@@ -13,7 +14,12 @@ export default function SettingsPage() {
     {
       key: "password",
       label: "Đổi mật khẩu",
-      children: <ChangePassword />,
+      children: <ChangePasswordSettings />,
+    },
+    {
+      key: "security",
+      label: "Bảo mật",
+      children: <SercuritySettings />,
     },
   ];
 
