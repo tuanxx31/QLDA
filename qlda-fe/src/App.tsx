@@ -12,6 +12,8 @@ import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import SettingsPage from "./pages/settings";
 import '@ant-design/v5-patch-for-react-19';
 import { setAuthHeader } from "./services/api";
+import GroupsPage from "./pages/groups";
+import GroupDetailPage from "./pages/groups/GroupDetail";
 
 export default function App() {
   const authHeader = useAuthHeader();
@@ -33,8 +35,10 @@ export default function App() {
           <Route path="/" element={<AppLayout />}>
             <Route index element={<Navigate to="/dashboard" />} />
             <Route path="dashboard" element={<Dashboard />} />
-            {/* <Route path="profile" element={<ProfilePage />} /> */}
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="groups" element={<GroupsPage />} >
+              <Route path=":groupId" element={<GroupDetailPage />} />
+            </Route>
           </Route>
         </Route>
       </Routes>

@@ -4,6 +4,7 @@ import {
   DashboardOutlined,
   SettingOutlined,
   LogoutOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import { Avatar, Dropdown, Space, type MenuProps } from "antd";
 import useAuth from "@/hooks/useAuth";
@@ -54,7 +55,7 @@ export default function AppLayout() {
             name: "Bảng điều khiển",
             icon: <DashboardOutlined />,
           },
-          // { path: "/profile", name: "Hồ sơ cá nhân", icon: <UserOutlined /> },
+          { path: "/groups", name: "Nhóm", icon: <TeamOutlined /> },
         ],
       }}
       // ✅ Hiển thị avatar + tên người dùng bên phải header

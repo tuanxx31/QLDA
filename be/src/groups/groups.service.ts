@@ -32,7 +32,14 @@ export class GroupsService {
     const leader = await this.userRepo.findOne({ where: { id: userId } });
     if (!leader) throw new NotFoundException('Không tìm thấy người dùng');
 
-    const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    // 🔁 Sinh mã mời ngẫu nhiên duy nhất
+    let inviteCode: string;
+    while (true) {
+      inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const exist = await this.groupRepo.findOne({ where: { inviteCode } });
+      if (!exist) break;
+    }
+
     const group = this.groupRepo.create({
       ...createGroupDto,
       inviteCode,
@@ -45,16 +52,17 @@ export class GroupsService {
       groupId: saved.id,
       userId,
       role: 'leader',
+      status: 'accepted',
     });
     await this.groupMemberRepo.save(member);
 
     return saved;
   }
 
-  // 🟢 2. Lấy danh sách nhóm của user
+  // 🟢 2. Lấy danh sách nhóm user
   async findAllByUser(userId: string) {
     const memberships = await this.groupMemberRepo.find({
-      where: { userId },
+      where: { userId, status: 'accepted' },
       relations: ['group', 'group.leader'],
       order: { joinedAt: 'DESC' },
     });
@@ -88,6 +96,7 @@ export class GroupsService {
       email: m.user.email,
       avatar: m.user.avatar,
       role: m.role,
+      status: m.status,
       joinedAt: m.joinedAt,
     }));
 
@@ -134,27 +143,30 @@ export class GroupsService {
     return { message: 'Đã giải tán nhóm' };
   }
 
+  // 🟢 6. Tham gia nhóm bằng mã mời
   async joinByCode(userId: string, dto: JoinGroupDto) {
-    const { inviteCode } = dto;
+    const inviteCode = dto.inviteCode.trim().toUpperCase();
     const group = await this.groupRepo.findOne({ where: { inviteCode } });
     if (!group) throw new NotFoundException('Mã nhóm không hợp lệ');
 
     const exist = await this.groupMemberRepo.findOne({
       where: { userId, groupId: group.id },
     });
-    if (exist) throw new BadRequestException('Bạn đã ở trong nhóm này');
+    if (exist)
+      throw new BadRequestException('Bạn đã tham gia hoặc đang được mời');
 
     const member = this.groupMemberRepo.create({
       groupId: group.id,
       userId,
       role: 'member',
+      status: 'accepted',
     });
     await this.groupMemberRepo.save(member);
 
     return { message: 'Đã tham gia nhóm thành công', groupId: group.id };
   }
 
-  // 🟢 7. Mời thành viên (Leader)
+  // 🟢 7. Mời thành viên
   async inviteMember(leaderId: string, dto: InviteMemberDto) {
     const { groupId, userId, email } = dto;
 
@@ -167,11 +179,9 @@ export class GroupsService {
       throw new ForbiddenException('Chỉ trưởng nhóm mới có quyền mời');
 
     let memberUser: User | null = null;
-    if (userId) {
-      memberUser = await this.userRepo.findOne({ where: { id: userId } });
-    } else if (email) {
+    if (userId) memberUser = await this.userRepo.findOne({ where: { id: userId } });
+    else if (email)
       memberUser = await this.userRepo.findOne({ where: { email } });
-    }
 
     if (!memberUser)
       throw new NotFoundException('Không tìm thấy người dùng cần mời');
@@ -179,15 +189,20 @@ export class GroupsService {
     const exist = await this.groupMemberRepo.findOne({
       where: { groupId, userId: memberUser.id },
     });
-    if (exist) throw new BadRequestException('Người dùng đã ở trong nhóm');
+    if (exist)
+      throw new BadRequestException('Người dùng đã ở trong nhóm hoặc đang chờ duyệt');
 
     const newMember = this.groupMemberRepo.create({
       groupId,
       userId: memberUser.id,
       role: 'member',
+      status: 'pending',
     });
     await this.groupMemberRepo.save(newMember);
 
-    return { message: 'Đã mời thành viên thành công' };
+    return {
+      message: 'Đã gửi lời mời thành viên',
+      inviteCode: group.inviteCode,
+    };
   }
 }
