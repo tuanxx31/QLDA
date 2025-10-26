@@ -7,6 +7,8 @@ import { ConfigModule } from '@nestjs/config';
 import { join } from 'path';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { GroupsModule } from './groups/groups.module';
+import { GroupMemberModule } from './group-member/group-member.module';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { AuthModule } from './auth/auth.module';
     }),
     UsersModule,
     AuthModule,
+    GroupsModule,
+    GroupMemberModule,
   ],
   controllers: [AppController],
   providers: [AppService],
