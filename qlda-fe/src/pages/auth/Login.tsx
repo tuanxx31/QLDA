@@ -5,7 +5,6 @@ import { login as loginService } from "@/services/auth.services";
 import { Link, useNavigate } from "react-router-dom";
 import { App } from "antd";
 import { useState } from "react";
-import { setAuthHeader } from "@/services/api";
 
 export default function Login() {
 
@@ -18,9 +17,7 @@ export default function Login() {
     setIsSubmitting(true);
     try {
       const res = await loginService(values);
-      console.log(res);
       login(res.access_token, res.user);
-      setAuthHeader(`Bearer ${res.access_token}`);
       message.success("Đăng nhập thành công!");
       navigate("/dashboard", { replace: true });
     } catch (err : any) {

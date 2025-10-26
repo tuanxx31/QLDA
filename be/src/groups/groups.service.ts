@@ -49,8 +49,8 @@ export class GroupsService {
     const saved = await this.groupRepo.save(group);
 
     const member = this.groupMemberRepo.create({
-      groupId: saved.id,
-      userId,
+      group: { id: saved.id },
+      user: { id: userId },
       role: 'leader',
       status: 'accepted',
     });
@@ -59,14 +59,16 @@ export class GroupsService {
     return saved;
   }
 
-  // 🟢 2. Lấy danh sách nhóm user
   async findAllByUser(userId: string) {
     const memberships = await this.groupMemberRepo.find({
-      where: { userId, status: 'accepted' },
-      relations: ['group', 'group.leader'],
+      where: { user: { id: userId } },
+      relations: ['group', 'group.leader', 'user'],
       order: { joinedAt: 'DESC' },
     });
+    
+    console.log("💡 Memberships found:", memberships);
 
+  
     return memberships.map((m) => ({
       id: m.group.id,
       name: m.group.name,
@@ -81,7 +83,8 @@ export class GroupsService {
       joinedAt: m.joinedAt,
     }));
   }
-
+  
+  
   // 🟢 3. Lấy chi tiết nhóm
   async findOne(id: string) {
     const group = await this.groupRepo.findOne({
@@ -150,14 +153,14 @@ export class GroupsService {
     if (!group) throw new NotFoundException('Mã nhóm không hợp lệ');
 
     const exist = await this.groupMemberRepo.findOne({
-      where: { userId, groupId: group.id },
+      where: { user: { id: userId }, group: { id: group.id } },
     });
     if (exist)
       throw new BadRequestException('Bạn đã tham gia hoặc đang được mời');
 
     const member = this.groupMemberRepo.create({
-      groupId: group.id,
-      userId,
+      group: { id: group.id },
+      user: { id: userId },
       role: 'member',
       status: 'accepted',
     });
@@ -187,14 +190,15 @@ export class GroupsService {
       throw new NotFoundException('Không tìm thấy người dùng cần mời');
 
     const exist = await this.groupMemberRepo.findOne({
-      where: { groupId, userId: memberUser.id },
+      where: { group: { id: groupId }, user: { id: memberUser.id } },
     });
+    console.log("💡 Exist:", exist);
     if (exist)
       throw new BadRequestException('Người dùng đã ở trong nhóm hoặc đang chờ duyệt');
 
     const newMember = this.groupMemberRepo.create({
-      groupId,
-      userId: memberUser.id,
+      group: { id: groupId },
+      user: memberUser,
       role: 'member',
       status: 'pending',
     });

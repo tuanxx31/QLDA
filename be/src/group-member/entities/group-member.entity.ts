@@ -11,16 +11,18 @@ import { Group } from 'src/groups/entities/group.entity';
 import { User } from 'src/users/entities/user.entity';
 
 @Entity('group_members')
-@Unique('UQ_group_members_group_user', ['groupId', 'userId'])
+@Unique('UQ_group_members_group_user', ['group', 'user'])
 export class GroupMember {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  groupId: string;
+  @ManyToOne(() => Group, (group) => group.members, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'group_id' })
+  group: Group;
 
-  @Column()
-  userId: string;
+  @ManyToOne(() => User, (user) => user.memberships, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
   @Column({
     type: 'enum',
@@ -38,12 +40,4 @@ export class GroupMember {
 
   @CreateDateColumn({ name: 'joined_at' })
   joinedAt: Date;
-
-  @ManyToOne(() => Group, (group) => group.members, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'group_id' })
-  group: Group;
-
-  @ManyToOne(() => User, (user) => user.memberships, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  user: User;
 }

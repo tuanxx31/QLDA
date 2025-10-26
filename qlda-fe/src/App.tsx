@@ -7,21 +7,12 @@ import Register from "@/pages/auth/Register";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
 import Dashboard from "@/pages/dashboard";
 import PrivateOutlet from "@/components/PrivateRoute";
-import { useEffect } from "react";
-import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 import SettingsPage from "./pages/settings";
 import '@ant-design/v5-patch-for-react-19';
-import { setAuthHeader } from "./services/api";
 import GroupsPage from "./pages/groups";
 import GroupDetailPage from "./pages/groups/GroupDetail";
 
 export default function App() {
-  const authHeader = useAuthHeader();
-
-  useEffect(() => {
-    setAuthHeader(authHeader);
-  }, [authHeader]);
-
   return (
     <AuthProvider>
       <Routes>
