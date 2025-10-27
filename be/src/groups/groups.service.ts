@@ -61,7 +61,10 @@ export class GroupsService {
 
   async findAllByUser(userId: string) {
     const memberships = await this.groupMemberRepo.find({
-      where: { user: { id: userId } },
+      where: { 
+        user: { id: userId },
+        status: 'accepted', // ✅ chỉ lấy nhóm đã tham gia
+      },
       relations: ['group', 'group.leader', 'user'],
       order: { joinedAt: 'DESC' },
     });
@@ -81,15 +84,48 @@ export class GroupsService {
     }));
   }
   
+  async findPendingInvites(userId: string) {
+    const invites = await this.groupMemberRepo.find({
+      where: { user: { id: userId }, status: 'pending' },
+      relations: ['group', 'group.leader'],
+      order: { joinedAt: 'DESC' },
+    });
   
-  // 🟢 3. Lấy chi tiết nhóm
-  async findOne(id: string) {
+    return invites.map((m) => ({
+      groupId: m.group.id,
+      groupName: m.group.name,
+      leader: {
+        id: m.group.leader.id,
+        name: m.group.leader.name,
+        email: m.group.leader.email,
+      },
+      invitedAt: m.joinedAt,
+    }));
+  }
+  
+  
+  
+  async findOne(id: string, userId: string) {
     const group = await this.groupRepo.findOne({
       where: { id },
       relations: ['leader', 'members', 'members.user'],
     });
-    if (!group) throw new NotFoundException('Không tìm thấy nhóm');
 
+    if (!group) {
+      throw new NotFoundException('Không tìm thấy nhóm');
+    }
+
+    // ✅ Kiểm tra quyền truy cập
+    const isLeader = group.leader.id === userId;
+    const isMember = group.members.some(
+      (m) => m.user.id === userId && m.status === 'accepted',
+    );
+
+    if (!isLeader && !isMember) {
+      throw new ForbiddenException('Bạn không có quyền truy cập nhóm này');
+    }
+
+    // ✅ Chuẩn hóa danh sách thành viên
     const members = group.members.map((m) => ({
       id: m.user.id,
       name: m.user.name,

@@ -49,14 +49,24 @@ export class GroupsController {
     return await this.groupsService.findAllByUser(req.user.sub as string);
   }
 
+  @Get('pending-invites')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Lấy danh sách lời mời chờ duyệt' })
+  @ApiResponse({ status: 200, description: 'Pending invites retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async findPendingInvites(@Request() req: any) {
+    return await this.groupsService.findPendingInvites(req.user.sub as string);
+  }
+
   @Get(':id')
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Xem chi tiết nhóm theo ID' })
   @ApiResponse({ status: 200, description: 'Group details retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Group not found' })
-  async findOne(@Param('id') id: string) {
-    return await this.groupsService.findOne(id);
+  async findOne( @Request() req: any, @Param('id') id: string) {
+    return await this.groupsService.findOne(id, req.user.sub as string);
   }
 
   @Put(':id')
