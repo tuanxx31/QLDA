@@ -27,3 +27,15 @@ export interface CreateProjectDto {
 export interface UpdateProjectDto extends Partial<CreateProjectDto> {
   id: string;
 }
+
+export interface ProjectMember {
+  id: string;
+  user: User;
+  role: "leader" | "member";
+  joinedAt: string;
+}
+
+export interface CreateProjectMemberDto {
+  email: string;
+  role: 'viewer' | 'editor' | 'leader';
+}

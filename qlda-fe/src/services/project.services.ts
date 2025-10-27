@@ -2,6 +2,8 @@ import type {
   CreateProjectDto,
   UpdateProjectDto,
   Project,
+  ProjectMember,
+  CreateProjectMemberDto,
 } from "@/types/project.type";
 import { api } from "./api";
 
@@ -39,5 +41,16 @@ export const projectService = {
 
 
 export const projectMemberService = {
-   
+  async getByProject(projectId: string) {
+    const res = await api.get<ProjectMember[]>(`/project-members/${projectId}`);
+    return res.data;
+  },
+  async remove(projectId: string, userId: string) {
+    const res = await api.delete(`/project-members/${projectId}/${userId}`);
+    return res.data;
+  },
+  async addMember(projectId: string, data: CreateProjectMemberDto) {
+    const res = await api.post(`/project-members/${projectId}`, data);
+    return res.data;
+  },
 }

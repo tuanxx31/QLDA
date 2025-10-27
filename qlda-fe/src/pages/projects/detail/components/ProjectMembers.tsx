@@ -13,7 +13,7 @@ const ProjectMembers = ({ projectId }: Props) => {
 
   const { data: members, isLoading } = useQuery({
     queryKey: ["projectMembers", projectId],
-    queryFn: async () => (await projectMemberService.getByProject(projectId)).data,
+    queryFn: async () => await projectMemberService.getByProject(projectId),
   });
 
   const removeMutation = useMutation({
