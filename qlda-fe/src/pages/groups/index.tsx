@@ -19,6 +19,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { groupService } from "@/services/group.services";
+import { GroupCard } from "@/components/GroupCard";
 
 const { Title, Text } = Typography;
 const GroupsPage = () => {
@@ -88,30 +89,7 @@ const GroupsPage = () => {
             }}
           >
             {groups.map((g) => (
-              <Card
-                key={g.id}
-                hoverable
-                title={g.name}
-                onClick={() => navigate(`/groups/${g.id}`)}
-                actions={[
-                  <KeyOutlined key="code" />,
-                  <TeamOutlined key="team" />,
-                ]}
-              >
-                <Text type="secondary">
-                  {g.description || "Không có mô tả"}
-                </Text>
-  
-                <div style={{ marginTop: 12 }}>
-                  <Text strong>Mã mời:</Text> {g.inviteCode}
-                </div>
-                <div style={{ marginTop: 4 }}>
-                  <UserOutlined />{" "}
-                  <Text type="secondary">
-                    {g.leader?.name || g.leader?.email}
-                  </Text>
-                </div>
-              </Card>
+              <GroupCard key={g.id}  group={g} />
             ))}
           </div>
         ) : (
@@ -144,6 +122,8 @@ const GroupsPage = () => {
             rows={3}
           />
         </Modal>
+
+        
       </div>
     );
 };

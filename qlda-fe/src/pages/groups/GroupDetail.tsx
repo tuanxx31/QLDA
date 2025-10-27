@@ -1,166 +1,247 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  PageContainer,
+  ProCard,
+  ProDescriptions,
+  ProTable,
+} from "@ant-design/pro-components";
+import {
+  Button,
+  Tabs,
+  message,
+  Space,
+  Typography,
+  Avatar,
+  Tooltip,
+  theme,
+  Tag,
+} from "antd";
+import {
+  ArrowLeftOutlined,
+  KeyOutlined,
+  UserOutlined,
+  TeamOutlined,
+  CopyOutlined,
+  CrownOutlined,
+} from "@ant-design/icons";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { groupService } from "@/services/group.services";
-import { Card, List, Avatar, Button, Space, Typography, Modal, Input, message } from "antd";
-import { ArrowLeftOutlined, UserAddOutlined, SwapOutlined, LogoutOutlined } from "@ant-design/icons";
-import { useState } from "react";
-import type { GroupMember } from "@/types/group.type";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
-// export default function GroupDetailPage() {
-//   const { id } = useParams();
-//   const navigate = useNavigate();
-//   const queryClient = useQueryClient();
+const GroupDetailPage = () => {
+  const navigate = useNavigate();
+  const { groupId } = useParams<{ groupId: string }>();
+  const { token } = theme.useToken();
 
-//   const { data: group, isLoading } = useQuery({
-//     queryKey: ["groupDetail", id],
-//     queryFn: () => groupService.getDetail(id!),
-//   });
+  // 🔄 Lấy thông tin nhóm
+  const {
+    data: group,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["groupDetail", groupId],
+    queryFn: () => groupService.getDetail(groupId!),
+    enabled: !!groupId,
+  });
 
-//   const [isInviteOpen, setInviteOpen] = useState(false);
-//   const [inviteEmail, setInviteEmail] = useState("");
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(group?.inviteCode || "");
+      message.success("Đã sao chép mã mời!");
+    } catch {
+      message.error("Không thể sao chép mã mời");
+    }
+  };
 
-//   const inviteMutation = useMutation({
-//     mutationFn: (email: string) =>
-//       groupService.inviteMember({ groupId: id!, email }),
-//     onSuccess: () => {
-//       message.success("Đã gửi lời mời thành công");
-//       setInviteOpen(false);
-//       setInviteEmail("");
-//       queryClient.invalidateQueries({ queryKey: ["groupDetail", id] });
-//     },
-//     onError: () => message.error("Lỗi khi gửi lời mời"),
-//   });
+  if (isLoading) return <PageContainer loading />;
+  if (isError || !group)
+    return (
+      <PageContainer
+        title="Không tìm thấy nhóm"
+        onBack={() => navigate("/groups")}
+      >
+        <Text>Không thể tải thông tin nhóm hoặc nhóm không tồn tại.</Text>
+      </PageContainer>
+    );
 
-//   if (isLoading || !group)
-//     return <div style={{ padding: 24 }}>Đang tải thông tin nhóm...</div>;
+  return (
+    <PageContainer
+      title={group.name}
+      subTitle={group.description || "Không có mô tả"}
+      onBack={() => navigate("/groups")}
+      extra={[
+        <Tooltip title="Sao chép mã mời" key="copy">
+          <Button icon={<CopyOutlined />} onClick={handleCopy}>
+            Sao chép mã mời
+          </Button>
+        </Tooltip>,
+      ]}
+    >
+      {/* 📋 Thông tin nhóm */}
+      <ProCard ghost gutter={16}>
+        <ProCard
+          title="Thông tin chung"
+          colSpan="40%"
+          bordered
+          style={{ borderRadius: 12 }}
+        >
+          <ProDescriptions
+            column={1}
+            dataSource={group}
+            labelStyle={{ fontWeight: 500 }}
+          >
+            <ProDescriptions.Item label="Tên nhóm">
+              {group?.name || ""}
+            </ProDescriptions.Item>
 
-//   const isLeader =
-//     group.leader &&
-//     group.leader.id === localStorage.getItem("user_id"); // hoặc lấy từ context auth
+            <ProDescriptions.Item label="Mã mời">
+              <Space>
+                <KeyOutlined />
+                <Text code>{group?.inviteCode || ""}</Text>
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<CopyOutlined />}
+                  onClick={handleCopy}
+                />
+              </Space>
+            </ProDescriptions.Item>
 
-//   return (
-//     <div style={{ padding: 24 }}>
-//       <Button
-//         icon={<ArrowLeftOutlined />}
-//         onClick={() => navigate("/groups")}
-//         style={{ marginBottom: 16 }}
-//       >
-//         Quay lại
-//       </Button>
+            <ProDescriptions.Item label="Trưởng nhóm">
+              <Space>
+                <UserOutlined />
+                <Text>
+                  {group?.leader?.name || group?.leader?.email || "Không xác định"}
+                </Text>
+              </Space>
+            </ProDescriptions.Item>
 
-//       <Card>
-//         <Title level={3}>{group.name}</Title>
-//         <Text type="secondary">{group.description || "Không có mô tả"}</Text>
+            <ProDescriptions.Item label="Ngày tạo">
+              {new Date(group?.createdAt || "").toLocaleString("vi-VN")}
+            </ProDescriptions.Item>
+          </ProDescriptions>
+        </ProCard>
 
-//         <div style={{ marginTop: 12 }}>
-//           <Text strong>Mã mời:</Text> {group.inviteCode}
-//         </div>
-//         <div>
-//           <Text type="secondary">
-//             Trưởng nhóm: {group.leader?.name || group.leader?.email}
-//           </Text>
-//         </div>
+        <ProCard
+          title="Tổng quan"
+          colSpan="60%"
+          bordered
+          style={{ borderRadius: 12 }}
+        >
+          <Space size="large">
+            <Space direction="vertical" align="center">
+              <TeamOutlined style={{ color: token.colorPrimary, fontSize: 22 }} />
+              <Text strong>{group?.members?.length || 0}</Text>
+              <Text type="secondary">Thành viên</Text>
+            </Space>
+          </Space>
+        </ProCard>
+      </ProCard>
 
-//         <Space style={{ marginTop: 16 }}>
-//           {isLeader && (
-//             <Button
-//               icon={<UserAddOutlined />}
-//               type="primary"
-//               onClick={() => setInviteOpen(true)}
-//             >
-//               Mời thành viên
-//             </Button>
-//           )}
-//         </Space>
-//       </Card>
+      {/* 📑 Tabs nội dung */}
+      <Tabs
+        defaultActiveKey="members"
+        style={{ marginTop: 24 }}
+        items={[
+          {
+            key: "members",
+            label: "Thành viên",
+            children: (
+              <ProCard bordered style={{ borderRadius: 12 }}>
+                <ProTable
+                  search={false}
+                  options={false}
+                  pagination={false}
+                  rowKey="id"
+                  dataSource={group?.members || []}
+                  columns={[
+                    {
+                      title: "Thành viên",
+                      dataIndex: "name",
+                      render: (_, member) => (
+                        <Space>
+                          <Avatar src={member.avatar} />
+                          <div>
+                            <Text strong>{member?.name || ""}</Text>
+                            <br />
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              {member?.email || "" || "-"}
+                            </Text>
+                          </div>
+                        </Space>
+                      ),
+                    },
+                    {
+                      title: "Vai trò",
+                      dataIndex: "role",
+                      render: (role) =>
+                        role === "leader" ? (
+                          <Tag color="gold" icon={<CrownOutlined />}>
+                            Trưởng nhóm
+                          </Tag>
+                        ) : (
+                          <Tag color="blue">Thành viên</Tag>
+                        ),
+                    },
+                    {
+                      title: "Trạng thái",
+                      dataIndex: "status",
+                      render: (status) => (
+                        <Tag
+                          color={
+                            status === "accepted"
+                              ? "green"
+                              : status === "pending"
+                              ? "orange"
+                              : "red"
+                          }
+                        >
+                          {status === "accepted"
+                            ? "Đã tham gia"
+                            : status === "pending"
+                            ? "Chờ duyệt"
+                            : "Từ chối"}
+                        </Tag>
+                      ),
+                    },
+                    {
+                      title: "Ngày tham gia",
+                      dataIndex: "joinedAt",
+                      render: (d) =>
+                        d
+                          ? new Date(d).toLocaleDateString("vi-VN")
+                          : "—",
+                    },
+                  ]}
+                />
+              </ProCard>
+            ),
+          },
+          {
+            key: "projects",
+            label: "Dự án",
+            children: (
+              <ProCard bordered style={{ borderRadius: 12 }}>
+                <Text type="secondary">Danh sách dự án sẽ hiển thị tại đây.</Text>
+              </ProCard>
+            ),
+          },
+          {
+            key: "settings",
+            label: "Cài đặt",
+            children: (
+              <ProCard bordered style={{ borderRadius: 12 }}>
+                <Text type="secondary">
+                  Cấu hình nhóm (đổi tên, giải tán nhóm...) sẽ hiển thị tại đây.
+                </Text>
+              </ProCard>
+            ),
+          },
+        ]}
+      />
+    </PageContainer>
+  );
+};
 
-//       <Card style={{ marginTop: 24 }}>
-//         <Title level={4}>Thành viên</Title>
-//         <List<GroupMember[]>
-//           itemLayout="horizontal"
-//           dataSource={group.members || []}
-//           renderItem={(member) => (
-//             <List.Item
-//               actions={
-//                 isLeader && member.role !== "leader"
-//                   ? [
-//                       <Button
-//                         key="transfer"
-//                         icon={<SwapOutlined />}
-//                         size="small"
-//                         onClick={() =>
-//                           Modal.confirm({
-//                             title: "Chuyển quyền trưởng nhóm",
-//                             content: `Bạn có chắc muốn chuyển quyền cho ${member.name}?`,
-//                             onOk: async () => {
-//                               await groupService.transferLeader(group.id, member.id);
-//                               message.success("Đã chuyển quyền");
-//                               queryClient.invalidateQueries({
-//                                 queryKey: ["groupDetail", id],
-//                               });
-//                             },
-//                           })
-//                         }
-//                       />,
-//                       <Button
-//                         key="remove"
-//                         icon={<LogoutOutlined />}
-//                         danger
-//                         size="small"
-//                         onClick={() =>
-//                           Modal.confirm({
-//                             title: "Xóa thành viên",
-//                             content: `Bạn có chắc muốn xóa ${member.name}?`,
-//                             onOk: async () => {
-//                               await groupService.removeMember(group.id, member.id);
-//                               message.success("Đã xóa thành viên");
-//                               queryClient.invalidateQueries({
-//                                 queryKey: ["groupDetail", id],
-//                               });
-//                             },
-//                           })
-//                         }
-//                       />,
-//                     ]
-//                   : []
-//               }
-//             >
-//               <List.Item.Meta
-//                 avatar={<Avatar src={member.avatar} />}
-//                 title={
-//                   <Text strong>
-//                     {member.name}{" "}
-//                     {member.role === "leader" && (
-//                       <Text type="success">(Trưởng nhóm)</Text>
-//                     )}
-//                   </Text>
-//                 }
-//                 description={member.email}
-//               />
-//             </List.Item>
-//           )}
-//         />
-//       </Card>
-
-//       <Modal
-//         title="Mời thành viên vào nhóm"
-//         open={isInviteOpen}
-//         onCancel={() => setInviteOpen(false)}
-//         onOk={() => inviteMutation.mutate(inviteEmail)}
-//         okText="Gửi lời mời"
-//       >
-//         <Input
-//           placeholder="Nhập email thành viên"
-//           value={inviteEmail}
-//           onChange={(e) => setInviteEmail(e.target.value)}
-//         />
-//       </Modal>
-//     </div>
-//   );
-// }
-
-export default function GroupDetailPage() {
-  return <></>
-}
+export default GroupDetailPage;

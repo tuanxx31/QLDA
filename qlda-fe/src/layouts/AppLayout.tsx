@@ -6,7 +6,7 @@ import {
   LogoutOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
-import { Avatar, Dropdown, Space, type MenuProps } from "antd";
+import { Avatar, Card, Dropdown, Space, type MenuProps } from "antd";
 import useAuth from "@/hooks/useAuth";
 export default function AppLayout() {
   const navigate = useNavigate();
@@ -75,7 +75,9 @@ export default function AppLayout() {
       )}
     >
       <PageContainer>
+        <Card style={{minHeight: "80vh"}}>
         <Outlet />
+        </Card>
       </PageContainer>
     </ProLayout>
   );

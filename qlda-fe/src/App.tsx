@@ -27,9 +27,9 @@ export default function App() {
             <Route index element={<Navigate to="/dashboard" />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="settings" element={<SettingsPage />} />
-            <Route path="groups" element={<GroupsPage />} >
-              <Route path=":groupId" element={<GroupDetailPage />} />
-            </Route>
+            <Route path="groups" element={<GroupsPage />} />
+            <Route path="groups/:groupId" element={<GroupDetailPage />} />
+
           </Route>
         </Route>
       </Routes>
