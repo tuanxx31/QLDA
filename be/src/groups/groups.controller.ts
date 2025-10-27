@@ -59,6 +59,26 @@ export class GroupsController {
     return await this.groupsService.findPendingInvites(req.user.sub as string);
   }
 
+  @Post('accept-invite/:groupId')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Chấp nhận lời mời thành viên' })
+  @ApiResponse({ status: 200, description: 'Invite accepted successfully' })
+  @ApiResponse({ status: 404, description: 'Invite not found' })
+  async acceptInvite(@Param('groupId') groupId: string, @Request() req: any) {
+    return await this.groupsService.acceptInvite(groupId, req.user.sub as string);
+  }
+
+  @Post('reject-invite/:groupId')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Từ chối lời mời thành viên' })
+  @ApiResponse({ status: 200, description: 'Invite rejected successfully' })
+  @ApiResponse({ status: 404, description: 'Invite not found' })
+  async rejectInvite(@Param('groupId') groupId: string, @Request() req: any) {
+    return await this.groupsService.rejectInvite(groupId, req.user.sub as string);
+  }
+
   @Get(':id')
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')

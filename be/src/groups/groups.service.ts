@@ -102,7 +102,33 @@ export class GroupsService {
       invitedAt: m.joinedAt,
     }));
   }
+  async acceptInvite(groupId: string, userId: string) {
+    const member = await this.groupMemberRepo.findOne({
+      where: { group: { id: groupId }, user: { id: userId } },
+    });
   
+    if (!member) throw new NotFoundException('Không tìm thấy lời mời');
+    if (member.status !== 'pending')
+      throw new BadRequestException('Lời mời đã được xử lý');
+  
+    member.status = 'accepted';
+    await this.groupMemberRepo.save(member);
+    return { message: 'Đã tham gia nhóm thành công' };
+  }
+  
+  async rejectInvite(groupId: string, userId: string) {
+    const member = await this.groupMemberRepo.findOne({
+      where: { group: { id: groupId }, user: { id: userId } },
+    });
+  
+    if (!member) throw new NotFoundException('Không tìm thấy lời mời');
+    if (member.status !== 'pending')
+      throw new BadRequestException('Lời mời đã được xử lý');
+  
+    member.status = 'rejected';
+    await this.groupMemberRepo.save(member);
+    return { message: 'Đã từ chối lời mời' };
+  }
   
   
   async findOne(id: string, userId: string) {
