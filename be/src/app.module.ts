@@ -9,6 +9,8 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { GroupsModule } from './groups/groups.module';
 import { GroupMemberModule } from './group-member/group-member.module';
+import { ProjectsModule } from './projects/projects.module';
+import { ProjectMembersModule } from './project-members/project-members.module';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { GroupMemberModule } from './group-member/group-member.module';
     AuthModule,
     GroupsModule,
     GroupMemberModule,
+    ProjectsModule,
+    ProjectMembersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

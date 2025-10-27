@@ -1,5 +1,7 @@
 import { GroupMember } from 'src/group-member/entities/group-member.entity';
 import { Group } from 'src/groups/entities/group.entity';
+import { ProjectMember } from 'src/project-members/entities/project-member.entity';
+import { Project } from 'src/projects/entities/project.entity';
 import {
   Column,
   Entity,
@@ -46,4 +48,10 @@ export class User {
 
   @OneToMany(() => GroupMember, (member) => member.user)
   memberships: GroupMember[];
+
+  @OneToMany(() => Project, (project) => project.owner)
+  ownedProjects: Project[];
+
+  @OneToMany(() => ProjectMember, (member) => member.user)
+  projectMemberships: ProjectMember[];
 }
