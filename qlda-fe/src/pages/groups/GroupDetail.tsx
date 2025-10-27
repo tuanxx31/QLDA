@@ -18,10 +18,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { groupService } from "@/services/group.services";
 import useAuth from "@/hooks/useAuth";
-import { GroupInfoCard } from "@/components/GroupInfoCard";
-import { GroupMembersTable } from "@/components/GroupMembersTable";
-import { GroupSettings } from "@/components/GroupSettings";
-import { AddMemberModal } from "@/components/AddMemberModal";
+import { GroupInfoCard } from "@/pages/groups/components/GroupInfoCard";
+import { GroupMembersTable } from "@/pages/groups/components/GroupMembersTable";
+import { GroupSettings } from "@/pages/groups/components/GroupSettings";
+import { AddMemberModal } from "@/pages/groups/components/AddMemberModal";
 
 
 

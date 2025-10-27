@@ -1,12 +1,20 @@
 import { ProCard, ProTable } from "@ant-design/pro-components";
 import { Space, Avatar, Tag, Popconfirm, Button, Typography } from "antd";
-import { DeleteOutlined, CrownOutlined } from "@ant-design/icons";
+import { DeleteOutlined, CrownOutlined, LogoutOutlined } from "@ant-design/icons";
 import { groupService } from "@/services/group.services";
 import { useMutation } from "@tanstack/react-query";
 
 const { Text } = Typography;
 
 export const GroupMembersTable = ({ group, isLeader, onRemoveSuccess }: any) => {
+  const leaveGroupMutation = useMutation({
+    mutationFn: (groupId: string) =>
+      groupService.leaveGroup({ groupId }),
+    onSuccess: () => {
+      onRemoveSuccess();
+    },
+  });
+
   const removeMemberMutation = useMutation({
     mutationFn: (memberId: string) =>
       groupService.removeMember(group.id, memberId),
@@ -78,6 +86,8 @@ export const GroupMembersTable = ({ group, isLeader, onRemoveSuccess }: any) => 
             render: (_: any, member: any) =>
               member.joinedAt ? new Date(member.joinedAt as string).toLocaleDateString("vi-VN") : "—",
           },
+        
+         
           ...(isLeader
             ? [
                 {

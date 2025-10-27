@@ -48,4 +48,8 @@ export const groupService = {
     const res = await api.post(`/groups/reject-invite/${groupId}`);
     return res.data;
   },
+  async leaveGroup(data: { groupId: string }) {
+    const res = await api.post(`/group-members/leave`, data);
+    return res.data;
+  },
 };
