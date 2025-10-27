@@ -41,7 +41,7 @@ export const projectService = {
 
 
 export const projectMemberService = {
-  async getByProject(projectId: string) {
+  async getProjectMebers(projectId: string) {
     const res = await api.get<ProjectMember[]>(`/project-members/${projectId}`);
     return res.data;
   },
@@ -51,6 +51,10 @@ export const projectMemberService = {
   },
   async addMember(projectId: string, data: CreateProjectMemberDto) {
     const res = await api.post(`/project-members/${projectId}`, data);
+    return res.data;
+  },
+  async transferLeader(projectId: string, leaderId: string) {
+    const res = await api.put(`/project-members/${projectId}/transfer-leader/${leaderId}`);
     return res.data;
   },
 }
