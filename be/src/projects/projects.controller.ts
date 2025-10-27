@@ -52,8 +52,8 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Lấy danh sách dự án theo nhóm' })
   @ApiResponse({ status: 200, description: 'Danh sách dự án theo nhóm được lấy thành công' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy nhóm' })
-  async findAllByGroup(@Param('groupId') groupId: string) {
-    return await this.projectsService.findAllByGroup(groupId);
+  async findAllByGroup(@Param('groupId') groupId: string , @Request() req: any) {
+    return await this.projectsService.findAllByGroup(groupId, req.user.sub as string);
   }
 
   @Get(':id')

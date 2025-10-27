@@ -10,7 +10,7 @@ import PrivateOutlet from "@/components/PrivateRoute";
 import SettingsPage from "./pages/settings";
 import '@ant-design/v5-patch-for-react-19';
 import GroupsPage from "./pages/groups";
-import GroupDetailPage from "./pages/groups/GroupDetail";
+import GroupDetailPage from "./pages/groups/detail";
 import ProjectPage from "./pages/projects";
 import ProjectDetailPage from "./pages/projects/detail";
 

@@ -37,6 +37,11 @@ export const projectService = {
     const res = await api.delete(`/projects/${id}`);
     return res.data;
   },
+
+  async getByGroupId(groupId: string) {
+    const res = await api.get<Project[]>(`/projects/group/${groupId}`);
+    return res.data;
+  },
 };
 
 

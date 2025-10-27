@@ -72,16 +72,36 @@ export class ProjectsService {
       .getMany();
   }
 
-  /** 🟢 Lấy danh sách dự án theo group */
-  async findAllByGroup(groupId: string) {
+  async findAllByGroup(groupId: string, userId: string) {
+    const group = await this.groupRepo.findOne({
+      where: { id: groupId },
+      relations: ['members', 'members.user'],
+    });
+  
+    if (!group) {
+      throw new NotFoundException('Không tìm thấy nhóm.');
+    }
+  
+    const member = group.members.find((m) => m.user.id === userId);
+    const isLeader = member?.role === 'leader';
+    const isMember = !!member;
+  
+    const whereCondition = isLeader
+      ? { group: { id: groupId } }
+      : {
+          group: { id: groupId },
+          members: { user: { id: userId } },
+        };
+  
     return this.projectRepo.find({
-      where: { group: { id: groupId } },
-      relations: ['group', 'owner', 'manager', 'members', 'members.user'],
+      where: whereCondition,
+      relations: ['group', 'manager', 'members', 'members.user'],
       order: { createdAt: 'DESC' },
     });
   }
+  
+  
 
-  /** 🟢 Lấy chi tiết dự án */
   async findOne(id: string) {
     const project = await this.projectRepo.findOne({
       where: { id },
@@ -91,7 +111,6 @@ export class ProjectsService {
     return project;
   }
 
-  /** 🟢 Cập nhật thông tin dự án */
   async update(id: string, dto: UpdateProjectDto, userId: string) {
     const project = await this.projectRepo.findOne({
       where: { id },
@@ -106,7 +125,6 @@ export class ProjectsService {
     return this.projectRepo.save(project);
   }
 
-  /** 🟢 Xóa dự án */
   async remove(id: string, userId: string) {
     const project = await this.projectRepo.findOne({
       where: { id },
@@ -120,7 +138,6 @@ export class ProjectsService {
     return { message: 'Đã xóa dự án thành công.' };
   }
 
-  /** 🟢 Chuyển dự án cá nhân thành dự án nhóm */
   async convertToGroup(projectId: string, groupId: string, userId: string) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
@@ -137,7 +154,6 @@ export class ProjectsService {
     });
     if (!group) throw new NotFoundException('Không tìm thấy nhóm.');
 
-    // Gán group vào project
     project.group = group;
     await this.projectRepo.save(project);
 
@@ -159,7 +175,6 @@ export class ProjectsService {
     return { message: 'Đã chuyển dự án cá nhân thành dự án nhóm.' };
   }
 
-  /** 🟢 Tách dự án khỏi nhóm (trở thành dự án cá nhân) */
   async removeGroup(projectId: string, userId: string) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },

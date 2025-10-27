@@ -22,6 +22,7 @@ import { GroupInfoCard } from "@/pages/groups/components/GroupInfoCard";
 import { GroupMembersTable } from "@/pages/groups/components/GroupMembersTable";
 import { GroupSettings } from "@/pages/groups/components/GroupSettings";
 import { AddMemberModal } from "@/pages/groups/components/AddMemberModal";
+import GroupProjectTable from "./components/GroupProjectTable";
 
 
 
@@ -135,7 +136,7 @@ const GroupDetailPage = () => {
             label: "Dự án",
             children: (
               <ProCard bordered style={{ borderRadius: 12 }}>
-                Danh sách dự án sẽ hiển thị tại đây.
+                <GroupProjectTable groupId={groupId!} />
               </ProCard>
             ),
           },
