@@ -22,4 +22,14 @@ export const groupService = {
     const res = await api.post("/groups", data);
     return res.data;
   },
+
+  async deleteGroup(groupId: string) {
+    const res = await api.delete(`/groups/${groupId}`);
+    return res.data;
+  },
+
+  async removeMember(groupId: string, memberId: string) {
+    const res = await api.delete(`/group-members/${groupId}/${memberId}`);
+    return res.data;
+  },
 };

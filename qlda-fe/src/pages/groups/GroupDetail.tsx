@@ -1,55 +1,70 @@
 import {
   PageContainer,
   ProCard,
-  ProDescriptions,
-  ProTable,
 } from "@ant-design/pro-components";
 import {
   Button,
-  Tabs,
-  message,
-  Space,
-  Typography,
-  Avatar,
-  Tooltip,
-  theme,
-  Tag,
   Divider,
-  Modal,
-  Input,
+  Tabs,
+  Tooltip,
+  message,
 } from "antd";
 import {
-  ArrowLeftOutlined,
-  KeyOutlined,
-  UserOutlined,
-  TeamOutlined,
   CopyOutlined,
-  CrownOutlined,
   UserAddOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { groupService } from "@/services/group.services";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { groupService } from "@/services/group.services";
+import useAuth from "@/hooks/useAuth";
+import { GroupInfoCard } from "@/components/GroupInfoCard";
+import { GroupMembersTable } from "@/components/GroupMembersTable";
+import { GroupSettings } from "@/components/GroupSettings";
+import { AddMemberModal } from "@/components/AddMemberModal";
 
-const { Text } = Typography;
+
 
 const GroupDetailPage = () => {
   const navigate = useNavigate();
   const { groupId } = useParams<{ groupId: string }>();
-  const { token } = theme.useToken();
-  const [open, setOpen] = useState(false);
+  const auth = useAuth();
+  const currentUser = auth.authUser;
+  const queryClient = useQueryClient();
+
+  const [openAddMember, setOpenAddMember] = useState(false);
+
   // 🔄 Lấy thông tin nhóm
-  const {
-    data: group,
-    isLoading,
-    isError,
-  } = useQuery({
+  const { data: group, isLoading, isError } = useQuery({
     queryKey: ["groupDetail", groupId],
     queryFn: () => groupService.getDetail(groupId!),
     enabled: !!groupId,
   });
 
+  const isLeader = group?.leader?.id === currentUser?.id;
+
+  // 🧩 Mutation: Giải tán nhóm
+  const deleteGroupMutation = useMutation({
+    mutationFn: () => groupService.deleteGroup(groupId!),
+    onSuccess: () => {
+      message.success("Đã giải tán nhóm!");
+      navigate("/groups");
+    },
+    onError: () => message.error("Không thể giải tán nhóm"),
+  });
+
+  // 🧩 Mutation: Thêm thành viên
+  const addMemberMutation = useMutation({
+    mutationFn: (email: string) => groupService.inviteMember({ groupId: groupId!, email }),
+    onSuccess: () => {
+      message.success("Đã gửi lời mời thành công!");
+      queryClient.invalidateQueries({ queryKey: ["groupDetail", groupId] });
+      setOpenAddMember(false);
+    },
+    onError: () => message.error("Không thể thêm thành viên"),
+  });
+
+  // 📋 Copy mã mời
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(group?.inviteCode || "");
@@ -59,18 +74,13 @@ const GroupDetailPage = () => {
     }
   };
 
-
   if (isLoading) return <PageContainer loading />;
   if (isError || !group)
     return (
-      <PageContainer
-        title="Không tìm thấy nhóm"
-        onBack={() => navigate("/groups")}
-      >
-        <Text>Không thể tải thông tin nhóm hoặc nhóm không tồn tại.</Text>
+      <PageContainer title="Không tìm thấy nhóm" onBack={() => navigate("/groups")}>
+        Không thể tải thông tin nhóm hoặc nhóm không tồn tại.
       </PageContainer>
     );
-
 
   return (
     <PageContainer
@@ -82,75 +92,25 @@ const GroupDetailPage = () => {
           <Button icon={<CopyOutlined />} onClick={handleCopy}>
             Sao chép mã mời
           </Button>
-          <Divider type="vertical" />
-          <Button icon={<UserAddOutlined />} type="primary">
-            Thêm thành viên
-          </Button>
         </Tooltip>,
+        isLeader && (
+          <>
+            <Divider type="vertical" />
+            <Button
+              icon={<UserAddOutlined />}
+              type="primary"
+              onClick={() => setOpenAddMember(true)}
+            >
+              Thêm thành viên
+            </Button>
+          </>
+        ),
       ]}
     >
-      {/* 📋 Thông tin nhóm */}
-      <ProCard ghost gutter={16}>
-        <ProCard
-          title="Thông tin chung"
-          colSpan="40%"
-          bordered
-          style={{ borderRadius: 12 }}
-        >
-          <ProDescriptions
-            column={1}
-            dataSource={group}
-            labelStyle={{ fontWeight: 500 }}
-          >
-            <ProDescriptions.Item label="Tên nhóm">
-              {group?.name || ""}
-            </ProDescriptions.Item>
+      {/* Thông tin chung */}
+      <GroupInfoCard group={group} />
 
-            <ProDescriptions.Item label="Mã mời">
-              <Space>
-                <KeyOutlined />
-                <Text code>{group?.inviteCode || ""}</Text>
-                <Button
-                  type="text"
-                  size="small"
-                  icon={<CopyOutlined />}
-                  onClick={handleCopy}
-                />
-              </Space>
-            </ProDescriptions.Item>
-
-            <ProDescriptions.Item label="Trưởng nhóm">
-              <Space>
-                <UserOutlined />
-                <Text>
-                  {group?.leader?.name || group?.leader?.email || "Không xác định"}
-                </Text>
-              </Space>
-            </ProDescriptions.Item>
-
-            <ProDescriptions.Item label="Ngày tạo">
-              {new Date(group?.createdAt || "").toLocaleString("vi-VN")}
-            </ProDescriptions.Item>
-          </ProDescriptions>
-        </ProCard>
-
-        <ProCard
-          title="Tổng quan"
-          colSpan="60%"
-          bordered
-          style={{ borderRadius: 12 }}
-        >
-          <Space size="large">
-            <Space direction="vertical" align="center">
-              <TeamOutlined style={{ color: token.colorPrimary, fontSize: 22 }} />
-              <Text strong>{group?.members?.length || 0}</Text>
-              <Text type="secondary">Thành viên</Text>
-            </Space>
-          </Space>
-        </ProCard>
-      </ProCard>
-
-      {/* 📑 Tabs nội dung */}
+      {/* Tabs */}
       <Tabs
         defaultActiveKey="members"
         style={{ marginTop: 24 }}
@@ -159,74 +119,13 @@ const GroupDetailPage = () => {
             key: "members",
             label: "Thành viên",
             children: (
-              <ProCard bordered style={{ borderRadius: 12 }}>
-                <ProTable
-                  search={false}
-                  options={false}
-                  pagination={false}
-                  rowKey="id"
-                  dataSource={group?.members || []}
-                  columns={[
-                    {
-                      title: "Thành viên",
-                      dataIndex: "name",
-                      render: (_, member) => (
-                        <Space>
-                          <Avatar src={member.avatar} />
-                          <div>
-                            <Text strong>{member?.name || ""}</Text>
-                            <br />
-                            <Text type="secondary" style={{ fontSize: 12 }}>
-                              {member?.email || "" || "-"}
-                            </Text>
-                          </div>
-                        </Space>
-                      ),
-                    },
-                    {
-                      title: "Vai trò",
-                      dataIndex: "role",
-                      render: (role) =>
-                        role === "leader" ? (
-                          <Tag color="gold" icon={<CrownOutlined />}>
-                            Trưởng nhóm
-                          </Tag>
-                        ) : (
-                          <Tag color="blue">Thành viên</Tag>
-                        ),
-                    },
-                    {
-                      title: "Trạng thái",
-                      dataIndex: "status",
-                      render: (status) => (
-                        <Tag
-                          color={
-                            status === "accepted"
-                              ? "green"
-                              : status === "pending"
-                              ? "orange"
-                              : "red"
-                          }
-                        >
-                          {status === "accepted"
-                            ? "Đã tham gia"
-                            : status === "pending"
-                            ? "Chờ duyệt"
-                            : "Từ chối"}
-                        </Tag>
-                      ),
-                    },
-                    {
-                      title: "Ngày tham gia",
-                      dataIndex: "joinedAt",
-                      render: (d) =>
-                        d
-                          ? new Date(d).toLocaleDateString("vi-VN")
-                          : "—",
-                    },
-                  ]}
-                />
-              </ProCard>
+              <GroupMembersTable
+                group={group}
+                isLeader={isLeader}
+                onRemoveSuccess={() =>
+                  queryClient.invalidateQueries({ queryKey: ["groupDetail", groupId] })
+                }
+              />
             ),
           },
           {
@@ -234,22 +133,32 @@ const GroupDetailPage = () => {
             label: "Dự án",
             children: (
               <ProCard bordered style={{ borderRadius: 12 }}>
-                <Text type="secondary">Danh sách dự án sẽ hiển thị tại đây.</Text>
+                Danh sách dự án sẽ hiển thị tại đây.
               </ProCard>
             ),
           },
-          {
-            key: "settings",
-            label: "Cài đặt",
-            children: (
-              <ProCard bordered style={{ borderRadius: 12 }}>
-                <Text type="secondary">
-                  Cấu hình nhóm (đổi tên, giải tán nhóm...) sẽ hiển thị tại đây.
-                </Text>
-              </ProCard>
-            ),
-          },
+          ...(isLeader
+            ? [
+                {
+                  key: "settings",
+                  label: "Cài đặt",
+                  children: (
+                    <GroupSettings
+                      onDelete={() => deleteGroupMutation.mutate()}
+                    />
+                  ),
+                },
+              ]
+            : []),
         ]}
+      />
+
+      {/* Modal thêm thành viên */}
+      <AddMemberModal
+        open={openAddMember}
+        onCancel={() => setOpenAddMember(false)}
+        onSubmit={(email) => addMemberMutation.mutate(email)}
+        loading={addMemberMutation.isPending}
       />
     </PageContainer>
   );
