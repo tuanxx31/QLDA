@@ -34,7 +34,6 @@ const GroupDetailPage = () => {
 
   const [openAddMember, setOpenAddMember] = useState(false);
 
-  // 🔄 Lấy thông tin nhóm
   const { data: group, isLoading, isError } = useQuery({
     queryKey: ["groupDetail", groupId],
     queryFn: () => groupService.getDetail(groupId!),
@@ -43,7 +42,6 @@ const GroupDetailPage = () => {
 
   const isLeader = group?.leader?.id === currentUser?.id;
 
-  // 🧩 Mutation: Giải tán nhóm
   const deleteGroupMutation = useMutation({
     mutationFn: () => groupService.deleteGroup(groupId!),
     onSuccess: () => {
@@ -52,8 +50,15 @@ const GroupDetailPage = () => {
     },
     onError: () => message.error("Không thể giải tán nhóm"),
   });
+  const leaveGroupMutation = useMutation({
+    mutationFn: () => groupService.leaveGroup({ groupId: groupId! }),
+    onSuccess: () => {
+      message.success("Đã rời nhóm!");
+      navigate("/groups");
+    },
+    onError: () => message.error("Không thể rời nhóm"),
+  });
 
-  // 🧩 Mutation: Thêm thành viên
   const addMemberMutation = useMutation({
     mutationFn: (email: string) => groupService.inviteMember({ groupId: groupId!, email }),
     onSuccess: () => {
@@ -64,7 +69,6 @@ const GroupDetailPage = () => {
     onError: () => message.error("Không thể thêm thành viên"),
   });
 
-  // 📋 Copy mã mời
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(group?.inviteCode || "");
@@ -107,10 +111,8 @@ const GroupDetailPage = () => {
         ),
       ]}
     >
-      {/* Thông tin chung */}
       <GroupInfoCard group={group} />
 
-      {/* Tabs */}
       <Tabs
         defaultActiveKey="members"
         style={{ marginTop: 24 }}
@@ -122,7 +124,7 @@ const GroupDetailPage = () => {
               <GroupMembersTable
                 group={group}
                 isLeader={isLeader}
-                onRemoveSuccess={() =>
+                onUpdate={() =>
                   queryClient.invalidateQueries({ queryKey: ["groupDetail", groupId] })
                 }
               />
@@ -137,6 +139,19 @@ const GroupDetailPage = () => {
               </ProCard>
             ),
           },
+          ...(!isLeader ? [
+            {
+              key: "settings",
+              label: "Cài đặt",
+              children: (
+                <GroupSettings
+                  group={group}
+                  onDelete={() => leaveGroupMutation.mutate()}
+                />
+              ),
+            },
+          ]
+          : []),
           ...(isLeader
             ? [
                 {
@@ -144,6 +159,7 @@ const GroupDetailPage = () => {
                   label: "Cài đặt",
                   children: (
                     <GroupSettings
+                      group={group}
                       onDelete={() => deleteGroupMutation.mutate()}
                     />
                   ),
@@ -153,7 +169,6 @@ const GroupDetailPage = () => {
         ]}
       />
 
-      {/* Modal thêm thành viên */}
       <AddMemberModal
         open={openAddMember}
         onCancel={() => setOpenAddMember(false)}

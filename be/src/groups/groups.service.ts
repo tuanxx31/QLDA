@@ -177,7 +177,6 @@ export class GroupsService {
     };
   }
 
-  // 🟢 4. Cập nhật nhóm
   async update(id: string, userId: string, dto: UpdateGroupDto) {
     const group = await this.groupRepo.findOne({
       where: { id },
@@ -191,7 +190,6 @@ export class GroupsService {
     return await this.groupRepo.save(group);
   }
 
-  // 🟢 5. Giải tán nhóm
   async remove(id: string, userId: string) {
     const group = await this.groupRepo.findOne({
       where: { id },
@@ -205,7 +203,6 @@ export class GroupsService {
     return { message: 'Đã giải tán nhóm' };
   }
 
-  // 🟢 6. Tham gia nhóm bằng mã mời
   async joinByCode(userId: string, dto: JoinGroupDto) {
     const inviteCode = dto.inviteCode.trim().toUpperCase();
     const group = await this.groupRepo.findOne({ where: { inviteCode } });
@@ -228,7 +225,6 @@ export class GroupsService {
     return { message: 'Đã tham gia nhóm thành công', groupId: group.id };
   }
 
-  // 🟢 7. Mời thành viên
   async inviteMember(leaderId: string, dto: InviteMemberDto) {
     const { groupId, userId, email } = dto;
 

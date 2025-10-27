@@ -52,4 +52,8 @@ export const groupService = {
     const res = await api.post(`/group-members/leave`, data);
     return res.data;
   },
+  async transferLeader(groupId: string, leaderId: string) {
+    const res = await api.put(`/group-members/${groupId}/transfer-leader/${leaderId}`);
+    return res.data;
+  },
 };

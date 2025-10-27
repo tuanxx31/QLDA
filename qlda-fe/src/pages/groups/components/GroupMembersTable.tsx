@@ -1,28 +1,31 @@
 import { ProCard, ProTable } from "@ant-design/pro-components";
-import { Space, Avatar, Tag, Popconfirm, Button, Typography } from "antd";
+import { Space, Avatar, Tag, Popconfirm, Button, Typography, message } from "antd";
 import { DeleteOutlined, CrownOutlined, LogoutOutlined } from "@ant-design/icons";
 import { groupService } from "@/services/group.services";
 import { useMutation } from "@tanstack/react-query";
 
 const { Text } = Typography;
 
-export const GroupMembersTable = ({ group, isLeader, onRemoveSuccess }: any) => {
-  const leaveGroupMutation = useMutation({
-    mutationFn: (groupId: string) =>
-      groupService.leaveGroup({ groupId }),
-    onSuccess: () => {
-      onRemoveSuccess();
-    },
-  });
+export const GroupMembersTable = ({ group, isLeader, onUpdate }: any) => {
 
   const removeMemberMutation = useMutation({
     mutationFn: (memberId: string) =>
       groupService.removeMember(group.id, memberId),
     onSuccess: () => {
-      onRemoveSuccess();
+      message.success("Đã xóa thành viên khỏi nhóm!");
+      onUpdate();
     },
   });
 
+  const transferLeaderMutation = useMutation({
+    mutationFn: (memberId: string) =>
+      groupService.transferLeader(group.id, memberId),
+    onSuccess: () => {
+      message.success("Đã chuyển quyền trưởng nhóm!");
+      onUpdate();
+    },
+  });
+  
   return (
     <ProCard bordered style={{ borderRadius: 12 }}>
       <ProTable
@@ -68,15 +71,15 @@ export const GroupMembersTable = ({ group, isLeader, onRemoveSuccess }: any) => 
                   member.status === "accepted"
                     ? "green"
                     : member.status === "pending"
-                    ? "orange"
-                    : "red"
+                      ? "orange"
+                      : "red"
                 }
               >
                 {member.status === "accepted"
                   ? "Đã tham gia"
                   : member.status === "pending"
-                  ? "Chờ duyệt"
-                  : "Từ chối"}
+                    ? "Chờ duyệt"
+                    : "Từ chối"}
               </Tag>
             ),
           },
@@ -86,17 +89,18 @@ export const GroupMembersTable = ({ group, isLeader, onRemoveSuccess }: any) => 
             render: (_: any, member: any) =>
               member.joinedAt ? new Date(member.joinedAt as string).toLocaleDateString("vi-VN") : "—",
           },
-        
-         
+
+
           ...(isLeader
             ? [
-                {
-                  title: "Thao tác",
-                  key: "actions",
-                  render: (_: any, member: any) =>
-                    member.id === group.leader.id ? (
-                      <Text type="secondary">—</Text>
-                    ) : (
+              {
+                title: "Thao tác",
+                key: "actions",
+                render: (_: any, member: any) =>
+                  member.id === group.leader.id ? (
+                    <Text type="secondary">—</Text>
+                  ) : (
+                    <Space>
                       <Popconfirm
                         title="Xóa thành viên này khỏi nhóm?"
                         onConfirm={() => removeMemberMutation.mutate(member.id)}
@@ -109,9 +113,25 @@ export const GroupMembersTable = ({ group, isLeader, onRemoveSuccess }: any) => 
                           icon={<DeleteOutlined />}
                         />
                       </Popconfirm>
-                    ),
-                },
-              ]
+                      {
+                        member.status === "accepted" && (
+                        <Popconfirm
+                        title="Chuyển quyền trưởng nhóm?"
+                        onConfirm={() => transferLeaderMutation.mutate(member.id)}
+                        okText="Xác nhận"
+                        cancelText="Hủy"
+                      >
+                        <Button
+                          type="text"
+                          icon={<CrownOutlined />}
+                        />
+                      </Popconfirm>
+                      )}
+                      
+                    </Space>
+                  ),
+              },
+            ]
             : []),
         ]}
       />
