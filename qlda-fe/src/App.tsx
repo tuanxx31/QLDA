@@ -11,6 +11,8 @@ import SettingsPage from "./pages/settings";
 import '@ant-design/v5-patch-for-react-19';
 import GroupsPage from "./pages/groups";
 import GroupDetailPage from "./pages/groups/GroupDetail";
+import ProjectPage from "./pages/projects";
+import ProjectDetailPage from "./pages/projects/detail";
 
 export default function App() {
   return (
@@ -29,7 +31,8 @@ export default function App() {
             <Route path="settings" element={<SettingsPage />} />
             <Route path="groups" element={<GroupsPage />} />
             <Route path="groups/:groupId" element={<GroupDetailPage />} />
-
+            <Route path="projects" element={<ProjectPage />} />
+            <Route path="projects/:projectId" element={<ProjectDetailPage />} />
           </Route>
         </Route>
       </Routes>

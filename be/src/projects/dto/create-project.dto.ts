@@ -14,6 +14,11 @@ export class CreateProjectDto {
   @ApiProperty({ example: '2025-01-01' })
   @IsOptional()
   @IsDateString()
+  startDate?: string;
+
+  @ApiProperty({ example: '2025-01-01' })
+  @IsOptional()
+  @IsDateString()
   deadline?: string;
 
   @ApiProperty({ example: 'todo' })
