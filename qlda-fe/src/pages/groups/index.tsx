@@ -19,9 +19,9 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { groupService } from "@/services/group.services";
-import { GroupCard } from "@/components/GroupCard";
+import { GroupCard } from "@/pages/groups/components/GroupCard";
 import { ProCard, ProList } from "@ant-design/pro-components";
-import { GroupPendingList } from "@/components/GroupPendingList";
+import { GroupPendingList } from "@/pages/groups/components/GroupPendingList";
 
 const { Title, Text } = Typography;
 const GroupsPage = () => {
