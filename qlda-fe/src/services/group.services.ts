@@ -1,4 +1,4 @@
-import type { Group } from "@/types/group.type";
+import type { Group, InviteGroupDto } from "@/types/group.type";
 import { api } from "./api";
 import type { InviteMemberDto } from "@/types/group.type";
 
@@ -31,6 +31,21 @@ export const groupService = {
 
   async removeMember(groupId: string, memberId: string) {
     const res = await api.delete(`/group-members/${groupId}/${memberId}`);
+    return res.data;
+  },
+
+  async findPendingInvites(): Promise<InviteGroupDto[]> {
+    const res = await api.get("/groups/pending-invites");
+    return res.data;
+  },
+
+  async acceptInvite(groupId: string) {
+    const res = await api.post(`/groups/accept-invite/${groupId}`);
+    return res.data;
+  },
+
+  async rejectInvite(groupId: string) {
+    const res = await api.post(`/groups/reject-invite/${groupId}`);
     return res.data;
   },
 };
