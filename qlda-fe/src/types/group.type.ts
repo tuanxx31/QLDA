@@ -22,3 +22,8 @@ export interface GroupMember {
     status: string;
     joinedAt: string;
 }
+
+export interface InviteMemberDto {
+    groupId: string;
+    email: string;
+}

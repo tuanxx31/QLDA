@@ -1,5 +1,6 @@
 import type { Group } from "@/types/group.type";
 import { api } from "./api";
+import type { InviteMemberDto } from "@/types/group.type";
 
 export const groupService = {
 
@@ -8,8 +9,8 @@ export const groupService = {
     return res.data;
   },
 
-  async inviteMember(data: { groupId: string; email: string }) {
-    const res = await api.post(`/groups/${data.groupId}/invite`, { email: data.email });
+  async inviteMember(data: InviteMemberDto) {
+    const res = await api.post(`/groups/invite`, data);
     return res.data;
   },
 
