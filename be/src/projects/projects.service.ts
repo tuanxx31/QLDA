@@ -38,7 +38,6 @@ export class ProjectsService {
       if (!group) throw new NotFoundException('Không tìm thấy nhóm.');
     }
   
-    // ✅ Tạo entity đúng kiểu
     const project = this.projectRepo.create({
       ...dto,
       owner,
@@ -46,10 +45,8 @@ export class ProjectsService {
       manager: owner,
     });
   
-    // ✅ Ép kiểu rõ ràng để tránh TypeORM nhầm overload
     const saved: Project = await this.projectRepo.save(project);
   
-    // ✅ Tạo leader member
     const leaderMember = this.projectMemberRepo.create({
       project: { id: saved.id } as Project,
       user: { id: owner.id } as User,
@@ -62,7 +59,6 @@ export class ProjectsService {
   
   
 
-  /** 🟢 Lấy tất cả dự án của user (owner, manager, hoặc member) */
   async findAllByUser(userId: string) {
     return this.projectRepo
       .createQueryBuilder('project')
