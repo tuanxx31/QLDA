@@ -8,6 +8,7 @@ import { useState } from "react";
 import ProjectInfoCard from "./components/ProjectInfoCard";
 import ProjectMembers from "./components/ProjectMembers";
 import MemberAddModal from "./components/MemberAddModal";
+import MemberAddFromGroupModal from "./components/MemberAddFromGroupModal";
 
 const { Title } = Typography;
 
@@ -16,10 +17,11 @@ const ProjectDetailPage = () => {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [openAddMember, setOpenAddMember] = useState(false);
+  const [openAddFromGroup, setOpenAddFromGroup] = useState(false); // 🔹 mới
 
   const { data: project, isLoading } = useQuery({
     queryKey: ["project", projectId],
-    queryFn: async () => (await projectService.getById(projectId!)),
+    queryFn: async () => await projectService.getById(projectId!),
     enabled: !!projectId,
   });
 
@@ -46,6 +48,8 @@ const ProjectDetailPage = () => {
     );
   }
 
+  const isGroupProject = !!(project.group?.id); // 🔎 tùy backend trả về
+
   return (
     <PageContainer
       title={
@@ -67,10 +71,19 @@ const ProjectDetailPage = () => {
         >
           Thêm thành viên
         </Button>,
-      ]}
+        isGroupProject && (
+          <Button
+            key="addFromGroup"
+            icon={<UserAddOutlined />}
+            onClick={() => setOpenAddFromGroup(true)}
+          >
+            Thêm từ nhóm
+          </Button>
+        ),
+      ].filter(Boolean)}
     >
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <ProjectInfoCard project={project} />
+        <ProjectInfoCard project={project} onUpdate={() => {qc.invalidateQueries({ queryKey: ["project", projectId] });}}/>
         <ProjectMembers projectId={projectId!} />
       </Space>
 
@@ -79,6 +92,21 @@ const ProjectDetailPage = () => {
         onClose={() => setOpenAddMember(false)}
         projectId={projectId!}
       />
+
+      {/* 🔹 Modal chọn thành viên từ Group (chỉ hiện khi dự án là nhóm) */}
+      {isGroupProject && (
+        <MemberAddFromGroupModal
+          open={openAddFromGroup}
+          onClose={() => setOpenAddFromGroup(false)}
+          projectId={projectId!}
+          groupId={project.group?.id || ""}
+          onSuccess={async () => {
+            message.success("Đã thêm thành viên từ nhóm");
+            await qc.invalidateQueries({ queryKey: ["project", projectId] });
+            await qc.invalidateQueries({ queryKey: ["projectMembers", projectId] });
+          }}
+        />
+      )}
     </PageContainer>
   );
 };

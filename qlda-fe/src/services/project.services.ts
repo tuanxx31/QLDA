@@ -62,4 +62,8 @@ export const projectMemberService = {
     const res = await api.put(`/project-members/${projectId}/transfer-leader/${leaderId}`);
     return res.data;
   },
+  async addMembers(projectId: string, data: { userIds: string[] }) {
+    const res = await api.post(`/project-members/${projectId}/add-members`, data);
+    return res.data;
+  },
 }

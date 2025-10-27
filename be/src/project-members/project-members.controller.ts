@@ -50,6 +50,17 @@ export class ProjectMembersController {
     return await this.projectMembersService.addMember(projectId, dto, req.user.sub as string);
   }
 
+  @Post(':projectId/add-members')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Thêm nhiều thành viên vào dự án' })
+  @ApiResponse({ status: 201, description: 'Thành viên được thêm thành công' })
+  @ApiResponse({ status: 403, description: 'Chỉ leader hoặc manager mới có quyền thêm thành viên' })
+  async addMembers(@Param('projectId') projectId: string, @Body() dto: { userIds: string[] }) {
+    return await this.projectMembersService.addMembers(projectId, dto);
+  }
+
+
   @Patch(':projectId/:memberId')
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')

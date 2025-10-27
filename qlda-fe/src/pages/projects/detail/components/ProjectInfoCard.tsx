@@ -8,9 +8,10 @@ const { Text, Paragraph, Title } = Typography;
 
 interface Props {
   project: Project;
+  onUpdate: () => void;
 }
 
-const ProjectInfoCard = ({ project }: Props) => {
+const ProjectInfoCard = ({ project, onUpdate }: Props) => {
   const [open, setOpen] = useState(false);
 
   const formatDate = (date?: string | null) =>
@@ -51,7 +52,7 @@ const ProjectInfoCard = ({ project }: Props) => {
         <Descriptions.Item label="Hạn chót">{formatDate(project.deadline)}</Descriptions.Item>
       </Descriptions>
 
-      <ProjectEditModal open={open} onClose={() => setOpen(false)} project={project} />
+      <ProjectEditModal open={open} onClose={() => setOpen(false)} project={project} onUpdate={() => {onUpdate();}} />
     </Card>
   );
 };

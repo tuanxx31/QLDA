@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { ProjectMember } from './entities/project-member.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Project } from 'src/projects/entities/project.entity';
@@ -67,6 +67,29 @@ export class ProjectMembersService {
     }));
   }
 
+  /** 🟢 Thêm nhiều thành viên vào dự án */
+  async addMembers(projectId: string, dto: { userIds: string[] }) {
+    const project = await this.projectRepo.findOne({
+      where: { id: projectId },
+      relations: ['members', 'members.user'],
+    });
+    if (!project) throw new NotFoundException('Không tìm thấy dự án.');
+
+    const users = await this.userRepo.find({
+      where: { id: In(dto.userIds) },
+    });
+    if (users.length !== dto.userIds.length) throw new NotFoundException('Không tìm thấy người dùng.');
+
+    const already = project.members.filter((m) => users.some((u) => u.id === m.user.id));
+    if (already.length > 0) throw new BadRequestException('Người dùng đã nằm trong dự án.');
+
+    const newMembers = users.map((user) => this.projectMemberRepo.create({
+      project,
+      user,
+      role: 'viewer' as const,
+    }));
+    return this.projectMemberRepo.save(newMembers);
+  }
   /** 🟢 Cập nhật vai trò thành viên */
   async updateMemberRole(
     projectId: string,

@@ -1,4 +1,4 @@
-import type { Group, InviteGroupDto } from "@/types/group.type";
+import type { Group, GroupMember, InviteGroupDto } from "@/types/group.type";
 import { api } from "./api";
 import type { InviteMemberDto } from "@/types/group.type";
 
@@ -57,3 +57,11 @@ export const groupService = {
     return res.data;
   },
 };
+
+
+export const groupMemberService = {
+  async getGroupMembers(groupId: string) {
+    const res = await api.get<GroupMember[]>(`/group-members/${groupId}`);
+    return res.data;
+  },
+}

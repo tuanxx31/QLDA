@@ -15,9 +15,10 @@ interface Props {
   open: boolean;
   onClose: () => void;
   project: Project;
+  onUpdate: () => void;
 }
 
-const ProjectEditModal = ({ open, onClose, project }: Props) => {
+const ProjectEditModal = ({ open, onClose, project ,onUpdate}: Props) => {
   const qc = useQueryClient();
 
   /** 🟢 Lấy danh sách nhóm của user để chọn */
@@ -91,7 +92,7 @@ const ProjectEditModal = ({ open, onClose, project }: Props) => {
         allowClear
         showSearch
         options={
-          groups?.data?.map((g: Group) => ({
+          groups?.map((g: Group) => ({
             label: g.name,
             value: g.id,
           })) || []
