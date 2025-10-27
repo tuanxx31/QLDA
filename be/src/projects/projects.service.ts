@@ -40,10 +40,7 @@ export class ProjectsService {
   
     // ✅ Tạo entity đúng kiểu
     const project = this.projectRepo.create({
-      name: dto.name,
-      description: dto.description,
-      deadline: dto.deadline ? new Date(dto.deadline) : undefined, // ✅ Không dùng null
-      status: dto.status || 'todo',
+      ...dto,
       owner,
       group,
       manager: owner,
