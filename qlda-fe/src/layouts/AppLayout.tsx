@@ -43,7 +43,7 @@ export default function AppLayout() {
 
   return (
     <ProLayout
-      title="QLDA Sinh viên"
+      // title="QLDA Sinh viên"
       layout="mix"
       menuItemRender={(item, dom) => (
         <div onClick={() => item.path && navigate(item.path)}>{dom}</div>

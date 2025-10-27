@@ -14,6 +14,9 @@ import {
   Tooltip,
   theme,
   Tag,
+  Divider,
+  Modal,
+  Input,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -22,10 +25,12 @@ import {
   TeamOutlined,
   CopyOutlined,
   CrownOutlined,
+  UserAddOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { groupService } from "@/services/group.services";
+import { useState } from "react";
 
 const { Text } = Typography;
 
@@ -33,7 +38,7 @@ const GroupDetailPage = () => {
   const navigate = useNavigate();
   const { groupId } = useParams<{ groupId: string }>();
   const { token } = theme.useToken();
-
+  const [open, setOpen] = useState(false);
   // 🔄 Lấy thông tin nhóm
   const {
     data: group,
@@ -54,6 +59,7 @@ const GroupDetailPage = () => {
     }
   };
 
+
   if (isLoading) return <PageContainer loading />;
   if (isError || !group)
     return (
@@ -65,6 +71,7 @@ const GroupDetailPage = () => {
       </PageContainer>
     );
 
+
   return (
     <PageContainer
       title={group.name}
@@ -74,6 +81,10 @@ const GroupDetailPage = () => {
         <Tooltip title="Sao chép mã mời" key="copy">
           <Button icon={<CopyOutlined />} onClick={handleCopy}>
             Sao chép mã mời
+          </Button>
+          <Divider type="vertical" />
+          <Button icon={<UserAddOutlined />} type="primary">
+            Thêm thành viên
           </Button>
         </Tooltip>,
       ]}
