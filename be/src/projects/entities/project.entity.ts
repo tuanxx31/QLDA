@@ -25,6 +25,9 @@ export class Project {
   description?: string;
 
   @Column({ type: 'date', nullable: true })
+  startDate?: Date;
+
+  @Column({ type: 'date', nullable: true })
   deadline?: Date;
 
   @Column({

@@ -5,6 +5,7 @@ import {
   SettingOutlined,
   LogoutOutlined,
   TeamOutlined,
+  ProjectOutlined,
 } from "@ant-design/icons";
 import { Avatar, Card, Dropdown, Space, type MenuProps } from "antd";
 import useAuth from "@/hooks/useAuth";
@@ -15,12 +16,6 @@ export default function AppLayout() {
   const { authUser: user } = useAuth();
 
   const menuItems: MenuProps["items"] = [
-    // {
-    //   key: "profile",
-    //   label: "Hồ sơ cá nhân",
-    //   icon: <UserOutlined />,
-    //   onClick: () => navigate("/profile"),
-    // },
     {
       key: "settings",
       label: "Cài đặt",
@@ -56,6 +51,7 @@ export default function AppLayout() {
             icon: <DashboardOutlined />,
           },
           { path: "/groups", name: "Nhóm", icon: <TeamOutlined /> },
+          { path: "/projects", name: "Dự án", icon: <ProjectOutlined /> },
         ],
       }}
       // ✅ Hiển thị avatar + tên người dùng bên phải header
@@ -75,8 +71,8 @@ export default function AppLayout() {
       )}
     >
       <PageContainer>
-        <Card style={{minHeight: "80vh"}}>
-        <Outlet />
+        <Card style={{ minHeight: "80vh" }}>
+          <Outlet />
         </Card>
       </PageContainer>
     </ProLayout>

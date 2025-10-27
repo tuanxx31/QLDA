@@ -36,7 +36,6 @@ export class ProjectMembersController {
     return await this.projectMembersService.getMembers(projectId);
   }
 
-  // 🟢 Thêm thành viên vào dự án
   @Post(':projectId')
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')
@@ -51,7 +50,6 @@ export class ProjectMembersController {
     return await this.projectMembersService.addMember(projectId, dto, req.user.sub as string);
   }
 
-  // 🟢 Cập nhật vai trò của thành viên
   @Patch(':projectId/:memberId')
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')
