@@ -1,18 +1,6 @@
-import {
-  PageContainer,
-  ProCard,
-} from "@ant-design/pro-components";
-import {
-  Button,
-  Divider,
-  Tabs,
-  Tooltip,
-  message,
-} from "antd";
-import {
-  CopyOutlined,
-  UserAddOutlined,
-} from "@ant-design/icons";
+import { PageContainer, ProCard } from "@ant-design/pro-components";
+import { Button, Divider, Tabs, Tooltip, message } from "antd";
+import { CopyOutlined, UserAddOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -23,8 +11,7 @@ import { GroupMembersTable } from "@/pages/groups/components/GroupMembersTable";
 import { GroupSettings } from "@/pages/groups/components/GroupSettings";
 import { AddMemberModal } from "@/pages/groups/components/AddMemberModal";
 import GroupProjectTable from "./components/GroupProjectTable";
-
-
+import { GroupEditModal } from "./components/GroupEditModal";
 
 const GroupDetailPage = () => {
   const navigate = useNavigate();
@@ -32,10 +19,15 @@ const GroupDetailPage = () => {
   const auth = useAuth();
   const currentUser = auth.authUser;
   const queryClient = useQueryClient();
+  const [openEditGroup, setOpenEditGroup] = useState(false);
 
   const [openAddMember, setOpenAddMember] = useState(false);
 
-  const { data: group, isLoading, isError } = useQuery({
+  const {
+    data: group,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["groupDetail", groupId],
     queryFn: () => groupService.getDetail(groupId!),
     enabled: !!groupId,
@@ -61,7 +53,8 @@ const GroupDetailPage = () => {
   });
 
   const addMemberMutation = useMutation({
-    mutationFn: (email: string) => groupService.inviteMember({ groupId: groupId!, email }),
+    mutationFn: (email: string) =>
+      groupService.inviteMember({ groupId: groupId!, email }),
     onSuccess: () => {
       message.success("Đã gửi lời mời thành công!");
       queryClient.invalidateQueries({ queryKey: ["groupDetail", groupId] });
@@ -82,7 +75,10 @@ const GroupDetailPage = () => {
   if (isLoading) return <PageContainer loading />;
   if (isError || !group)
     return (
-      <PageContainer title="Không tìm thấy nhóm" onBack={() => navigate("/groups")}>
+      <PageContainer
+        title="Không tìm thấy nhóm"
+        onBack={() => navigate("/groups")}
+      >
         Không thể tải thông tin nhóm hoặc nhóm không tồn tại.
       </PageContainer>
     );
@@ -100,6 +96,12 @@ const GroupDetailPage = () => {
         </Tooltip>,
         isLeader && (
           <>
+            <Button
+              style={{ marginLeft: 8 }}
+              onClick={() => setOpenEditGroup(true)}
+            >
+              Chỉnh sửa nhóm
+            </Button>
             <Divider type="vertical" />
             <Button
               icon={<UserAddOutlined />}
@@ -126,7 +128,9 @@ const GroupDetailPage = () => {
                 group={group}
                 isLeader={isLeader}
                 onUpdate={() =>
-                  queryClient.invalidateQueries({ queryKey: ["groupDetail", groupId] })
+                  queryClient.invalidateQueries({
+                    queryKey: ["groupDetail", groupId],
+                  })
                 }
               />
             ),
@@ -140,19 +144,20 @@ const GroupDetailPage = () => {
               </ProCard>
             ),
           },
-          ...(!isLeader ? [
-            {
-              key: "settings",
-              label: "Cài đặt",
-              children: (
-                <GroupSettings
-                  group={group}
-                  onDelete={() => leaveGroupMutation.mutate()}
-                />
-              ),
-            },
-          ]
-          : []),
+          ...(!isLeader
+            ? [
+                {
+                  key: "settings",
+                  label: "Cài đặt",
+                  children: (
+                    <GroupSettings
+                      group={group}
+                      onDelete={() => leaveGroupMutation.mutate()}
+                    />
+                  ),
+                },
+              ]
+            : []),
           ...(isLeader
             ? [
                 {
@@ -175,6 +180,12 @@ const GroupDetailPage = () => {
         onCancel={() => setOpenAddMember(false)}
         onSubmit={(email) => addMemberMutation.mutate(email)}
         loading={addMemberMutation.isPending}
+      />
+      <GroupEditModal
+        open={openEditGroup}
+        onClose={() => setOpenEditGroup(false)}
+        groupId={groupId!}
+        group={group}
       />
     </PageContainer>
   );

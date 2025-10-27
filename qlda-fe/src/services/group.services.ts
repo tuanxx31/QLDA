@@ -56,6 +56,10 @@ export const groupService = {
     const res = await api.put(`/group-members/${groupId}/transfer-leader/${leaderId}`);
     return res.data;
   },
+  async updateGroup(groupId: string, data: { name: string; description?: string }) {
+    const res = await api.put(`/groups/${groupId}`, data);
+    return res.data;
+  },
 };
 
 
