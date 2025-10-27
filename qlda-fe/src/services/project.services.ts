@@ -58,8 +58,8 @@ export const projectMemberService = {
     const res = await api.post(`/project-members/${projectId}`, data);
     return res.data;
   },
-  async transferLeader(projectId: string, leaderId: string) {
-    const res = await api.put(`/project-members/${projectId}/transfer-leader/${leaderId}`);
+  async transferLeader(projectId: string, newLeaderId: string) {
+    const res = await api.put(`/project-members/${projectId}/transfer-leader/${newLeaderId}`);
     return res.data;
   },
 }
