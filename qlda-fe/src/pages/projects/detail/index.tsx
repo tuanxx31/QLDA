@@ -17,7 +17,7 @@ const ProjectDetailPage = () => {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [openAddMember, setOpenAddMember] = useState(false);
-  const [openAddFromGroup, setOpenAddFromGroup] = useState(false); // 🔹 mới
+  const [openAddFromGroup, setOpenAddFromGroup] = useState(false); 
 
   const { data: project, isLoading } = useQuery({
     queryKey: ["project", projectId],

@@ -118,10 +118,16 @@ export class ProjectsService {
     });
     if (!project) throw new NotFoundException('Không tìm thấy dự án.');
 
+ 
     if (project.owner.id !== userId && project.manager?.id !== userId)
       throw new ForbiddenException('Không có quyền chỉnh sửa dự án.');
 
     Object.assign(project, dto);
+
+    if (dto.group && dto.group.id == "0") {
+      project.group = null;
+    }
+
     return this.projectRepo.save(project);
   }
 

@@ -42,6 +42,10 @@ const ProjectInfoCard = ({ project, onUpdate }: Props) => {
         <Descriptions.Item label="Tên dự án" span={2}>
           <Text strong>{project.name}</Text>
         </Descriptions.Item>
+        <Descriptions.Item label="Trưởng dự án" span={2}>  <Text strong>{project.owner?.name}</Text></Descriptions.Item>
+        <Descriptions.Item label="Thuộc nhóm" span={2}>
+          <Text strong>{project.group?.name || <Text type="secondary">Cá nhân</Text>}</Text>
+        </Descriptions.Item>
         <Descriptions.Item label="Trạng thái" span={2}>
           <Tag color={getStatusColor(project.status)}>{getStatusText(project.status)}</Tag>
         </Descriptions.Item>

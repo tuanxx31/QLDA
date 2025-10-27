@@ -21,11 +21,16 @@ export interface CreateProjectDto {
   startDate?: string;
   deadline?: string;
   status?: "todo" | "doing" | "done";
-  groupId?: string;
+  group?: {
+    id: string;
+  } | null;
 }
 
 export interface UpdateProjectDto extends Partial<CreateProjectDto> {
   id: string;
+  group?: {
+    id: string;
+  } | null;
 }
 
 export interface ProjectMember {

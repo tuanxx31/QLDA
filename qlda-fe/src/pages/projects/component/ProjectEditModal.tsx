@@ -18,7 +18,7 @@ interface Props {
   onUpdate: () => void;
 }
 
-const ProjectEditModal = ({ open, onClose, project ,onUpdate}: Props) => {
+const ProjectEditModal = ({ open, onClose, project, onUpdate }: Props) => {
   const qc = useQueryClient();
 
   /** 🟢 Lấy danh sách nhóm của user để chọn */
@@ -29,11 +29,13 @@ const ProjectEditModal = ({ open, onClose, project ,onUpdate}: Props) => {
 
   /** 🟢 Gọi API cập nhật dự án */
   const mutation = useMutation({
-    mutationFn: (data: UpdateProjectDto) => projectService.update(project.id, data),
+    mutationFn: (data: UpdateProjectDto) =>
+      projectService.update(project.id, data),
     onSuccess: () => {
       message.success("Cập nhật dự án thành công");
       qc.invalidateQueries({ queryKey: ["projects"] });
       qc.invalidateQueries({ queryKey: ["projects", project.id] });
+      onUpdate();
       onClose();
     },
     onError: () => {
@@ -46,14 +48,7 @@ const ProjectEditModal = ({ open, onClose, project ,onUpdate}: Props) => {
       title="Chỉnh sửa dự án"
       open={open}
       modalProps={{ onCancel: onClose, destroyOnClose: true }}
-      initialValues={{
-        name: project.name,
-        description: project.description,
-        status: project.status,
-        groupId: project.group?.id,
-        startDate: project.startDate || undefined,
-        deadline: project.deadline || undefined,
-      }}
+      initialValues={project}
       onFinish={async (values) => {
         await mutation.mutateAsync({
           ...values,
@@ -83,20 +78,23 @@ const ProjectEditModal = ({ open, onClose, project ,onUpdate}: Props) => {
         rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
       />
 
-      {/* 🧩 Chọn nhóm */}
       <ProFormSelect
-        name="groupId"
+        name={["group", "id"]}
         label="Thuộc nhóm"
         placeholder="Chọn nhóm (hoặc để trống nếu dự án cá nhân)"
         fieldProps={{ loading: isLoading }}
         allowClear
         showSearch
-        options={
-          groups?.map((g: Group) => ({
+        options={[
+          {
+            label: "Cá nhân",
+            value: null,
+          },
+          ...(groups?.map((g: Group) => ({
             label: g.name,
             value: g.id,
-          })) || []
-        }
+          })) || []),
+        ]}
       />
 
       <Space direction="horizontal" style={{ width: "100%" }}>
@@ -108,4 +106,3 @@ const ProjectEditModal = ({ open, onClose, project ,onUpdate}: Props) => {
 };
 
 export default ProjectEditModal;
-
