@@ -20,6 +20,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { groupService } from "@/services/group.services";
 import { GroupCard } from "@/components/GroupCard";
+import { ProCard, ProList } from "@ant-design/pro-components";
+import { GroupPendingList } from "@/components/GroupPendingList";
 
 const { Title, Text } = Typography;
 const GroupsPage = () => {
@@ -29,7 +31,6 @@ const GroupsPage = () => {
     const {
       data: groups,
       isLoading,
-      refetch,
     } = useQuery({
       queryKey: ["myGroups"],
       queryFn: groupService.getMyGroups,
@@ -56,8 +57,11 @@ const GroupsPage = () => {
       createGroup.mutate();
     };
   
+      
+    
     return (
       <div style={{ padding: 24 }}>
+         <GroupPendingList onUpdate={() => queryClient.invalidateQueries({ queryKey: ["myGroups"] })}/>
         <Space
           style={{
             width: "100%",
@@ -65,6 +69,8 @@ const GroupsPage = () => {
             marginBottom: 16,
           }}
         >
+
+         
           <Title level={3} style={{ margin: 0 }}>
             Nhóm của tôi
           </Title>
@@ -77,7 +83,6 @@ const GroupsPage = () => {
           </Button>
         </Space>
   
-        {/* Danh sách nhóm */}
         {isLoading ? (
           <Skeleton active paragraph={{ rows: 4 }} />
         ) : groups && groups.length > 0 ? (
@@ -99,7 +104,6 @@ const GroupsPage = () => {
           />
         )}
   
-        {/* Modal tạo nhóm */}
         <Modal
           title="Tạo nhóm mới"
           open={isModalOpen}

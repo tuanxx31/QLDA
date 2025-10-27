@@ -27,3 +27,14 @@ export interface InviteMemberDto {
     groupId: string;
     email: string;
 }
+
+export interface InviteGroupDto {
+    groupId: string;
+    groupName: string;
+    leader: {
+        id: string;
+        name: string;
+        email: string;
+    };
+    invitedAt: string;
+}
