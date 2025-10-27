@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -101,7 +102,7 @@ export class ProjectMembersController {
   }
 
   // 🟢 Chuyển quyền leader cho thành viên khác
-  @Patch(':projectId/transfer-leader/:newLeaderId')
+  @Put(':projectId/transfer-leader/:newLeaderId')
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Chuyển quyền leader cho thành viên khác' })
