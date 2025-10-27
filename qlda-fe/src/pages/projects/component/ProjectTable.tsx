@@ -1,8 +1,16 @@
 import { ProTable } from "@ant-design/pro-components";
-import { Tag, Typography, Button, message, Popconfirm } from "antd";
+import {
+  Tag,
+  Typography,
+  Button,
+  message,
+  Popconfirm,
+  Space,
+  Tooltip,
+} from "antd";
 import { useNavigate } from "react-router-dom";
 import type { Project } from "@/types/project.type";
-import { DeleteOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectService } from "@/services/project.services";
 
@@ -101,16 +109,33 @@ const ProjectTable = ({ data = [], loading }: Props) => {
           render: (name) => name || "—",
         },
         {
-          title:"Hành động",
+          title: "Hành động",
           dataIndex: "actions",
           render: (_, record) => (
-            <Popconfirm title="Xác nhận xóa dự án" onConfirm={() => removeMutation.mutate(record.id)} okText="Xóa" cancelText="Hủy">
-              <Button type="link" danger>
-                <DeleteOutlined />
-              </Button>
-            </Popconfirm>
+            <Space>
+              <Tooltip title="Chỉnh sửa dự án">
+                <Button
+                  type="link"
+                  onClick={() => navigate(`/projects/${record.id}`)}
+                >
+                  <EditOutlined />
+                </Button>
+              </Tooltip>
+              <Popconfirm
+                title="Xác nhận xóa dự án"
+                onConfirm={() => removeMutation.mutate(record.id)}
+                okText="Xóa"
+                cancelText="Hủy"
+              >
+                <Tooltip title="Xóa dự án">
+                  <Button type="link" danger>
+                    <DeleteOutlined />
+                  </Button>
+                </Tooltip>
+              </Popconfirm>
+            </Space>
           ),
-        }
+        },
       ]}
       options={false}
       bordered
