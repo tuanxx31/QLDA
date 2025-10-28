@@ -25,7 +25,6 @@ export class ProjectMembersService {
     private readonly projectRepo: Repository<Project>,
   ) {}
 
-  /** 🟢 Thêm thành viên vào dự án */
   async addMember(projectId: string, dto: CreateProjectMemberDto, userId: string) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
@@ -33,7 +32,6 @@ export class ProjectMembersService {
     });
     if (!project) throw new NotFoundException('Không tìm thấy dự án.');
 
-    // chỉ leader hoặc manager được thêm
     const actor = project.members.find((m) => m.user.id === userId);
     if (!actor || (actor.role !== 'leader' && actor.role !== 'editor'))
       throw new ForbiddenException('Không có quyền thêm thành viên.');
@@ -52,7 +50,6 @@ export class ProjectMembersService {
     return this.projectMemberRepo.save(newMember);
   }
 
-  /** 🟢 Lấy danh sách thành viên dự án */
   async getMembers(projectId: string) {
     const members = await this.projectMemberRepo.find({
       where: { project: { id: projectId } },
@@ -67,7 +64,6 @@ export class ProjectMembersService {
     }));
   }
 
-  /** 🟢 Thêm nhiều thành viên vào dự án */
   async addMembers(projectId: string, dto: { userIds: string[] }) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
@@ -90,7 +86,6 @@ export class ProjectMembersService {
     }));
     return this.projectMemberRepo.save(newMembers);
   }
-  /** 🟢 Cập nhật vai trò thành viên */
   async updateMemberRole(
     projectId: string,
     memberId: string,
@@ -117,7 +112,6 @@ export class ProjectMembersService {
     return this.projectMemberRepo.save(member);
   }
 
-  /** 🟢 Xóa thành viên khỏi dự án */
   async removeMember(projectId: string, memberId: string, actorId: string) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
@@ -136,7 +130,6 @@ export class ProjectMembersService {
     return { message: 'Đã xóa thành viên khỏi dự án.' };
   }
 
-  /** 🟢 Chuyển quyền leader cho người khác */
   async transferLeader(projectId: string, newLeaderId: string, actorId: string) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },

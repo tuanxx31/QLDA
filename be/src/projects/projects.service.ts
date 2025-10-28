@@ -163,7 +163,6 @@ export class ProjectsService {
     project.group = group;
     await this.projectRepo.save(project);
 
-    // Thêm thành viên nhóm vào project nếu chưa có
     const existingUserIds = project.members.map((m) => m.user.id);
     const newMembers = group.members.filter(
       (gm) => !existingUserIds.includes(gm.user.id),

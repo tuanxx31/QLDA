@@ -48,7 +48,7 @@ const ProjectDetailPage = () => {
     );
   }
 
-  const isGroupProject = !!(project.group?.id); // 🔎 tùy backend trả về
+  const isGroupProject = !!(project.group?.id); 
 
   return (
     <PageContainer
@@ -93,7 +93,6 @@ const ProjectDetailPage = () => {
         projectId={projectId!}
       />
 
-      {/* 🔹 Modal chọn thành viên từ Group (chỉ hiện khi dự án là nhóm) */}
       {isGroupProject && (
         <MemberAddFromGroupModal
           open={openAddFromGroup}

@@ -26,7 +26,6 @@ import { UpdateProjectMemberDto } from './dto/update-project-member.dto';
 export class ProjectMembersController {
   constructor(private readonly projectMembersService: ProjectMembersService) {}
 
-  // 🟢 Lấy danh sách thành viên trong dự án
   @Get(':projectId')
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')
@@ -82,7 +81,6 @@ export class ProjectMembersController {
     );
   }
 
-  // 🟢 Xóa thành viên khỏi dự án
   @Delete(':projectId/:memberId')
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')
@@ -101,7 +99,6 @@ export class ProjectMembersController {
     );
   }
 
-  // 🟢 Chuyển quyền leader cho thành viên khác
   @Put(':projectId/transfer-leader/:newLeaderId')
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')
