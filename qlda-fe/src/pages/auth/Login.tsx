@@ -48,7 +48,6 @@ export default function Login() {
         placeholder="Nhập mật khẩu"
         rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
       />
-      {/* <ProFormCheckbox name="remember" label="Nhớ tôi" valuePropName="checked" /> */}
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
         <Link to="/register">Chưa có tài khoản? Đăng ký</Link>
         <Link to="/forgot-password">Quên mật khẩu?</Link>
