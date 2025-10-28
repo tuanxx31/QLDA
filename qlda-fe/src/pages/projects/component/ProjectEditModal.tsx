@@ -21,13 +21,11 @@ interface Props {
 const ProjectEditModal = ({ open, onClose, project, onUpdate }: Props) => {
   const qc = useQueryClient();
 
-  /** 🟢 Lấy danh sách nhóm của user để chọn */
   const { data: groups, isLoading } = useQuery({
     queryKey: ["groups", "for-project"],
     queryFn: groupService.getMyGroups,
   });
 
-  /** 🟢 Gọi API cập nhật dự án */
   const mutation = useMutation({
     mutationFn: (data: UpdateProjectDto) =>
       projectService.update(project.id, data),

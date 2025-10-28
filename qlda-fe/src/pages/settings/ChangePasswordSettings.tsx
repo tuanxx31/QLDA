@@ -11,17 +11,14 @@ const ChangePasswordSettings = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (values: ChangePasswordDto) => {
-    // check confirm password
     if (values.newPassword !== values.confirmPassword) {
       message.error("Mật khẩu mới và xác nhận mật khẩu không khớp");
       return;
     }
-    // check password length
     if (values.newPassword.length < 6) {
       message.error("Mật khẩu mới phải có ít nhất 6 ký tự");
       return;
     }
-    // check password strength
     if (
       !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
         values.newPassword
@@ -32,7 +29,6 @@ const ChangePasswordSettings = () => {
       );
       return;
     }
-    // submit form
     setIsSubmitting(true);
     try {
       await changePassword(values);

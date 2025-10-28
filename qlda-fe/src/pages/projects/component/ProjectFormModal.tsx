@@ -18,14 +18,12 @@ import type { Group } from "@/types/group.type";
   
   const ProjectFormModal = ({ open, onClose }: Props) => {
     const qc = useQueryClient();
-  
-    /** 🟢 Lấy danh sách nhóm của user để chọn */
+
     const { data: groups, isLoading } = useQuery({
       queryKey: ["groups", "for-project"],
-      queryFn: groupService.getMyGroups, // giả sử backend có /groups/my
+      queryFn: groupService.getMyGroups, 
     });
   
-    /** 🟢 Gọi API tạo dự án */
     const mutation = useMutation({
       mutationFn: projectService.create,
       onSuccess: () => {
@@ -66,7 +64,6 @@ import type { Group } from "@/types/group.type";
           initialValue="todo"
         />
   
-        {/* 🧩 Chọn nhóm */}
         <ProFormSelect
           name="groupId"
           label="Thuộc nhóm"

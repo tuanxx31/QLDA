@@ -19,9 +19,9 @@ type MemberLike = {
   name?: string;
   email?: string;
   avatar?: string;
-  role?: string;        // optional: group role, if có
+  role?: string;        
   user?: { id: string; name?: string; email?: string; avatar?: string };
-  joinedAt?: string;    // optional
+  joinedAt?: string;    
 };
 
 const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess }: Props) => {
@@ -29,21 +29,18 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
   const [search, setSearch] = useState("");
   const [pageSize, setPageSize] = useState(8);
 
-  // 1) Lấy thành viên nhóm
   const { data: groupMembers, isLoading: loadingGroup } = useQuery({
     queryKey: ["groupMembers", groupId],
     queryFn: () => groupMemberService.getGroupMembers(groupId),
     enabled: open && !!groupId,
   });
 
-  // 2) Lấy thành viên dự án để loại bỏ
   const { data: projectMembers, isLoading: loadingProjectMembers } = useQuery({
     queryKey: ["projectMembers", projectId],
     queryFn: () => projectMemberService.getProjectMebers(projectId),
     enabled: open && !!projectId,
   });
 
-  // Clear state khi mở/đóng
   useEffect(() => {
     if (!open) {
       setSelectedRowKeys([]);
@@ -51,12 +48,10 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
     }
   }, [open]);
 
-  // Chuẩn hóa id đã có trong dự án
   const alreadyIds = useMemo(() => {
     return new Set((projectMembers ?? []).map((m: any) => m.user?.id || m.id));
   }, [projectMembers]);
 
-  // Danh sách có thể chọn (lọc ra khỏi những người đã ở trong dự án)
   const selectable: MemberLike[] = useMemo(() => {
     const arr: MemberLike[] = (groupMembers ?? []).filter((m: any) => {
       const uid = m.user?.id || m.id;
@@ -69,14 +64,13 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
         name: m.user?.name ?? m.name ?? "",
         email: m.user?.email ?? m.email ?? "",
         avatar: m.user?.avatar ?? m.avatar,
-        role: m.role, // nếu API có
+        role: m.role, 
         joinedAt: m.joinedAt,
         user: m.user,
       };
     });
   }, [groupMembers, alreadyIds]);
 
-  // Tìm kiếm theo tên/email
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return selectable;
@@ -87,7 +81,6 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
     });
   }, [selectable, search]);
 
-  // DataSource cho Table
   const dataSource = useMemo(
     () => filtered.map((u) => ({ key: u.id, ...u })),
     [filtered]
@@ -111,8 +104,6 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
     await mutation.mutateAsync({ userIds: selectedRowKeys as string[] });
   };
 
-  // “Chọn tất cả” theo dữ liệu đang lọc (và trang hiện tại hay toàn bộ?)
-  // Ở đây mình chọn toàn bộ danh sách đang lọc (mọi trang).
   const handleSelectAllFiltered = () => {
     const allKeys = dataSource.map((x) => x.key as string);
     setSelectedRowKeys(allKeys);
@@ -211,7 +202,6 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
         rowSelection={{
           selectedRowKeys,
           onChange: setSelectedRowKeys,
-          // có thể thêm built-in selections nếu muốn:
           selections: [
             Table.SELECTION_ALL,
             Table.SELECTION_INVERT,

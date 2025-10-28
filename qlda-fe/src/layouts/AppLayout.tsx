@@ -54,7 +54,6 @@ export default function AppLayout() {
           { path: "/projects", name: "Dự án", icon: <ProjectOutlined /> },
         ],
       }}
-      // ✅ Hiển thị avatar + tên người dùng bên phải header
       rightContentRender={() => (
         <Dropdown
           menu={{ items: menuItems as MenuProps["items"] }}

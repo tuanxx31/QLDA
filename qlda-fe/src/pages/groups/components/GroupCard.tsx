@@ -56,7 +56,6 @@ export const GroupCard = ({ group }: { group: Group }) => {
         height: "100%",
       }}
     >
-      {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Space align="center">
           <div
@@ -84,7 +83,6 @@ export const GroupCard = ({ group }: { group: Group }) => {
         </Tooltip>
       </div>
 
-      {/* Mô tả nhóm */}
       <Paragraph
         type="secondary"
         ellipsis={{ rows: 2 }}
@@ -100,7 +98,6 @@ export const GroupCard = ({ group }: { group: Group }) => {
 
       <Divider style={{ margin: "10px 0" }} />
 
-      {/* Mã mời */}
       <div
         style={{
           background: token.colorFillQuaternary,
@@ -126,7 +123,6 @@ export const GroupCard = ({ group }: { group: Group }) => {
         </Tooltip>
       </div>
 
-      {/* Leader */}
       <div style={{ marginTop: 12, display: "flex", alignItems: "center" }}>
         <UserOutlined style={{ color: token.colorTextSecondary, marginRight: 6 }} />
         <Text type="secondary" style={{ fontSize: 13 }}>

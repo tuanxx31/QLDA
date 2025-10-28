@@ -4,7 +4,7 @@ import { groupService } from "@/services/group.services";
 import useAuth from "@/hooks/useAuth";
 import {  useQueryClient } from "@tanstack/react-query";
 import {  useNavigate } from "react-router-dom";
-// giải tán nhóm và rời nhóm, nếu trưởng nhóm thì giải tán nhóm, nếu không thì rời nhóm
+
 export const GroupSettings = ({ group, onDelete }: { group: any, onDelete: () => void }) => {
   const auth = useAuth();
   const isLeader = group.leader.id === auth.authUser?.id;
