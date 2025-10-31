@@ -11,6 +11,9 @@ import { GroupsModule } from './groups/groups.module';
 import { GroupMemberModule } from './group-member/group-member.module';
 import { ProjectsModule } from './projects/projects.module';
 import { ProjectMembersModule } from './project-members/project-members.module';
+import { ColumnsModule } from './columns/columns.module';
+import { TasksModule } from './tasks/tasks.module';
+import { SubTasksModule } from './sub-tasks/sub-tasks.module';
 
 @Module({
   imports: [
@@ -35,6 +38,9 @@ import { ProjectMembersModule } from './project-members/project-members.module';
     GroupMemberModule,
     ProjectsModule,
     ProjectMembersModule,
+    ColumnsModule,
+    TasksModule,
+    SubTasksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -11,7 +11,7 @@ import {
 import { User } from 'src/users/entities/user.entity';
 import { Group } from 'src/groups/entities/group.entity';
 import { ProjectMember } from 'src/project-members/entities/project-member.entity';
-
+import { ColumnEntity } from 'src/columns/entities/column.entity';
 
 @Entity('projects')
 export class Project {
@@ -62,4 +62,7 @@ export class Project {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @OneToMany(() => ColumnEntity, (column) => column.project, { cascade: true })
+  columns: ColumnEntity[];
 }
