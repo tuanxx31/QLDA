@@ -4,8 +4,8 @@ import { PageContainer } from "@ant-design/pro-components";
 import { Button } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { useState } from "react";
-import ProjectFormModal from "./component/ProjectFormModal";
-import ProjectTable from "./component/ProjectTable";
+import ProjectFormModal from "./components/ProjectFormModal";
+import ProjectTable from "./components/ProjectTable";
 
 const ProjectPage = () => {
   const { data, isLoading } = useQuery({

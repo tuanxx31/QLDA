@@ -17,7 +17,7 @@ const ProjectDetailPage = () => {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [openAddMember, setOpenAddMember] = useState(false);
-  const [openAddFromGroup, setOpenAddFromGroup] = useState(false); 
+  const [openAddFromGroup, setOpenAddFromGroup] = useState(false);
 
   const { data: project, isLoading } = useQuery({
     queryKey: ["project", projectId],
@@ -48,7 +48,7 @@ const ProjectDetailPage = () => {
     );
   }
 
-  const isGroupProject = !!(project.group?.id); 
+  const isGroupProject = !!project.group?.id;
 
   return (
     <PageContainer
@@ -80,10 +80,21 @@ const ProjectDetailPage = () => {
             Thêm từ nhóm
           </Button>
         ),
+        <Button
+          key="viewBoard"
+          onClick={() => navigate(`/projects/${projectId}/board`)}
+        >
+          Xem bảng công việc
+        </Button>,
       ].filter(Boolean)}
     >
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <ProjectInfoCard project={project} onUpdate={() => {qc.invalidateQueries({ queryKey: ["project", projectId] });}}/>
+        <ProjectInfoCard
+          project={project}
+          onUpdate={() => {
+            qc.invalidateQueries({ queryKey: ["project", projectId] });
+          }}
+        />
         <ProjectMembers projectId={projectId!} />
       </Space>
 
@@ -102,7 +113,9 @@ const ProjectDetailPage = () => {
           onSuccess={async () => {
             message.success("Đã thêm thành viên từ nhóm");
             await qc.invalidateQueries({ queryKey: ["project", projectId] });
-            await qc.invalidateQueries({ queryKey: ["projectMembers", projectId] });
+            await qc.invalidateQueries({
+              queryKey: ["projectMembers", projectId],
+            });
           }}
         />
       )}

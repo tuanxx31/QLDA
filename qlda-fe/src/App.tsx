@@ -13,6 +13,7 @@ import GroupsPage from "./pages/groups";
 import GroupDetailPage from "./pages/groups/detail";
 import ProjectPage from "./pages/projects";
 import ProjectDetailPage from "./pages/projects/detail";
+import ProjectBoardPage from "./pages/projects/detail/ProjectBoardPage";
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="groups/:groupId" element={<GroupDetailPage />} />
             <Route path="projects" element={<ProjectPage />} />
             <Route path="projects/:projectId" element={<ProjectDetailPage />} />
+            <Route path="/projects/:projectId/board" element={<ProjectBoardPage />} />
           </Route>
         </Route>
       </Routes>

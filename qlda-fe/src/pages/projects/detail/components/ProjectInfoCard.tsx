@@ -2,7 +2,7 @@ import { Card, Descriptions, Tag, Typography, Button, Space } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import type { Project } from "@/types/project.type";
-import ProjectEditModal from "../../component/ProjectEditModal";
+import ProjectEditModal from "../../components/ProjectEditModal";
 
 const { Text, Paragraph, Title } = Typography;
 
