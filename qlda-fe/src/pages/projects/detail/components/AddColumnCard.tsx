@@ -23,19 +23,23 @@ export default function AddColumnCard({
         background: token.colorBgLayout,
         border: `1px dashed ${token.colorBorder}`,
         borderRadius: token.borderRadiusLG,
-        textAlign: 'center',
+        textAlign: "center",
       }}
     >
       {isAdding ? (
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space direction="vertical" style={{ width: "100%" }}>
           <Input
             placeholder="Tên cột..."
             value={newName}
-            onChange={e => setNewName(e.target.value)}
+            onChange={(e) => setNewName(e.target.value)}
             onPressEnter={() => newName && onAdd(newName)}
           />
           <Space>
-            <Button type="primary" size="small" onClick={() => newName && onAdd(newName)}>
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => newName && onAdd(newName)}
+            >
               Thêm
             </Button>
             <Button size="small" onClick={() => setIsAdding(false)}>
@@ -44,7 +48,12 @@ export default function AddColumnCard({
           </Space>
         </Space>
       ) : (
-        <Button icon={<PlusOutlined />} type="dashed" block onClick={() => setIsAdding(true)}>
+        <Button
+          icon={<PlusOutlined />}
+          type="dashed"
+          block
+          onClick={() => setIsAdding(true)}
+        >
           Thêm cột mới
         </Button>
       )}
