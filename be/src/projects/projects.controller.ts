@@ -39,9 +39,13 @@ export class ProjectsController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')
   @ApiOperation({
-    summary: 'Lấy danh sách tất cả dự án mà người dùng tham gia (bao gồm cá nhân + nhóm)',
+    summary:
+      'Lấy danh sách tất cả dự án mà người dùng tham gia (bao gồm cá nhân + nhóm)',
   })
-  @ApiResponse({ status: 200, description: 'Danh sách dự án được lấy thành công' })
+  @ApiResponse({
+    status: 200,
+    description: 'Danh sách dự án được lấy thành công',
+  })
   async findAllByUser(@Request() req: any) {
     return await this.projectsService.findAllByUser(req.user.sub as string);
   }
@@ -50,17 +54,26 @@ export class ProjectsController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Lấy danh sách dự án theo nhóm' })
-  @ApiResponse({ status: 200, description: 'Danh sách dự án theo nhóm được lấy thành công' })
+  @ApiResponse({
+    status: 200,
+    description: 'Danh sách dự án theo nhóm được lấy thành công',
+  })
   @ApiResponse({ status: 404, description: 'Không tìm thấy nhóm' })
-  async findAllByGroup(@Param('groupId') groupId: string , @Request() req: any) {
-    return await this.projectsService.findAllByGroup(groupId, req.user.sub as string);
+  async findAllByGroup(@Param('groupId') groupId: string, @Request() req: any) {
+    return await this.projectsService.findAllByGroup(
+      groupId,
+      req.user.sub as string,
+    );
   }
 
   @Get(':id')
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Lấy chi tiết một dự án' })
-  @ApiResponse({ status: 200, description: 'Thông tin dự án được lấy thành công' })
+  @ApiResponse({
+    status: 200,
+    description: 'Thông tin dự án được lấy thành công',
+  })
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
   async findOne(@Param('id') id: string) {
     return await this.projectsService.findOne(id);
@@ -69,7 +82,9 @@ export class ProjectsController {
   @Patch(':id')
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')
-  @ApiOperation({ summary: 'Cập nhật thông tin dự án (chỉ owner hoặc manager)' })
+  @ApiOperation({
+    summary: 'Cập nhật thông tin dự án (chỉ owner hoặc manager)',
+  })
   @ApiResponse({ status: 200, description: 'Dự án được cập nhật thành công' })
   @ApiResponse({ status: 403, description: 'Không có quyền cập nhật dự án' })
   async update(
@@ -112,8 +127,14 @@ export class ProjectsController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Tách dự án khỏi nhóm, trở thành dự án cá nhân' })
-  @ApiResponse({ status: 200, description: 'Dự án được tách khỏi nhóm thành công' })
-  @ApiResponse({ status: 403, description: 'Không có quyền thực hiện thao tác này' })
+  @ApiResponse({
+    status: 200,
+    description: 'Dự án được tách khỏi nhóm thành công',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Không có quyền thực hiện thao tác này',
+  })
   async removeGroup(@Param('id') id: string, @Request() req: any) {
     return await this.projectsService.removeGroup(id, req.user.sub as string);
   }

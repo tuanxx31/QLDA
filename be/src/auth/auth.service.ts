@@ -1,5 +1,9 @@
 // auth.service.ts
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -15,7 +19,9 @@ export class AuthService {
   ) {}
 
   async register(registerUserDto: RegisterUserDto) {
-    const existingUser = await this.usersService.findOneByEmail(registerUserDto.email);
+    const existingUser = await this.usersService.findOneByEmail(
+      registerUserDto.email,
+    );
     if (existingUser) {
       throw new BadRequestException('Email đã tồn tại');
     }
@@ -37,7 +43,10 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
     }
-    const isPasswordValid = await bcrypt.compare(loginUserDto.password, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      loginUserDto.password,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
     }

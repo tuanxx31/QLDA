@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ColumnEntity } from './entities/column.entity';
@@ -21,7 +25,9 @@ export class ColumnsService {
       relations: ['members', 'owner', 'members.user'],
     });
     if (!project) throw new NotFoundException('Không tìm thấy dự án.');
-    const isMember = project.members?.some((m) => m.user.id === userId) || project.owner.id === userId;
+    const isMember =
+      project.members?.some((m) => m.user.id === userId) ||
+      project.owner.id === userId;
     if (!isMember) throw new ForbiddenException('Không có quyền tạo cột.');
 
     const column = this.columnRepo.create({ ...dto, project });
@@ -47,6 +53,6 @@ export class ColumnsService {
     const column = await this.columnRepo.findOne({ where: { id } });
     if (!column) throw new NotFoundException('Không tìm thấy cột.');
     await this.columnRepo.remove(column);
-    return { message : 'Đã xóa cột thành công.' };
+    return { message: 'Đã xóa cột thành công.' };
   }
 }

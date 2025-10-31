@@ -25,7 +25,11 @@ export class ProjectMembersService {
     private readonly projectRepo: Repository<Project>,
   ) {}
 
-  async addMember(projectId: string, dto: CreateProjectMemberDto, userId: string) {
+  async addMember(
+    projectId: string,
+    dto: CreateProjectMemberDto,
+    userId: string,
+  ) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
       relations: ['owner', 'manager', 'members', 'members.user'],
@@ -40,7 +44,8 @@ export class ProjectMembersService {
     if (!user) throw new NotFoundException('Không tìm thấy người dùng.');
 
     const already = project.members.find((m) => m.user.id === user.id);
-    if (already) throw new BadRequestException('Người dùng đã nằm trong dự án.');
+    if (already)
+      throw new BadRequestException('Người dùng đã nằm trong dự án.');
 
     const newMember = this.projectMemberRepo.create({
       project,
@@ -74,16 +79,22 @@ export class ProjectMembersService {
     const users = await this.userRepo.find({
       where: { id: In(dto.userIds) },
     });
-    if (users.length !== dto.userIds.length) throw new NotFoundException('Không tìm thấy người dùng.');
+    if (users.length !== dto.userIds.length)
+      throw new NotFoundException('Không tìm thấy người dùng.');
 
-    const already = project.members.filter((m) => users.some((u) => u.id === m.user.id));
-    if (already.length > 0) throw new BadRequestException('Người dùng đã nằm trong dự án.');
+    const already = project.members.filter((m) =>
+      users.some((u) => u.id === m.user.id),
+    );
+    if (already.length > 0)
+      throw new BadRequestException('Người dùng đã nằm trong dự án.');
 
-    const newMembers = users.map((user) => this.projectMemberRepo.create({
-      project,
-      user,
-      role: 'viewer' as const,
-    }));
+    const newMembers = users.map((user) =>
+      this.projectMemberRepo.create({
+        project,
+        user,
+        role: 'viewer' as const,
+      }),
+    );
     return this.projectMemberRepo.save(newMembers);
   }
   async updateMemberRole(
@@ -100,7 +111,9 @@ export class ProjectMembersService {
 
     const actor = project.members.find((m) => m.user.id === actorId);
     if (!actor || actor.role !== 'leader')
-      throw new ForbiddenException('Chỉ leader mới có quyền chỉnh sửa vai trò.');
+      throw new ForbiddenException(
+        'Chỉ leader mới có quyền chỉnh sửa vai trò.',
+      );
 
     const member = await this.projectMemberRepo.findOne({
       where: { id: memberId },
@@ -130,7 +143,11 @@ export class ProjectMembersService {
     return { message: 'Đã xóa thành viên khỏi dự án.' };
   }
 
-  async transferLeader(projectId: string, newLeaderId: string, actorId: string) {
+  async transferLeader(
+    projectId: string,
+    newLeaderId: string,
+    actorId: string,
+  ) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
       relations: ['members', 'members.user'],
@@ -141,7 +158,9 @@ export class ProjectMembersService {
       (m) => m.user.id === actorId && m.role === 'leader',
     );
     if (!currentLeader)
-      throw new ForbiddenException('Chỉ leader hiện tại mới có thể chuyển quyền.');
+      throw new ForbiddenException(
+        'Chỉ leader hiện tại mới có thể chuyển quyền.',
+      );
 
     const newLeader = project.members.find((m) => m.user.id === newLeaderId);
     if (!newLeader)

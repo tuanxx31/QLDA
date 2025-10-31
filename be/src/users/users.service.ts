@@ -20,7 +20,10 @@ export class UsersService {
     private userRepository: Repository<User>,
   ) {}
 
-  async updatePassword(id: string, dto: UpdatePasswordDto): Promise<{ message: string }> {
+  async updatePassword(
+    id: string,
+    dto: UpdatePasswordDto,
+  ): Promise<{ message: string }> {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -33,8 +36,11 @@ export class UsersService {
     await this.userRepository.update(id, { password: hashedNewPassword });
     return { message: 'Mật khẩu đã được cập nhật thành công' };
   }
-  
-  async updateProfile(id: string, dto: UpdateUserDto): Promise<{ message: string }> {
+
+  async updateProfile(
+    id: string,
+    dto: UpdateUserDto,
+  ): Promise<{ message: string }> {
     await this.userRepository.update(id, dto);
     return { message: 'Thông tin profile đã được cập nhật thành công' };
   }

@@ -57,7 +57,10 @@ export class GroupMemberService {
       );
     }
 
-    await this.groupMemberRepo.delete({ user: { id: userId }, group: { id: groupId } });
+    await this.groupMemberRepo.delete({
+      user: { id: userId },
+      group: { id: groupId },
+    });
     return { message: 'Đã rời nhóm thành công' };
   }
 
@@ -90,35 +93,42 @@ export class GroupMemberService {
     if (!group) throw new NotFoundException('Không tìm thấy nhóm');
     if (group.leader.id !== leaderId)
       throw new ForbiddenException('Bạn không phải trưởng nhóm');
-  
+
     if (leaderId === newLeaderId)
       throw new BadRequestException('Bạn đã là trưởng nhóm');
-  
+
     const targetMember = await this.groupMemberRepo.findOne({
-      where: { group: { id: groupId }, user: { id: newLeaderId }, status: 'accepted' },
+      where: {
+        group: { id: groupId },
+        user: { id: newLeaderId },
+        status: 'accepted',
+      },
     });
     if (!targetMember)
       throw new NotFoundException('Người được chọn chưa là thành viên nhóm');
-  
+
     const currentLeader = await this.groupMemberRepo.findOne({
       where: { group: { id: groupId }, user: { id: leaderId } },
     });
     if (!currentLeader)
-      throw new NotFoundException('Không tìm thấy thành viên trưởng nhóm hiện tại');
-  
+      throw new NotFoundException(
+        'Không tìm thấy thành viên trưởng nhóm hiện tại',
+      );
+
     currentLeader.role = 'member';
     targetMember.role = 'leader';
-  
+
     await this.groupMemberRepo.save([currentLeader, targetMember]);
-  
-    const newLeader = await this.userRepo.findOne({ where: { id: newLeaderId } });
+
+    const newLeader = await this.userRepo.findOne({
+      where: { id: newLeaderId },
+    });
     if (!newLeader)
       throw new NotFoundException('Không tìm thấy người dùng để chuyển quyền');
-  
+
     group.leader = newLeader;
     await this.groupRepo.save(group);
-  
+
     return { message: 'Đã chuyển quyền trưởng nhóm thành công' };
   }
-  
 }

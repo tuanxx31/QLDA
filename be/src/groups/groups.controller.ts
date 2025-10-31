@@ -53,7 +53,10 @@ export class GroupsController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Lấy danh sách lời mời chờ duyệt' })
-  @ApiResponse({ status: 200, description: 'Pending invites retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Pending invites retrieved successfully',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async findPendingInvites(@Request() req: any) {
     return await this.groupsService.findPendingInvites(req.user.sub as string);
@@ -66,7 +69,10 @@ export class GroupsController {
   @ApiResponse({ status: 200, description: 'Invite accepted successfully' })
   @ApiResponse({ status: 404, description: 'Invite not found' })
   async acceptInvite(@Param('groupId') groupId: string, @Request() req: any) {
-    return await this.groupsService.acceptInvite(groupId, req.user.sub as string);
+    return await this.groupsService.acceptInvite(
+      groupId,
+      req.user.sub as string,
+    );
   }
 
   @Post('reject-invite/:groupId')
@@ -76,16 +82,22 @@ export class GroupsController {
   @ApiResponse({ status: 200, description: 'Invite rejected successfully' })
   @ApiResponse({ status: 404, description: 'Invite not found' })
   async rejectInvite(@Param('groupId') groupId: string, @Request() req: any) {
-    return await this.groupsService.rejectInvite(groupId, req.user.sub as string);
+    return await this.groupsService.rejectInvite(
+      groupId,
+      req.user.sub as string,
+    );
   }
 
   @Get(':id')
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Xem chi tiết nhóm theo ID' })
-  @ApiResponse({ status: 200, description: 'Group details retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Group details retrieved successfully',
+  })
   @ApiResponse({ status: 404, description: 'Group not found' })
-  async findOne( @Request() req: any, @Param('id') id: string) {
+  async findOne(@Request() req: any, @Param('id') id: string) {
     return await this.groupsService.findOne(id, req.user.sub as string);
   }
 

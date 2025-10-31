@@ -9,7 +9,7 @@ import { User } from 'src/users/entities/user.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Group, GroupMember,User]),
+    TypeOrmModule.forFeature([Group, GroupMember, User]),
     forwardRef(() => UsersModule),
   ],
   controllers: [GroupsController],

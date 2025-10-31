@@ -61,14 +61,14 @@ export class GroupsService {
 
   async findAllByUser(userId: string) {
     const memberships = await this.groupMemberRepo.find({
-      where: { 
+      where: {
         user: { id: userId },
         status: 'accepted', // ✅ chỉ lấy nhóm đã tham gia
       },
       relations: ['group', 'group.leader', 'user'],
       order: { joinedAt: 'DESC' },
     });
-    
+
     return memberships.map((m) => ({
       id: m.group.id,
       name: m.group.name,
@@ -83,14 +83,14 @@ export class GroupsService {
       joinedAt: m.joinedAt,
     }));
   }
-  
+
   async findPendingInvites(userId: string) {
     const invites = await this.groupMemberRepo.find({
       where: { user: { id: userId }, status: 'pending' },
       relations: ['group', 'group.leader'],
       order: { joinedAt: 'DESC' },
     });
-  
+
     return invites.map((m) => ({
       groupId: m.group.id,
       groupName: m.group.name,
@@ -106,31 +106,30 @@ export class GroupsService {
     const member = await this.groupMemberRepo.findOne({
       where: { group: { id: groupId }, user: { id: userId } },
     });
-  
+
     if (!member) throw new NotFoundException('Không tìm thấy lời mời');
     if (member.status !== 'pending')
       throw new BadRequestException('Lời mời đã được xử lý');
-  
+
     member.status = 'accepted';
     await this.groupMemberRepo.save(member);
     return { message: 'Đã tham gia nhóm thành công' };
   }
-  
+
   async rejectInvite(groupId: string, userId: string) {
     const member = await this.groupMemberRepo.findOne({
       where: { group: { id: groupId }, user: { id: userId } },
     });
-  
+
     if (!member) throw new NotFoundException('Không tìm thấy lời mời');
     if (member.status !== 'pending')
       throw new BadRequestException('Lời mời đã được xử lý');
-  
+
     member.status = 'rejected';
     await this.groupMemberRepo.save(member);
     return { message: 'Đã từ chối lời mời' };
   }
-  
-  
+
   async findOne(id: string, userId: string) {
     const group = await this.groupRepo.findOne({
       where: { id },
@@ -237,7 +236,8 @@ export class GroupsService {
       throw new ForbiddenException('Chỉ trưởng nhóm mới có quyền mời');
 
     let memberUser: User | null = null;
-    if (userId) memberUser = await this.userRepo.findOne({ where: { id: userId } });
+    if (userId)
+      memberUser = await this.userRepo.findOne({ where: { id: userId } });
     else if (email)
       memberUser = await this.userRepo.findOne({ where: { email } });
 
@@ -248,7 +248,9 @@ export class GroupsService {
       where: { group: { id: groupId }, user: { id: memberUser.id } },
     });
     if (exist)
-      throw new BadRequestException('Người dùng đã ở trong nhóm hoặc đang chờ duyệt');
+      throw new BadRequestException(
+        'Người dùng đã ở trong nhóm hoặc đang chờ duyệt',
+      );
 
     const newMember = this.groupMemberRepo.create({
       group: { id: groupId },

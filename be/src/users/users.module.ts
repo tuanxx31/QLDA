@@ -11,6 +11,6 @@ import { GroupMember } from 'src/group-member/entities/group-member.entity';
   imports: [TypeOrmModule.forFeature([Group, GroupMember, User])],
   providers: [UsersService],
   controllers: [UsersController],
-  exports: [UsersService], 
+  exports: [UsersService],
 })
 export class UsersModule {}

@@ -13,17 +13,17 @@ import {
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn('uuid') 
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ nullable: true })
   name: string;
 
   @Column({ unique: true })
-  email: string; 
+  email: string;
 
   @Column({ nullable: false })
-  password: string; 
+  password: string;
 
   @Column({
     nullable: true,
@@ -32,17 +32,17 @@ export class User {
   avatar: string;
 
   @Column({ nullable: true })
-  studentCode: string; 
+  studentCode: string;
 
   @Column({ nullable: true })
-  department: string; 
+  department: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-  
+
   @OneToMany(() => Group, (group) => group.leader)
   ownedGroups: Group[];
 

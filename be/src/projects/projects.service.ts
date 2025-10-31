@@ -31,33 +31,31 @@ export class ProjectsService {
   async create(dto: CreateProjectDto, userId: string) {
     const owner = await this.userRepo.findOne({ where: { id: userId } });
     if (!owner) throw new NotFoundException('Không tìm thấy người dùng.');
-  
+
     let group: Group | null = null;
     if (dto.groupId) {
       group = await this.groupRepo.findOne({ where: { id: dto.groupId } });
       if (!group) throw new NotFoundException('Không tìm thấy nhóm.');
     }
-  
+
     const project = this.projectRepo.create({
       ...dto,
       owner,
       group,
       manager: owner,
     });
-  
+
     const saved: Project = await this.projectRepo.save(project);
-  
+
     const leaderMember = this.projectMemberRepo.create({
       project: { id: saved.id } as Project,
       user: { id: owner.id } as User,
       role: 'leader',
     });
     await this.projectMemberRepo.save(leaderMember);
-  
+
     return saved;
   }
-  
-  
 
   async findAllByUser(userId: string) {
     return this.projectRepo
@@ -67,7 +65,10 @@ export class ProjectsService {
       .leftJoinAndSelect('project.group', 'group')
       .leftJoinAndSelect('project.members', 'members')
       .leftJoinAndSelect('members.user', 'memberUser')
-      .where('owner.id = :userId OR manager.id = :userId OR memberUser.id = :userId', { userId })
+      .where(
+        'owner.id = :userId OR manager.id = :userId OR memberUser.id = :userId',
+        { userId },
+      )
       .orderBy('project.created_at', 'DESC')
       .getMany();
   }
@@ -77,30 +78,28 @@ export class ProjectsService {
       where: { id: groupId },
       relations: ['members', 'members.user'],
     });
-  
+
     if (!group) {
       throw new NotFoundException('Không tìm thấy nhóm.');
     }
-  
+
     const member = group.members.find((m) => m.user.id === userId);
     const isLeader = member?.role === 'leader';
     const isMember = !!member;
-  
+
     const whereCondition = isLeader
       ? { group: { id: groupId } }
       : {
           group: { id: groupId },
           members: { user: { id: userId } },
         };
-  
+
     return this.projectRepo.find({
       where: whereCondition,
       relations: ['group', 'manager', 'members', 'members.user'],
       order: { createdAt: 'DESC' },
     });
   }
-  
-  
 
   async findOne(id: string) {
     const project = await this.projectRepo.findOne({
@@ -118,13 +117,12 @@ export class ProjectsService {
     });
     if (!project) throw new NotFoundException('Không tìm thấy dự án.');
 
- 
     if (project.owner.id !== userId && project.manager?.id !== userId)
       throw new ForbiddenException('Không có quyền chỉnh sửa dự án.');
 
     Object.assign(project, dto);
 
-    if (dto.group && dto.group.id == "0") {
+    if (dto.group && dto.group.id == '0') {
       project.group = null;
     }
 

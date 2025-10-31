@@ -1,6 +1,19 @@
-import { Body, Controller, Delete, Get, Put, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Put,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
@@ -27,10 +40,12 @@ export class UsersController {
   @ApiOperation({ summary: 'Cập nhật thông tin profile của user hiện tại' })
   @ApiResponse({ status: 200, description: 'Profile updated successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async updateProfile(@Request() req: any, @Body() dto: UpdateUserDto): Promise<{ message: string }> {
+  async updateProfile(
+    @Request() req: any,
+    @Body() dto: UpdateUserDto,
+  ): Promise<{ message: string }> {
     return await this.usersService.updateProfile(req.user.sub as string, dto);
   }
-
 
   @Put('change-password')
   @UseGuards(AuthGuard)
@@ -38,10 +53,12 @@ export class UsersController {
   @ApiOperation({ summary: 'Cập nhật mật khẩu của user hiện tại' })
   @ApiResponse({ status: 200, description: 'Password updated successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async updatePassword(@Request() req: any, @Body() dto: UpdatePasswordDto): Promise<{ message: string }> {
+  async updatePassword(
+    @Request() req: any,
+    @Body() dto: UpdatePasswordDto,
+  ): Promise<{ message: string }> {
     return await this.usersService.updatePassword(req.user.sub as string, dto);
   }
-
 
   @Delete('delete')
   @UseGuards(AuthGuard)
