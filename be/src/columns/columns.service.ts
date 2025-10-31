@@ -18,10 +18,9 @@ export class ColumnsService {
   async create(projectId: string, dto: CreateColumnDto, userId: string) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
-      relations: ['members', 'owner'],
+      relations: ['members', 'owner', 'members.user'],
     });
     if (!project) throw new NotFoundException('Không tìm thấy dự án.');
-
     const isMember = project.members?.some((m) => m.user.id === userId) || project.owner.id === userId;
     if (!isMember) throw new ForbiddenException('Không có quyền tạo cột.');
 

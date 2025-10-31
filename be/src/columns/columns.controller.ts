@@ -21,7 +21,6 @@ export class ColumnsController {
     @Body() dto: CreateColumnDto,
     @CurrentUser('sub') userId: string,
   ) {
-    console.log({userId});
     return this.columnsService.create(projectId, dto, userId);
   }
 
