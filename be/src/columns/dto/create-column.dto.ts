@@ -1,4 +1,14 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNotEmpty, IsNumber } from 'class-validator';
+
 export class CreateColumnDto {
-    name: string;
-    order?: number;
-  }
+  @ApiProperty({ example: 'Tên cột' })
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty({ example: 1 })
+  @IsNumber()
+  @IsNotEmpty()
+  order?: number;
+}
