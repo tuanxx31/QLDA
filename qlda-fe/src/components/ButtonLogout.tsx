@@ -1,6 +1,6 @@
-import { Button } from "antd";
-import { LogoutOutlined } from "@ant-design/icons";
-import useAuth from "@/hooks/useAuth";
+import { Button } from 'antd';
+import { LogoutOutlined } from '@ant-design/icons';
+import useAuth from '@/hooks/useAuth';
 export default function ButtonLogout() {
   const { logout } = useAuth();
   return (

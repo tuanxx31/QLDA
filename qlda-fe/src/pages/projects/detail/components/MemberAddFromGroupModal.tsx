@@ -1,10 +1,10 @@
-import { Modal, Button, Table, Input, Avatar, Tag, Space, Typography, message } from "antd";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import { groupMemberService } from "@/services/group.services";
-import { projectMemberService } from "@/services/project.services";
-import type { ColumnsType } from "antd/es/table";
-import { CheckOutlined, UserOutlined, TeamOutlined } from "@ant-design/icons";
+import { Modal, Button, Table, Input, Avatar, Tag, Space, Typography, message } from 'antd';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from 'react';
+import { groupMemberService } from '@/services/group.services';
+import { projectMemberService } from '@/services/project.services';
+import type { ColumnsType } from 'antd/es/table';
+import { CheckOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons';
 
 interface Props {
   open: boolean;
@@ -19,24 +19,24 @@ type MemberLike = {
   name?: string;
   email?: string;
   avatar?: string;
-  role?: string;        
+  role?: string;
   user?: { id: string; name?: string; email?: string; avatar?: string };
-  joinedAt?: string;    
+  joinedAt?: string;
 };
 
 const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess }: Props) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [pageSize, setPageSize] = useState(8);
 
   const { data: groupMembers, isLoading: loadingGroup } = useQuery({
-    queryKey: ["groupMembers", groupId],
+    queryKey: ['groupMembers', groupId],
     queryFn: () => groupMemberService.getGroupMembers(groupId),
     enabled: open && !!groupId,
   });
 
   const { data: projectMembers, isLoading: loadingProjectMembers } = useQuery({
-    queryKey: ["projectMembers", projectId],
+    queryKey: ['projectMembers', projectId],
     queryFn: () => projectMemberService.getProjectMebers(projectId),
     enabled: open && !!projectId,
   });
@@ -44,7 +44,7 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
   useEffect(() => {
     if (!open) {
       setSelectedRowKeys([]);
-      setSearch("");
+      setSearch('');
     }
   }, [open]);
 
@@ -61,10 +61,10 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
       const uid = m.user?.id || m.id;
       return {
         id: uid,
-        name: m.user?.name ?? m.name ?? "",
-        email: m.user?.email ?? m.email ?? "",
+        name: m.user?.name ?? m.name ?? '',
+        email: m.user?.email ?? m.email ?? '',
         avatar: m.user?.avatar ?? m.avatar,
-        role: m.role, 
+        role: m.role,
         joinedAt: m.joinedAt,
         user: m.user,
       };
@@ -74,23 +74,20 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return selectable;
-    return selectable.filter((u) => {
-      const inName = (u.name || "").toLowerCase().includes(q);
-      const inMail = (u.email || "").toLowerCase().includes(q);
+    return selectable.filter(u => {
+      const inName = (u.name || '').toLowerCase().includes(q);
+      const inMail = (u.email || '').toLowerCase().includes(q);
       return inName || inMail;
     });
   }, [selectable, search]);
 
-  const dataSource = useMemo(
-    () => filtered.map((u) => ({ key: u.id, ...u })),
-    [filtered]
-  );
+  const dataSource = useMemo(() => filtered.map(u => ({ key: u.id, ...u })), [filtered]);
 
   const mutation = useMutation({
     mutationFn: (payload: { userIds: string[] }) =>
       projectMemberService.addMembers(projectId, payload),
     onSuccess: () => {
-      message.success("Đã thêm thành viên vào dự án");
+      message.success('Đã thêm thành viên vào dự án');
       onClose();
       onSuccess?.();
     },
@@ -98,14 +95,14 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
 
   const handleSubmit = async () => {
     if (selectedRowKeys.length === 0) {
-      message.warning("Hãy chọn ít nhất 1 thành viên");
+      message.warning('Hãy chọn ít nhất 1 thành viên');
       return;
     }
     await mutation.mutateAsync({ userIds: selectedRowKeys as string[] });
   };
 
   const handleSelectAllFiltered = () => {
-    const allKeys = dataSource.map((x) => x.key as string);
+    const allKeys = dataSource.map(x => x.key as string);
     setSelectedRowKeys(allKeys);
   };
 
@@ -113,9 +110,9 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
 
   const columns: ColumnsType<any> = [
     {
-      title: "Thành viên",
-      dataIndex: "name",
-      key: "name",
+      title: 'Thành viên',
+      dataIndex: 'name',
+      key: 'name',
       render: (_: any, record: any) => (
         <Space>
           <Avatar src={record.avatar} icon={!record.avatar && <UserOutlined />} />
@@ -129,9 +126,9 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
       ),
     },
     {
-      title: "Vai trò nhóm",
-      dataIndex: "role",
-      key: "role",
+      title: 'Vai trò nhóm',
+      dataIndex: 'role',
+      key: 'role',
       width: 150,
       render: (role: string) =>
         role ? (
@@ -143,12 +140,16 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
         ),
     },
     {
-      title: "Tham gia",
-      dataIndex: "joinedAt",
-      key: "joinedAt",
+      title: 'Tham gia',
+      dataIndex: 'joinedAt',
+      key: 'joinedAt',
       width: 180,
       render: (v: string) =>
-        v ? new Date(v).toLocaleString("vi-VN") : <Typography.Text type="secondary">—</Typography.Text>,
+        v ? (
+          new Date(v).toLocaleString('vi-VN')
+        ) : (
+          <Typography.Text type="secondary">—</Typography.Text>
+        ),
     },
   ];
 
@@ -162,7 +163,7 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
       width={720}
       destroyOnClose
       footer={[
-        <Space key="left" style={{ marginRight: "auto" }}>
+        <Space key="left" style={{ marginRight: 'auto' }}>
           <Button onClick={handleSelectAllFiltered} disabled={loading || dataSource.length === 0}>
             Chọn tất cả ({dataSource.length})
           </Button>
@@ -186,12 +187,12 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
         </Space>,
       ]}
     >
-      <Space style={{ width: "100%", marginBottom: 12 }}>
+      <Space style={{ width: '100%', marginBottom: 12 }}>
         <Input.Search
           allowClear
           placeholder="Tìm theo tên hoặc email…"
-          onSearch={(v) => setSearch(v)}
-          onChange={(e) => setSearch(e.target.value)}
+          onSearch={v => setSearch(v)}
+          onChange={e => setSearch(e.target.value)}
           value={search}
           style={{ maxWidth: 320 }}
         />
@@ -206,13 +207,13 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
             Table.SELECTION_ALL,
             Table.SELECTION_INVERT,
             {
-              key: "select-filtered",
-              text: "Chọn tất cả (đang lọc)",
+              key: 'select-filtered',
+              text: 'Chọn tất cả (đang lọc)',
               onSelect: handleSelectAllFiltered,
             },
             {
-              key: "clear",
-              text: "Bỏ chọn",
+              key: 'clear',
+              text: 'Bỏ chọn',
               onSelect: handleClearSelection,
             },
           ],
@@ -223,7 +224,7 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
           pageSize,
           showSizeChanger: true,
           onShowSizeChange: (_, size) => setPageSize(size),
-          showTotal: (total) => `Tổng ${total} thành viên`,
+          showTotal: total => `Tổng ${total} thành viên`,
         }}
         size="middle"
       />

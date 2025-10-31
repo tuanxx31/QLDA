@@ -1,9 +1,9 @@
-import { changePassword } from "@/services/user.services";
-import type { ChangePasswordDto } from "@/types/user.type";
-import { App } from "antd";
-import ProForm, { ProFormText } from "@ant-design/pro-form";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { changePassword } from '@/services/user.services';
+import type { ChangePasswordDto } from '@/types/user.type';
+import { App } from 'antd';
+import ProForm, { ProFormText } from '@ant-design/pro-form';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const ChangePasswordSettings = () => {
   const { message } = App.useApp();
@@ -12,32 +12,30 @@ const ChangePasswordSettings = () => {
 
   const handleSubmit = async (values: ChangePasswordDto) => {
     if (values.newPassword !== values.confirmPassword) {
-      message.error("Mật khẩu mới và xác nhận mật khẩu không khớp");
+      message.error('Mật khẩu mới và xác nhận mật khẩu không khớp');
       return;
     }
     if (values.newPassword.length < 6) {
-      message.error("Mật khẩu mới phải có ít nhất 6 ký tự");
+      message.error('Mật khẩu mới phải có ít nhất 6 ký tự');
       return;
     }
     if (
       !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
-        values.newPassword
+        values.newPassword,
       )
     ) {
       message.error(
-        "Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ cái viết hoa, chữ cái viết thường, số và ký tự đặc biệt"
+        'Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ cái viết hoa, chữ cái viết thường, số và ký tự đặc biệt',
       );
       return;
     }
     setIsSubmitting(true);
     try {
       await changePassword(values);
-      message.success("Mật khẩu đã được cập nhật thành công");
-      navigate("/settings");
+      message.success('Mật khẩu đã được cập nhật thành công');
+      navigate('/settings');
     } catch (err: any) {
-      message.error(
-        err.response?.data?.message || "Cập nhật mật khẩu thất bại"
-      );
+      message.error(err.response?.data?.message || 'Cập nhật mật khẩu thất bại');
     } finally {
       setIsSubmitting(false);
     }
@@ -48,17 +46,17 @@ const ChangePasswordSettings = () => {
       <ProFormText
         name="password"
         label="Mật khẩu hiện tại"
-        rules={[{ required: true, message: "Vui lòng nhập mật khẩu hiện tại" }]}
+        rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại' }]}
       />
       <ProFormText
         name="newPassword"
         label="Mật khẩu mới"
-        rules={[{ required: true, message: "Vui lòng nhập mật khẩu mới" }]}
+        rules={[{ required: true, message: 'Vui lòng nhập mật khẩu mới' }]}
       />
       <ProFormText
         name="confirmPassword"
         label="Xác nhận mật khẩu"
-        rules={[{ required: true, message: "Vui lòng xác nhận mật khẩu" }]}
+        rules={[{ required: true, message: 'Vui lòng xác nhận mật khẩu' }]}
       />
     </ProForm>
   );

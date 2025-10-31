@@ -1,9 +1,8 @@
-import type { Group, GroupMember, InviteGroupDto } from "@/types/group.type";
-import { api } from "./api";
-import type { InviteMemberDto } from "@/types/group.type";
+import type { Group, GroupMember, InviteGroupDto } from '@/types/group.type';
+import { api } from './api';
+import type { InviteMemberDto } from '@/types/group.type';
 
 export const groupService = {
-
   async getDetail(groupId: string): Promise<Group> {
     const res = await api.get(`/groups/${groupId}`);
     return res.data;
@@ -15,12 +14,12 @@ export const groupService = {
   },
 
   async getMyGroups(): Promise<Group[]> {
-    const res = await api.get("/groups/my");
+    const res = await api.get('/groups/my');
     return res.data;
   },
 
   async createGroup(data: { name: string; description?: string }) {
-    const res = await api.post("/groups", data);
+    const res = await api.post('/groups', data);
     return res.data;
   },
 
@@ -35,7 +34,7 @@ export const groupService = {
   },
 
   async findPendingInvites(): Promise<InviteGroupDto[]> {
-    const res = await api.get("/groups/pending-invites");
+    const res = await api.get('/groups/pending-invites');
     return res.data;
   },
 
@@ -62,10 +61,9 @@ export const groupService = {
   },
 };
 
-
 export const groupMemberService = {
   async getGroupMembers(groupId: string) {
     const res = await api.get<GroupMember[]>(`/group-members/${groupId}`);
     return res.data;
   },
-}
+};

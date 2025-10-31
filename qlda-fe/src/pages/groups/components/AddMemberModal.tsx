@@ -1,5 +1,5 @@
-import { Modal, Input } from "antd";
-import { useState } from "react";
+import { Modal, Input } from 'antd';
+import { useState } from 'react';
 
 export const AddMemberModal = ({
   open,
@@ -12,7 +12,7 @@ export const AddMemberModal = ({
   onSubmit: (email: string) => void;
   loading?: boolean;
 }) => {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
 
   return (
     <Modal
@@ -21,7 +21,7 @@ export const AddMemberModal = ({
       onCancel={onCancel}
       onOk={() => {
         onSubmit(email);
-        setEmail("");
+        setEmail('');
       }}
       okText="Gửi lời mời"
       confirmLoading={loading}
@@ -29,7 +29,7 @@ export const AddMemberModal = ({
       <Input
         placeholder="Nhập email thành viên"
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        onChange={e => setEmail(e.target.value)}
       />
     </Modal>
   );

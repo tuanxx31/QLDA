@@ -1,8 +1,8 @@
-import { Card, Descriptions, Tag, Typography, Button, Space } from "antd";
-import { EditOutlined } from "@ant-design/icons";
-import { useState } from "react";
-import type { Project } from "@/types/project.type";
-import ProjectEditModal from "../../components/ProjectEditModal";
+import { Card, Descriptions, Tag, Typography, Button } from 'antd';
+import { EditOutlined } from '@ant-design/icons';
+import { useState } from 'react';
+import type { Project } from '@/types/project.type';
+import ProjectEditModal from '../../components/ProjectEditModal';
 
 const { Text, Paragraph, Title } = Typography;
 
@@ -16,17 +16,17 @@ const ProjectInfoCard = ({ project, onUpdate }: Props) => {
 
   const formatDate = (date?: string | null) =>
     date
-      ? new Date(date).toLocaleDateString("vi-VN", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
+      ? new Date(date).toLocaleDateString('vi-VN', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
         })
-      : "—";
+      : '—';
 
   const getStatusColor = (s: string) =>
-    s === "done" ? "green" : s === "doing" ? "blue" : "default";
+    s === 'done' ? 'green' : s === 'doing' ? 'blue' : 'default';
   const getStatusText = (s: string) =>
-    s === "done" ? "Hoàn thành" : s === "doing" ? "Đang thực hiện" : "Chưa bắt đầu";
+    s === 'done' ? 'Hoàn thành' : s === 'doing' ? 'Đang thực hiện' : 'Chưa bắt đầu';
 
   return (
     <Card
@@ -42,7 +42,10 @@ const ProjectInfoCard = ({ project, onUpdate }: Props) => {
         <Descriptions.Item label="Tên dự án" span={2}>
           <Text strong>{project.name}</Text>
         </Descriptions.Item>
-        <Descriptions.Item label="Trưởng dự án" span={2}>  <Text strong>{project.owner?.name}</Text></Descriptions.Item>
+        <Descriptions.Item label="Trưởng dự án" span={2}>
+          {' '}
+          <Text strong>{project.owner?.name}</Text>
+        </Descriptions.Item>
         <Descriptions.Item label="Thuộc nhóm" span={2}>
           <Text strong>{project.group?.name || <Text type="secondary">Cá nhân</Text>}</Text>
         </Descriptions.Item>
@@ -50,13 +53,22 @@ const ProjectInfoCard = ({ project, onUpdate }: Props) => {
           <Tag color={getStatusColor(project.status)}>{getStatusText(project.status)}</Tag>
         </Descriptions.Item>
         <Descriptions.Item label="Mô tả" span={2}>
-          <Paragraph>{project.description || <Text type="secondary">Chưa có mô tả</Text>}</Paragraph>
+          <Paragraph>
+            {project.description || <Text type="secondary">Chưa có mô tả</Text>}
+          </Paragraph>
         </Descriptions.Item>
         <Descriptions.Item label="Ngày bắt đầu">{formatDate(project.startDate)}</Descriptions.Item>
         <Descriptions.Item label="Hạn chót">{formatDate(project.deadline)}</Descriptions.Item>
       </Descriptions>
 
-      <ProjectEditModal open={open} onClose={() => setOpen(false)} project={project} onUpdate={() => {onUpdate();}} />
+      <ProjectEditModal
+        open={open}
+        onClose={() => setOpen(false)}
+        project={project}
+        onUpdate={() => {
+          onUpdate();
+        }}
+      />
     </Card>
   );
 };

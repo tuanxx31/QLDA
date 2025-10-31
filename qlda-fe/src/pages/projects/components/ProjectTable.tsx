@@ -1,18 +1,10 @@
-import { ProTable } from "@ant-design/pro-components";
-import {
-  Tag,
-  Typography,
-  Button,
-  message,
-  Popconfirm,
-  Space,
-  Tooltip,
-} from "antd";
-import { useNavigate } from "react-router-dom";
-import type { Project } from "@/types/project.type";
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { projectService } from "@/services/project.services";
+import { ProTable } from '@ant-design/pro-components';
+import { Tag, Typography, Button, message, Popconfirm, Space, Tooltip } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import type { Project } from '@/types/project.type';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { projectService } from '@/services/project.services';
 
 const { Text } = Typography;
 
@@ -27,11 +19,11 @@ const ProjectTable = ({ data = [], loading }: Props) => {
   const removeMutation = useMutation({
     mutationFn: (id: string) => projectService.remove(id),
     onSuccess: () => {
-      message.success("Đã xóa dự án");
-      qc.invalidateQueries({ queryKey: ["projects"] });
+      message.success('Đã xóa dự án');
+      qc.invalidateQueries({ queryKey: ['projects'] });
     },
     onError: () => {
-      message.error("Không thể xóa dự án");
+      message.error('Không thể xóa dự án');
     },
   });
 
@@ -44,8 +36,8 @@ const ProjectTable = ({ data = [], loading }: Props) => {
       dataSource={data}
       columns={[
         {
-          title: "Tên dự án",
-          dataIndex: "name",
+          title: 'Tên dự án',
+          dataIndex: 'name',
           render: (text, record) => (
             <Button
               type="link"
@@ -57,22 +49,18 @@ const ProjectTable = ({ data = [], loading }: Props) => {
           ),
         },
         {
-          title: "Mô tả",
-          dataIndex: "description",
+          title: 'Mô tả',
+          dataIndex: 'description',
           ellipsis: true,
         },
         {
-          title: "Trạng thái",
-          dataIndex: "status",
-          align: "center",
+          title: 'Trạng thái',
+          dataIndex: 'status',
+          align: 'center',
           render: (_, record) => (
             <Tag
               color={
-                record.status === "done"
-                  ? "green"
-                  : record.status === "doing"
-                  ? "blue"
-                  : "default"
+                record.status === 'done' ? 'green' : record.status === 'doing' ? 'blue' : 'default'
               }
             >
               {record.status.toUpperCase()}
@@ -80,44 +68,37 @@ const ProjectTable = ({ data = [], loading }: Props) => {
           ),
         },
         {
-          title: "Ngày bắt đầu",
-          dataIndex: "startDate",
-          render: (value) =>
+          title: 'Ngày bắt đầu',
+          dataIndex: 'startDate',
+          render: value =>
             value ? (
-              <Text type="secondary">
-                {new Date(value as string).toLocaleDateString("vi-VN")}
-              </Text>
+              <Text type="secondary">{new Date(value as string).toLocaleDateString('vi-VN')}</Text>
             ) : (
               <Text type="secondary">—</Text>
             ),
         },
         {
-          title: "Hạn chót",
-          dataIndex: "deadline",
-          render: (value) =>
+          title: 'Hạn chót',
+          dataIndex: 'deadline',
+          render: value =>
             value ? (
-              <Text type="secondary">
-                {new Date(value as string).toLocaleDateString("vi-VN")}
-              </Text>
+              <Text type="secondary">{new Date(value as string).toLocaleDateString('vi-VN')}</Text>
             ) : (
               <Text type="secondary">—</Text>
             ),
         },
         {
-          title: "Trưởng dự án",
-          dataIndex: ["manager", "name"],
-          render: (name) => name || "—",
+          title: 'Trưởng dự án',
+          dataIndex: ['manager', 'name'],
+          render: name => name || '—',
         },
         {
-          title: "Hành động",
-          dataIndex: "actions",
+          title: 'Hành động',
+          dataIndex: 'actions',
           render: (_, record) => (
             <Space>
               <Tooltip title="Chỉnh sửa dự án">
-                <Button
-                  type="link"
-                  onClick={() => navigate(`/projects/${record.id}`)}
-                >
+                <Button type="link" onClick={() => navigate(`/projects/${record.id}`)}>
                   <EditOutlined />
                 </Button>
               </Tooltip>

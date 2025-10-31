@@ -3,13 +3,13 @@ import {
   ProFormText,
   ProFormDatePicker,
   ProFormSelect,
-} from "@ant-design/pro-components";
-import { projectService } from "@/services/project.services";
-import { groupService } from "@/services/group.services";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { message, Space } from "antd";
-import type { UpdateProjectDto, Project } from "@/types/project.type";
-import type { Group } from "@/types/group.type";
+} from '@ant-design/pro-components';
+import { projectService } from '@/services/project.services';
+import { groupService } from '@/services/group.services';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { message, Space } from 'antd';
+import type { UpdateProjectDto, Project } from '@/types/project.type';
+import type { Group } from '@/types/group.type';
 
 interface Props {
   open: boolean;
@@ -22,22 +22,21 @@ const ProjectEditModal = ({ open, onClose, project, onUpdate }: Props) => {
   const qc = useQueryClient();
 
   const { data: groups, isLoading } = useQuery({
-    queryKey: ["groups", "for-project"],
+    queryKey: ['groups', 'for-project'],
     queryFn: groupService.getMyGroups,
   });
 
   const mutation = useMutation({
-    mutationFn: (data: UpdateProjectDto) =>
-      projectService.update(project.id, data),
+    mutationFn: (data: UpdateProjectDto) => projectService.update(project.id, data),
     onSuccess: () => {
-      message.success("Cập nhật dự án thành công");
-      qc.invalidateQueries({ queryKey: ["projects"] });
-      qc.invalidateQueries({ queryKey: ["projects", project.id] });
+      message.success('Cập nhật dự án thành công');
+      qc.invalidateQueries({ queryKey: ['projects'] });
+      qc.invalidateQueries({ queryKey: ['projects', project.id] });
       onUpdate();
       onClose();
     },
     onError: () => {
-      message.error("Cập nhật dự án thất bại");
+      message.error('Cập nhật dự án thất bại');
     },
   });
 
@@ -47,7 +46,7 @@ const ProjectEditModal = ({ open, onClose, project, onUpdate }: Props) => {
       open={open}
       modalProps={{ onCancel: onClose, destroyOnClose: true }}
       initialValues={project}
-      onFinish={async (values) => {
+      onFinish={async values => {
         await mutation.mutateAsync({
           ...values,
           id: project.id,
@@ -58,26 +57,22 @@ const ProjectEditModal = ({ open, onClose, project, onUpdate }: Props) => {
         name="name"
         label="Tên dự án"
         placeholder="Nhập tên dự án"
-        rules={[{ required: true, message: "Vui lòng nhập tên dự án" }]}
+        rules={[{ required: true, message: 'Vui lòng nhập tên dự án' }]}
       />
-      <ProFormText
-        name="description"
-        label="Mô tả"
-        placeholder="Mô tả ngắn gọn"
-      />
+      <ProFormText name="description" label="Mô tả" placeholder="Mô tả ngắn gọn" />
       <ProFormSelect
         name="status"
         label="Trạng thái"
         options={[
-          { label: "Chưa bắt đầu", value: "todo" },
-          { label: "Đang thực hiện", value: "doing" },
-          { label: "Hoàn thành", value: "done" },
+          { label: 'Chưa bắt đầu', value: 'todo' },
+          { label: 'Đang thực hiện', value: 'doing' },
+          { label: 'Hoàn thành', value: 'done' },
         ]}
-        rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
+        rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
       />
 
       <ProFormSelect
-        name={["group", "id"]}
+        name={['group', 'id']}
         label="Thuộc nhóm"
         placeholder="Chọn nhóm (hoặc để trống nếu dự án cá nhân)"
         fieldProps={{ loading: isLoading }}
@@ -85,7 +80,7 @@ const ProjectEditModal = ({ open, onClose, project, onUpdate }: Props) => {
         showSearch
         options={[
           {
-            label: "Cá nhân",
+            label: 'Cá nhân',
             value: null,
           },
           ...(groups?.map((g: Group) => ({
@@ -95,7 +90,7 @@ const ProjectEditModal = ({ open, onClose, project, onUpdate }: Props) => {
         ]}
       />
 
-      <Space direction="horizontal" style={{ width: "100%" }}>
+      <Space direction="horizontal" style={{ width: '100%' }}>
         <ProFormDatePicker name="startDate" label="Ngày bắt đầu" />
         <ProFormDatePicker name="deadline" label="Hạn chót" />
       </Space>

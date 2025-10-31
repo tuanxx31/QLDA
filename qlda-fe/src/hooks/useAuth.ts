@@ -6,25 +6,23 @@ import type { User } from '@/types/user.type';
 import { useNavigate } from 'react-router-dom';
 const useAuth = () => {
   const signIn = useSignIn();
-  const signOut = useSignOut(); 
+  const signOut = useSignOut();
   const isAuthenticated = useIsAuthenticated();
   const authUser = useAuthUser<User>();
   const navigate = useNavigate();
   const login = (token: string, user?: User) => {
     return signIn({
-      auth:{
+      auth: {
         token,
-        type: "Bearer",
+        type: 'Bearer',
       },
-      userState : user || {},
-
+      userState: user || {},
     });
   };
 
   const logout = () => {
     signOut();
     navigate('/login');
-
   };
 
   return {

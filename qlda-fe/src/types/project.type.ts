@@ -1,12 +1,12 @@
-import type { User } from "./user.type";
-import type { Group } from "./group.type";
+import type { User } from './user.type';
+import type { Group } from './group.type';
 
 export interface Project {
   id: string;
   name: string;
   description?: string;
   startDate?: string | null;
-  status: "todo" | "doing" | "done";
+  status: 'todo' | 'doing' | 'done';
   deadline?: string | null;
   owner: User;
   group?: Group | null;
@@ -20,7 +20,7 @@ export interface CreateProjectDto {
   description?: string;
   startDate?: string;
   deadline?: string;
-  status?: "todo" | "doing" | "done";
+  status?: 'todo' | 'doing' | 'done';
   group?: {
     id: string;
   } | null;
@@ -36,7 +36,7 @@ export interface UpdateProjectDto extends Partial<CreateProjectDto> {
 export interface ProjectMember {
   id: string;
   user: User;
-  role: "leader" | "member";
+  role: 'leader' | 'member';
   joinedAt: string;
 }
 

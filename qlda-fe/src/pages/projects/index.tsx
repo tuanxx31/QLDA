@@ -1,15 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
-import { projectService } from "@/services/project.services";
-import { PageContainer } from "@ant-design/pro-components";
-import { Button } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
-import { useState } from "react";
-import ProjectFormModal from "./components/ProjectFormModal";
-import ProjectTable from "./components/ProjectTable";
+import { useQuery } from '@tanstack/react-query';
+import { projectService } from '@/services/project.services';
+import { PageContainer } from '@ant-design/pro-components';
+import { Button } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { useState } from 'react';
+import ProjectFormModal from './components/ProjectFormModal';
+import ProjectTable from './components/ProjectTable';
 
 const ProjectPage = () => {
   const { data, isLoading } = useQuery({
-    queryKey: ["projects"],
+    queryKey: ['projects'],
     queryFn: projectService.getAllByUser,
   });
 

@@ -1,4 +1,4 @@
-import { Typography } from "antd";
+import { Typography } from 'antd';
 
 export default function ForgotPassword() {
   return (

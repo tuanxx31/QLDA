@@ -1,7 +1,7 @@
-import { Modal, Input, message } from "antd";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { groupService } from "@/services/group.services";
+import { Modal, Input, message } from 'antd';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { groupService } from '@/services/group.services';
 
 interface Props {
   open: boolean;
@@ -12,13 +12,13 @@ interface Props {
 
 export const GroupEditModal = ({ open, onClose, groupId, group }: Props) => {
   const qc = useQueryClient();
-  const [formState, setFormState] = useState({ name: "", description: "" });
+  const [formState, setFormState] = useState({ name: '', description: '' });
 
   useEffect(() => {
     if (group) {
       setFormState({
-        name: group.name || "",
-        description: group.description || "",
+        name: group.name || '',
+        description: group.description || '',
       });
     }
   }, [group]);
@@ -30,15 +30,15 @@ export const GroupEditModal = ({ open, onClose, groupId, group }: Props) => {
         description: formState.description,
       }),
     onSuccess: () => {
-      message.success("Cập nhật nhóm thành công ✅");
-      qc.invalidateQueries({ queryKey: ["groupDetail", groupId] });
+      message.success('Cập nhật nhóm thành công ✅');
+      qc.invalidateQueries({ queryKey: ['groupDetail', groupId] });
       onClose();
     },
-    onError: () => message.error("Lỗi khi cập nhật nhóm"),
+    onError: () => message.error('Lỗi khi cập nhật nhóm'),
   });
 
   const handleSubmit = () => {
-    if (!formState.name.trim()) return message.warning("Tên nhóm không được trống");
+    if (!formState.name.trim()) return message.warning('Tên nhóm không được trống');
     mutation.mutate();
   };
 
@@ -55,15 +55,13 @@ export const GroupEditModal = ({ open, onClose, groupId, group }: Props) => {
       <Input
         placeholder="Tên nhóm"
         value={formState.name}
-        onChange={(e) => setFormState((p) => ({ ...p, name: e.target.value }))}
+        onChange={e => setFormState(p => ({ ...p, name: e.target.value }))}
         style={{ marginBottom: 12 }}
       />
       <Input.TextArea
         placeholder="Mô tả (tùy chọn)"
         value={formState.description}
-        onChange={(e) =>
-          setFormState((p) => ({ ...p, description: e.target.value }))
-        }
+        onChange={e => setFormState(p => ({ ...p, description: e.target.value }))}
         rows={3}
       />
     </Modal>

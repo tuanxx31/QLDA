@@ -1,17 +1,17 @@
-import { PageContainer, ProCard } from "@ant-design/pro-components";
-import { Button, Divider, Tabs, Tooltip, message } from "antd";
-import { CopyOutlined, UserAddOutlined } from "@ant-design/icons";
-import { useNavigate, useParams } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { groupService } from "@/services/group.services";
-import useAuth from "@/hooks/useAuth";
-import { GroupInfoCard } from "@/pages/groups/components/GroupInfoCard";
-import { GroupMembersTable } from "@/pages/groups/components/GroupMembersTable";
-import { GroupSettings } from "@/pages/groups/components/GroupSettings";
-import { AddMemberModal } from "@/pages/groups/components/AddMemberModal";
-import GroupProjectTable from "./components/GroupProjectTable";
-import { GroupEditModal } from "./components/GroupEditModal";
+import { PageContainer, ProCard } from '@ant-design/pro-components';
+import { Button, Divider, Tabs, Tooltip, message } from 'antd';
+import { CopyOutlined, UserAddOutlined } from '@ant-design/icons';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { groupService } from '@/services/group.services';
+import useAuth from '@/hooks/useAuth';
+import { GroupInfoCard } from '@/pages/groups/components/GroupInfoCard';
+import { GroupMembersTable } from '@/pages/groups/components/GroupMembersTable';
+import { GroupSettings } from '@/pages/groups/components/GroupSettings';
+import { AddMemberModal } from '@/pages/groups/components/AddMemberModal';
+import GroupProjectTable from './components/GroupProjectTable';
+import { GroupEditModal } from './components/GroupEditModal';
 
 const GroupDetailPage = () => {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ const GroupDetailPage = () => {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["groupDetail", groupId],
+    queryKey: ['groupDetail', groupId],
     queryFn: () => groupService.getDetail(groupId!),
     enabled: !!groupId,
   });
@@ -38,47 +38,43 @@ const GroupDetailPage = () => {
   const deleteGroupMutation = useMutation({
     mutationFn: () => groupService.deleteGroup(groupId!),
     onSuccess: () => {
-      message.success("Đã giải tán nhóm!");
-      navigate("/groups");
+      message.success('Đã giải tán nhóm!');
+      navigate('/groups');
     },
-    onError: () => message.error("Không thể giải tán nhóm"),
+    onError: () => message.error('Không thể giải tán nhóm'),
   });
   const leaveGroupMutation = useMutation({
     mutationFn: () => groupService.leaveGroup({ groupId: groupId! }),
     onSuccess: () => {
-      message.success("Đã rời nhóm!");
-      navigate("/groups");
+      message.success('Đã rời nhóm!');
+      navigate('/groups');
     },
-    onError: () => message.error("Không thể rời nhóm"),
+    onError: () => message.error('Không thể rời nhóm'),
   });
 
   const addMemberMutation = useMutation({
-    mutationFn: (email: string) =>
-      groupService.inviteMember({ groupId: groupId!, email }),
+    mutationFn: (email: string) => groupService.inviteMember({ groupId: groupId!, email }),
     onSuccess: () => {
-      message.success("Đã gửi lời mời thành công!");
-      queryClient.invalidateQueries({ queryKey: ["groupDetail", groupId] });
+      message.success('Đã gửi lời mời thành công!');
+      queryClient.invalidateQueries({ queryKey: ['groupDetail', groupId] });
       setOpenAddMember(false);
     },
-    onError: () => message.error("Không thể thêm thành viên"),
+    onError: () => message.error('Không thể thêm thành viên'),
   });
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(group?.inviteCode || "");
-      message.success("Đã sao chép mã mời!");
+      await navigator.clipboard.writeText(group?.inviteCode || '');
+      message.success('Đã sao chép mã mời!');
     } catch {
-      message.error("Không thể sao chép mã mời");
+      message.error('Không thể sao chép mã mời');
     }
   };
 
   if (isLoading) return <PageContainer loading />;
   if (isError || !group)
     return (
-      <PageContainer
-        title="Không tìm thấy nhóm"
-        onBack={() => navigate("/groups")}
-      >
+      <PageContainer title="Không tìm thấy nhóm" onBack={() => navigate('/groups')}>
         Không thể tải thông tin nhóm hoặc nhóm không tồn tại.
       </PageContainer>
     );
@@ -86,8 +82,8 @@ const GroupDetailPage = () => {
   return (
     <PageContainer
       title={group.name}
-      subTitle={group.description || "Không có mô tả"}
-      onBack={() => navigate("/groups")}
+      subTitle={group.description || 'Không có mô tả'}
+      onBack={() => navigate('/groups')}
       extra={[
         <Tooltip title="Sao chép mã mời" key="copy">
           <Button icon={<CopyOutlined />} onClick={handleCopy}>
@@ -96,10 +92,7 @@ const GroupDetailPage = () => {
         </Tooltip>,
         isLeader && (
           <>
-            <Button
-              style={{ marginLeft: 8 }}
-              onClick={() => setOpenEditGroup(true)}
-            >
+            <Button style={{ marginLeft: 8 }} onClick={() => setOpenEditGroup(true)}>
               Chỉnh sửa nhóm
             </Button>
             <Divider type="vertical" />
@@ -121,23 +114,23 @@ const GroupDetailPage = () => {
         style={{ marginTop: 24 }}
         items={[
           {
-            key: "members",
-            label: "Thành viên",
+            key: 'members',
+            label: 'Thành viên',
             children: (
               <GroupMembersTable
                 group={group}
                 isLeader={isLeader}
                 onUpdate={() =>
                   queryClient.invalidateQueries({
-                    queryKey: ["groupDetail", groupId],
+                    queryKey: ['groupDetail', groupId],
                   })
                 }
               />
             ),
           },
           {
-            key: "projects",
-            label: "Dự án",
+            key: 'projects',
+            label: 'Dự án',
             children: (
               <ProCard bordered style={{ borderRadius: 12 }}>
                 <GroupProjectTable groupId={groupId!} />
@@ -147,13 +140,10 @@ const GroupDetailPage = () => {
           ...(!isLeader
             ? [
                 {
-                  key: "settings",
-                  label: "Cài đặt",
+                  key: 'settings',
+                  label: 'Cài đặt',
                   children: (
-                    <GroupSettings
-                      group={group}
-                      onDelete={() => leaveGroupMutation.mutate()}
-                    />
+                    <GroupSettings group={group} onDelete={() => leaveGroupMutation.mutate()} />
                   ),
                 },
               ]
@@ -161,13 +151,10 @@ const GroupDetailPage = () => {
           ...(isLeader
             ? [
                 {
-                  key: "settings",
-                  label: "Cài đặt",
+                  key: 'settings',
+                  label: 'Cài đặt',
                   children: (
-                    <GroupSettings
-                      group={group}
-                      onDelete={() => deleteGroupMutation.mutate()}
-                    />
+                    <GroupSettings group={group} onDelete={() => deleteGroupMutation.mutate()} />
                   ),
                 },
               ]
@@ -178,7 +165,7 @@ const GroupDetailPage = () => {
       <AddMemberModal
         open={openAddMember}
         onCancel={() => setOpenAddMember(false)}
-        onSubmit={(email) => addMemberMutation.mutate(email)}
+        onSubmit={email => addMemberMutation.mutate(email)}
         loading={addMemberMutation.isPending}
       />
       <GroupEditModal

@@ -1,14 +1,14 @@
-import { PageContainer, ProCard } from "@ant-design/pro-components";
-import { Space, Spin, Typography, Button, message } from "antd";
-import { ArrowLeftOutlined, UserAddOutlined } from "@ant-design/icons";
-import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { projectService } from "@/services/project.services";
-import { useState } from "react";
-import ProjectInfoCard from "./components/ProjectInfoCard";
-import ProjectMembers from "./components/ProjectMembers";
-import MemberAddModal from "./components/MemberAddModal";
-import MemberAddFromGroupModal from "./components/MemberAddFromGroupModal";
+import { PageContainer, ProCard } from '@ant-design/pro-components';
+import { Space, Spin, Typography, Button, message } from 'antd';
+import { ArrowLeftOutlined, UserAddOutlined } from '@ant-design/icons';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { projectService } from '@/services/project.services';
+import { useState } from 'react';
+import ProjectInfoCard from './components/ProjectInfoCard';
+import ProjectMembers from './components/ProjectMembers';
+import MemberAddModal from './components/MemberAddModal';
+import MemberAddFromGroupModal from './components/MemberAddFromGroupModal';
 
 const { Title } = Typography;
 
@@ -20,7 +20,7 @@ const ProjectDetailPage = () => {
   const [openAddFromGroup, setOpenAddFromGroup] = useState(false);
 
   const { data: project, isLoading } = useQuery({
-    queryKey: ["project", projectId],
+    queryKey: ['project', projectId],
     queryFn: async () => await projectService.getById(projectId!),
     enabled: !!projectId,
   });
@@ -28,7 +28,7 @@ const ProjectDetailPage = () => {
   if (isLoading) {
     return (
       <PageContainer>
-        <div style={{ textAlign: "center", padding: "120px 0" }}>
+        <div style={{ textAlign: 'center', padding: '120px 0' }}>
           <Spin size="large" />
         </div>
       </PageContainer>
@@ -42,7 +42,7 @@ const ProjectDetailPage = () => {
           <Title level={5} type="danger">
             Không tìm thấy dự án
           </Title>
-          <Button onClick={() => navigate("/projects")}>Quay lại</Button>
+          <Button onClick={() => navigate('/projects')}>Quay lại</Button>
         </ProCard>
       </PageContainer>
     );
@@ -54,11 +54,7 @@ const ProjectDetailPage = () => {
     <PageContainer
       title={
         <Space>
-          <Button
-            type="text"
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate("/projects")}
-          />
+          <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/projects')} />
           <span>{project.name}</span>
         </Space>
       }
@@ -80,19 +76,16 @@ const ProjectDetailPage = () => {
             Thêm từ nhóm
           </Button>
         ),
-        <Button
-          key="viewBoard"
-          onClick={() => navigate(`/projects/${projectId}/board`)}
-        >
+        <Button key="viewBoard" onClick={() => navigate(`/projects/${projectId}/board`)}>
           Xem bảng công việc
         </Button>,
       ].filter(Boolean)}
     >
-      <Space direction="vertical" size="large" style={{ width: "100%" }}>
+      <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <ProjectInfoCard
           project={project}
           onUpdate={() => {
-            qc.invalidateQueries({ queryKey: ["project", projectId] });
+            qc.invalidateQueries({ queryKey: ['project', projectId] });
           }}
         />
         <ProjectMembers projectId={projectId!} />
@@ -109,12 +102,12 @@ const ProjectDetailPage = () => {
           open={openAddFromGroup}
           onClose={() => setOpenAddFromGroup(false)}
           projectId={projectId!}
-          groupId={project.group?.id || ""}
+          groupId={project.group?.id || ''}
           onSuccess={async () => {
-            message.success("Đã thêm thành viên từ nhóm");
-            await qc.invalidateQueries({ queryKey: ["project", projectId] });
+            message.success('Đã thêm thành viên từ nhóm');
+            await qc.invalidateQueries({ queryKey: ['project', projectId] });
             await qc.invalidateQueries({
-              queryKey: ["projectMembers", projectId],
+              queryKey: ['projectMembers', projectId],
             });
           }}
         />

@@ -4,17 +4,17 @@ import type {
   Project,
   ProjectMember,
   CreateProjectMemberDto,
-} from "@/types/project.type";
-import { api } from "./api";
+} from '@/types/project.type';
+import { api } from './api';
 
 export const projectService = {
   async create(data: CreateProjectDto) {
-    const res = await api.post<Project>("/projects", data);
+    const res = await api.post<Project>('/projects', data);
     return res.data;
   },
 
   async getAllByUser() {
-    const res = await api.get<Project[]>("/projects");
+    const res = await api.get<Project[]>('/projects');
     return res.data;
   },
 
@@ -44,7 +44,6 @@ export const projectService = {
   },
 };
 
-
 export const projectMemberService = {
   async getProjectMebers(projectId: string) {
     const res = await api.get<ProjectMember[]>(`/project-members/${projectId}`);
@@ -66,4 +65,4 @@ export const projectMemberService = {
     const res = await api.post(`/project-members/${projectId}/add-members`, data);
     return res.data;
   },
-}
+};

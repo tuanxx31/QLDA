@@ -1,2 +1,2 @@
-export * from "./ButtonLogout";
-export * from "./PrivateRoute";
+export * from './ButtonLogout';
+export * from './PrivateRoute';

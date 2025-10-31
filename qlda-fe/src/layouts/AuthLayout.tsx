@@ -1,17 +1,17 @@
-import { Outlet, useNavigate } from "react-router-dom";
-import "@/styles/auth.css";
-import useAuth from "@/hooks/useAuth";
-import { useEffect } from "react";
+import { Outlet, useNavigate } from 'react-router-dom';
+import '@/styles/auth.css';
+import useAuth from '@/hooks/useAuth';
+import { useEffect } from 'react';
 
 export default function AuthLayout() {
-  const navigate = useNavigate()
-  const auth = useAuth()
+  const navigate = useNavigate();
+  const auth = useAuth();
 
-  useEffect(()=>{
+  useEffect(() => {
     if (auth.isAuthenticated) {
-      navigate("/")
+      navigate('/');
     }
-  },[])
+  }, []);
 
   return (
     <div className="auth-layout">

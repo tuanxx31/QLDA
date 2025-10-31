@@ -1,33 +1,33 @@
-import { PageContainer, ProLayout } from "@ant-design/pro-components";
-import { Outlet, useNavigate } from "react-router-dom";
+import { PageContainer, ProLayout } from '@ant-design/pro-components';
+import { Outlet, useNavigate } from 'react-router-dom';
 import {
   DashboardOutlined,
   SettingOutlined,
   LogoutOutlined,
   TeamOutlined,
   ProjectOutlined,
-} from "@ant-design/icons";
-import { Avatar, Card, Dropdown, Space, type MenuProps } from "antd";
-import useAuth from "@/hooks/useAuth";
+} from '@ant-design/icons';
+import { Avatar, Card, Dropdown, Space, type MenuProps } from 'antd';
+import useAuth from '@/hooks/useAuth';
 export default function AppLayout() {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
   const { authUser: user } = useAuth();
 
-  const menuItems: MenuProps["items"] = [
+  const menuItems: MenuProps['items'] = [
     {
-      key: "settings",
-      label: "Cài đặt",
+      key: 'settings',
+      label: 'Cài đặt',
       icon: <SettingOutlined />,
-      onClick: () => navigate("/settings"),
+      onClick: () => navigate('/settings'),
     },
     {
-      type: "divider",
+      type: 'divider',
     },
     {
-      key: "logout",
-      label: "Đăng xuất",
+      key: 'logout',
+      label: 'Đăng xuất',
       icon: <LogoutOutlined />,
       danger: true,
       onClick: () => {
@@ -46,23 +46,17 @@ export default function AppLayout() {
       route={{
         routes: [
           {
-            path: "/dashboard",
-            name: "Bảng điều khiển",
+            path: '/dashboard',
+            name: 'Bảng điều khiển',
             icon: <DashboardOutlined />,
           },
-          { path: "/groups", name: "Nhóm", icon: <TeamOutlined /> },
-          { path: "/projects", name: "Dự án", icon: <ProjectOutlined /> },
+          { path: '/groups', name: 'Nhóm', icon: <TeamOutlined /> },
+          { path: '/projects', name: 'Dự án', icon: <ProjectOutlined /> },
         ],
       }}
       rightContentRender={() => (
-        <Dropdown
-          menu={{ items: menuItems as MenuProps["items"] }}
-          placement="bottomRight"
-        >
-          <Space
-            style={{ cursor: "pointer", paddingRight: 16 }}
-            direction="horizontal"
-          >
+        <Dropdown menu={{ items: menuItems as MenuProps['items'] }} placement="bottomRight">
+          <Space style={{ cursor: 'pointer', paddingRight: 16 }} direction="horizontal">
             <span>{user.name}</span>
             <Avatar src={user.avatar} size="small" />
           </Space>
@@ -70,7 +64,7 @@ export default function AppLayout() {
       )}
     >
       <PageContainer>
-        <Card style={{ minHeight: "80vh" }}>
+        <Card style={{ minHeight: '80vh' }}>
           <Outlet />
         </Card>
       </PageContainer>

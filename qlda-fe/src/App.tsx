@@ -1,19 +1,19 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/context/AuthProvider";
-import AuthLayout from "@/layouts/AuthLayout";
-import AppLayout from "@/layouts/AppLayout";
-import Login from "@/pages/auth/Login";
-import Register from "@/pages/auth/Register";
-import ForgotPassword from "@/pages/auth/ForgotPassword";
-import Dashboard from "@/pages/dashboard";
-import PrivateOutlet from "@/components/PrivateRoute";
-import SettingsPage from "./pages/settings";
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from '@/context/AuthProvider';
+import AuthLayout from '@/layouts/AuthLayout';
+import AppLayout from '@/layouts/AppLayout';
+import Login from '@/pages/auth/Login';
+import Register from '@/pages/auth/Register';
+import ForgotPassword from '@/pages/auth/ForgotPassword';
+import Dashboard from '@/pages/dashboard';
+import PrivateOutlet from '@/components/PrivateRoute';
+import SettingsPage from './pages/settings';
 import '@ant-design/v5-patch-for-react-19';
-import GroupsPage from "./pages/groups";
-import GroupDetailPage from "./pages/groups/detail";
-import ProjectPage from "./pages/projects";
-import ProjectDetailPage from "./pages/projects/detail";
-import ProjectBoardPage from "./pages/projects/detail/ProjectBoardPage";
+import GroupsPage from './pages/groups';
+import GroupDetailPage from './pages/groups/detail';
+import ProjectPage from './pages/projects';
+import ProjectDetailPage from './pages/projects/detail';
+import ProjectBoardPage from './pages/projects/detail/ProjectBoardPage';
 
 export default function App() {
   return (
