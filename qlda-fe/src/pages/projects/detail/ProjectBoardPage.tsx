@@ -72,7 +72,7 @@ export default function ProjectBoardPage() {
     setColumns(reordered);
 
     await Promise.all(
-      reordered.map((c, i) => columnService.update(c.id, { order: i }))
+      reordered.map((c, i) => columnService.update(projectId!, c.id, { order: i }))
     );
   };
 
