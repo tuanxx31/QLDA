@@ -27,11 +27,15 @@ export const CreateGroupFormModal = ({ open, onClose }: Props) => {
       open={open}
       modalProps={{ onCancel: onClose, destroyOnClose: true }}
       onFinish={async values => {
-        if (!values.name.trim()) return message.warning('Vui lòng nhập tên nhóm');
         await createGroup.mutateAsync(values);
       }}
     >
-      <ProFormText name="name" label="Tên nhóm" placeholder="Nhập tên nhóm" required />
+      <ProFormText
+        name="name"
+        label="Tên nhóm"
+        placeholder="Nhập tên nhóm"
+        rules={[{ required: true, message: 'Vui lòng nhập tên nhóm' }]}
+      />
       <ProFormTextArea name="description" label="Mô tả" placeholder="Mô tả nhóm" />
     </ModalForm>
   );
