@@ -10,7 +10,7 @@ export const columnService = {
   update(id: string, data: any) {
     return api.patch(`/columns/${id}`, data);
   },
-  delete(id: string) {
+  deleteColumn(id: string) {
     return api.delete(`/columns/${id}`);
   },
 };

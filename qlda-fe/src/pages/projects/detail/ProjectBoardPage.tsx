@@ -35,6 +35,7 @@ export default function ProjectBoardPage() {
 
   const sensors = useSensors(useSensor(PointerSensor));
 
+
   // 🔹 Lấy dữ liệu cột
   const { data, isLoading } = useQuery({
     queryKey: ["columns", projectId],
