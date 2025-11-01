@@ -1,42 +1,20 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Typography, Modal, Input, Space, Empty, message, Skeleton } from 'antd';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Button, Typography, Space, Empty, Skeleton } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 import { groupService } from '@/services/group.services';
 import { GroupCard } from '@/pages/groups/components/GroupCard';
 import { GroupPendingList } from '@/pages/groups/components/GroupPendingList';
+import { CreateGroupFormModal } from './components/CreateGroupFormModal';
+import { useState } from 'react';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 const GroupsPage = () => {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
-
+  const [openModal, setOpenModal] = useState(false);
   const { data: groups, isLoading } = useQuery({
     queryKey: ['myGroups'],
     queryFn: groupService.getMyGroups,
   });
-
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [groupName, setGroupName] = useState('');
-  const [description, setDescription] = useState('');
-
-  const createGroup = useMutation({
-    mutationFn: () => groupService.createGroup({ name: groupName, description }),
-    onSuccess: () => {
-      message.success('Tạo nhóm thành công 🎉');
-      queryClient.invalidateQueries({ queryKey: ['myGroups'] });
-      setModalOpen(false);
-      setGroupName('');
-      setDescription('');
-    },
-    onError: () => message.error('Lỗi khi tạo nhóm'),
-  });
-
-  const handleSubmit = () => {
-    if (!groupName.trim()) return message.warning('Vui lòng nhập tên nhóm');
-    createGroup.mutate();
-  };
 
   return (
     <div style={{ padding: 24 }}>
@@ -53,7 +31,7 @@ const GroupsPage = () => {
         <Title level={3} style={{ margin: 0 }}>
           Nhóm của tôi
         </Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpenModal(true)}>
           Tạo nhóm
         </Button>
       </Space>
@@ -76,28 +54,7 @@ const GroupsPage = () => {
         <Empty description="Bạn chưa tham gia nhóm nào" style={{ marginTop: 60 }} />
       )}
 
-      <Modal
-        title="Tạo nhóm mới"
-        open={isModalOpen}
-        onCancel={() => setModalOpen(false)}
-        onOk={handleSubmit}
-        confirmLoading={createGroup.isPending}
-        okText="Tạo"
-        cancelText="Hủy"
-      >
-        <Input
-          placeholder="Tên nhóm"
-          value={groupName}
-          onChange={e => setGroupName(e.target.value)}
-          style={{ marginBottom: 12 }}
-        />
-        <Input.TextArea
-          placeholder="Mô tả (tùy chọn)"
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          rows={3}
-        />
-      </Modal>
+      <CreateGroupFormModal open={openModal} onClose={() => setOpenModal(false)} />
     </div>
   );
 };

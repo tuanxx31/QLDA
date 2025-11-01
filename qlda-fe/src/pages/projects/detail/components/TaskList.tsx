@@ -20,20 +20,16 @@ export default function TaskList({ column }: { column: Column }) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const oldIndex = tasks.findIndex((t) => t.id === active.id);
-    const newIndex = tasks.findIndex((t) => t.id === over.id);
+    const oldIndex = tasks.findIndex(t => t.id === active.id);
+    const newIndex = tasks.findIndex(t => t.id === over.id);
     setTasks(arrayMove(tasks, oldIndex, newIndex));
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleTaskDragEnd}
-    >
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleTaskDragEnd}>
       <SortableContext items={tasks} strategy={rectSortingStrategy}>
-        <Space direction="vertical" style={{ width: "100%" }}>
-          {tasks.map((task) => (
+        <Space direction="vertical" style={{ width: '100%' }}>
+          {tasks.map(task => (
             <SortableTask key={task.id} task={task} />
           ))}
         </Space>

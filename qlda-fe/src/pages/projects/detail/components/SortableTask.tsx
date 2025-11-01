@@ -5,11 +5,9 @@ import type { Task } from '@/types/project-board';
 
 const { Text } = Typography;
 
-
 export default function SortableTask({ task }: { task: Task }) {
   const { token } = theme.useToken();
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: task.id });
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: task.id });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -20,18 +18,11 @@ export default function SortableTask({ task }: { task: Task }) {
   };
 
   return (
-    <Card
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      size="small"
-      hoverable
-      style={style}
-    >
+    <Card ref={setNodeRef} {...attributes} {...listeners} size="small" hoverable style={style}>
       <Typography.Text strong>{task.title}</Typography.Text>
       <br />
       <Text type="secondary" ellipsis>
-        {task.description || "Không có mô tả"}
+        {task.description || 'Không có mô tả'}
       </Text>
     </Card>
   );

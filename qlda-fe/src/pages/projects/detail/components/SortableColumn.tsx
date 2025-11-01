@@ -7,8 +7,9 @@ import TaskList from './TaskList';
 
 export default function SortableColumn({ column }: { column: Column }) {
   const { token } = theme.useToken();
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: column.id });
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id: column.id,
+  });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -27,14 +28,7 @@ export default function SortableColumn({ column }: { column: Column }) {
       title={column.name}
       style={style}
       bodyStyle={{ padding: 8 }}
-      extra={
-        <Button
-          type="text"
-          size="small"
-          icon={<DeleteOutlined />}
-          danger
-        />
-      }
+      extra={<Button type="text" size="small" icon={<DeleteOutlined />} danger />}
     >
       <TaskList column={column} />
     </Card>

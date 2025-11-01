@@ -12,6 +12,11 @@ export interface Group {
   members: GroupMember[];
 }
 
+export interface CreateGroupDto {
+  name: string;
+  description?: string;
+}
+
 export interface GroupMember {
   id: string;
   name: string;
