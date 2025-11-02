@@ -35,6 +35,7 @@ export default function ProjectBoardPage() {
 
   const sensors = useSensors(useSensor(PointerSensor));
 
+
   // 🔹 Lấy dữ liệu cột
   const { data, isLoading } = useQuery({
     queryKey: ['columns', projectId],
@@ -70,7 +71,9 @@ export default function ProjectBoardPage() {
     const reordered = arrayMove(columns, oldIndex, newIndex);
     setColumns(reordered);
 
-    await Promise.all(reordered.map((c, i) => columnService.update(c.id, { order: i })));
+    await Promise.all(
+      reordered.map((c, i) => columnService.update(projectId!, c.id, { order: i }))
+    );
   };
 
   // 🔹 Khi bắt đầu kéo task

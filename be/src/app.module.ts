@@ -15,18 +15,21 @@ import { ColumnsModule } from './columns/columns.module';
 import { TasksModule } from './tasks/tasks.module';
 import { SubTasksModule } from './sub-tasks/sub-tasks.module';
 
+console.log(process.env.DATABASE_HOST, process.env.DATABASE_PORT, process.env.DATABASE_USERNAME, process.env.DATABASE_PASSWORD, process.env.DATABASE_NAME);
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
     TypeOrmModule.forRoot({
+      
       type: 'mysql',
       host: process.env.DATABASE_HOST,
       port: process.env.DATABASE_PORT
         ? parseInt(process.env.DATABASE_PORT)
         : 3306,
-      username: process.env.DATABASE_USER,
+      username: process.env.DATABASE_USERNAME,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
       entities: [join(__dirname, '**', '*.entity.{ts,js}')],

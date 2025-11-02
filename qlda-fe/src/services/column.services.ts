@@ -7,10 +7,10 @@ export const columnService = {
   create(projectId: string, data: any) {
     return api.post(`/projects/${projectId}/columns`, data);
   },
-  update(id: string, data: any) {
-    return api.patch(`/columns/${id}`, data);
+  update( projectId: string, id: string, data: any) {
+    return api.patch(`/projects/${projectId}/columns/${id}`, data);
   },
-  delete(id: string) {
-    return api.delete(`/columns/${id}`);
+  deleteColumn(projectId: string, id: string) {
+    return api.delete(`/projects/${projectId}/columns/${id}`);
   },
 };
