@@ -35,7 +35,6 @@ export default function ProjectBoardPage() {
 
   const sensors = useSensors(useSensor(PointerSensor));
 
-
   const { data, isLoading } = useQuery({
     queryKey: ['columns', projectId],
     queryFn: () => columnService.getColumns(projectId!),
@@ -50,8 +49,7 @@ export default function ProjectBoardPage() {
   }, [data]);
 
   const addColumn = useMutation({
-    mutationFn: (name: string) =>
-      columnService.create(projectId!, { name }),
+    mutationFn: (name: string) => columnService.create(projectId!, { name }),
     onSuccess: async () => {
       message.success('Đã thêm cột');
       await qc.invalidateQueries({ queryKey: ['columns', projectId] });
@@ -59,16 +57,13 @@ export default function ProjectBoardPage() {
       setNewColumnName('');
     },
   });
-  
 
   const debouncedUpdateOrder = useRef(
     debounce(async (reordered: Column[]) => {
       await Promise.all(
-        reordered.map((c, i) =>
-          columnService.update(projectId!, c.id, { order: i + 1 })
-        )
+        reordered.map((c, i) => columnService.update(projectId!, c.id, { order: i + 1 })),
       );
-    }, 500) // ⏱ 500ms sau khi ngừng kéo mới gọi API
+    }, 500), // ⏱ 500ms sau khi ngừng kéo mới gọi API
   ).current;
 
   const handleColumnDragEnd = (event: DragEndEvent) => {
@@ -83,7 +78,6 @@ export default function ProjectBoardPage() {
     // ✅ debounce update để chỉ gửi API sau khi user ngừng kéo
     debouncedUpdateOrder(reordered);
   };
-  
 
   const handleTaskDragStart = (event: DragStartEvent) => {
     const { active } = event;
