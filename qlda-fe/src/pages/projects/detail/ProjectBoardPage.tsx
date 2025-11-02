@@ -20,6 +20,7 @@ import type { Column, Task } from '@/types/project-board';
 import AddColumnCard from './components/AddColumnCard';
 import SortableColumn from './components/SortableColumn';
 import { debounce } from 'lodash';
+
 const { Title, Text } = Typography;
 
 export default function ProjectBoardPage() {
@@ -63,7 +64,7 @@ export default function ProjectBoardPage() {
       await Promise.all(
         reordered.map((c, i) => columnService.update(projectId!, c.id, { order: i + 1 })),
       );
-    }, 500), // ⏱ 500ms sau khi ngừng kéo mới gọi API
+    }, 500),
   ).current;
 
   const handleColumnDragEnd = (event: DragEndEvent) => {
@@ -74,8 +75,6 @@ export default function ProjectBoardPage() {
     const newIndex = columns.findIndex(c => c.id === over.id);
     const reordered = arrayMove(columns, oldIndex, newIndex);
     setColumns(reordered);
-
-    // ✅ debounce update để chỉ gửi API sau khi user ngừng kéo
     debouncedUpdateOrder(reordered);
   };
 
@@ -146,55 +145,58 @@ export default function ProjectBoardPage() {
         </Space>
       }
     >
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={handleTaskDragStart}
-        onDragEnd={event => {
-          handleTaskDragEnd(event);
-          handleColumnDragEnd(event);
-        }}
-      >
-        <SortableContext items={columns} strategy={rectSortingStrategy}>
-          <Space
-            align="start"
-            style={{
-              width: '100%',
-              overflowX: 'auto',
-              padding: 8,
-            }}
-          >
-            {columns.map(col => (
-              <SortableColumn key={col.id} column={col} />
-            ))}
-
-            <AddColumnCard
-              isAdding={isAddingColumn}
-              setIsAdding={setIsAddingColumn}
-              newName={newColumnName}
-              setNewName={setNewColumnName}
-              onAdd={name => addColumn.mutate(name)}
-            />
-          </Space>
-        </SortableContext>
-
-        <DragOverlay>
-          {activeTask ? (
-            <Card
+      <Card style={{ minHeight: '82vh' }}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleTaskDragStart}
+          onDragEnd={event => {
+            handleTaskDragEnd(event);
+            handleColumnDragEnd(event);
+          }}
+        >
+          <SortableContext items={columns} strategy={rectSortingStrategy}>
+            <Space
+              align="start"
               style={{
-                borderRadius: 8,
-                background: token.colorBgElevated,
-                boxShadow: token.boxShadowSecondary,
-                width: 250,
+                width: '100%',
+                minHeight: '100%',
+                overflowX: 'auto',
+                padding: 8,
               }}
             >
-              <Typography.Text strong>{activeTask.title}</Typography.Text>
-              <br />
-              <Text type="secondary">{activeTask.description || 'Không có mô tả'}</Text>
-            </Card>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+              {columns.map(col => (
+                <SortableColumn key={col.id} column={col} />
+              ))}
+
+              <AddColumnCard
+                isAdding={isAddingColumn}
+                setIsAdding={setIsAddingColumn}
+                newName={newColumnName}
+                setNewName={setNewColumnName}
+                onAdd={name => addColumn.mutate(name)}
+              />
+            </Space>
+          </SortableContext>
+
+          <DragOverlay>
+            {activeTask ? (
+              <Card
+                style={{
+                  borderRadius: 8,
+                  background: token.colorBgElevated,
+                  boxShadow: token.boxShadowSecondary,
+                  width: 250,
+                }}
+              >
+                <Typography.Text strong>{activeTask.title}</Typography.Text>
+                <br />
+                <Text type="secondary">{activeTask.description || 'Không có mô tả'}</Text>
+              </Card>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      </Card>
     </PageContainer>
   );
 }

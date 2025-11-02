@@ -87,7 +87,8 @@ export default function SortableColumn({ column }: { column: Column }) {
     <Card
       ref={setNodeRef}
       style={style}
-      bodyStyle={{ padding: 8 }}
+      bodyStyle={{ padding: 8, maxHeight: '75vh', overflowY: 'auto' }}
+
       title={
         <div
           {...attributes}

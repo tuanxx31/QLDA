@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { projectService } from '@/services/project.services';
 import { PageContainer } from '@ant-design/pro-components';
-import { Button } from 'antd';
+import { Button, Card } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import ProjectFormModal from './components/ProjectFormModal';
@@ -29,8 +29,10 @@ const ProjectPage = () => {
         </Button>,
       ]}
     >
-      <ProjectTable data={data} loading={isLoading} />
-      <ProjectFormModal open={openModal} onClose={() => setOpenModal(false)} />
+      <Card style={{ minHeight: '82vh' }}>
+        <ProjectTable data={data} loading={isLoading} />
+        <ProjectFormModal open={openModal} onClose={() => setOpenModal(false)} />
+      </Card>
     </PageContainer>
   );
 };

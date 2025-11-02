@@ -1,5 +1,5 @@
 import { PageContainer, ProCard } from '@ant-design/pro-components';
-import { Button, Divider, Tabs, Tooltip, message } from 'antd';
+import { Button, Tabs, Tooltip, message, Card } from 'antd';
 import { CopyOutlined, UserAddOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -20,14 +20,9 @@ const GroupDetailPage = () => {
   const currentUser = auth.authUser;
   const queryClient = useQueryClient();
   const [openEditGroup, setOpenEditGroup] = useState(false);
-
   const [openAddMember, setOpenAddMember] = useState(false);
 
-  const {
-    data: group,
-    isLoading,
-    isError,
-  } = useQuery({
+  const { data: group, isLoading, isError } = useQuery({
     queryKey: ['groupDetail', groupId],
     queryFn: () => groupService.getDetail(groupId!),
     enabled: !!groupId,
@@ -38,15 +33,16 @@ const GroupDetailPage = () => {
   const deleteGroupMutation = useMutation({
     mutationFn: () => groupService.deleteGroup(groupId!),
     onSuccess: () => {
-      message.success('Đã giải tán nhóm!');
+      message.success('Đã giải tán nhóm');
       navigate('/groups');
     },
     onError: () => message.error('Không thể giải tán nhóm'),
   });
+
   const leaveGroupMutation = useMutation({
     mutationFn: () => groupService.leaveGroup({ groupId: groupId! }),
     onSuccess: () => {
-      message.success('Đã rời nhóm!');
+      message.success('Đã rời nhóm');
       navigate('/groups');
     },
     onError: () => message.error('Không thể rời nhóm'),
@@ -55,7 +51,7 @@ const GroupDetailPage = () => {
   const addMemberMutation = useMutation({
     mutationFn: (email: string) => groupService.inviteMember({ groupId: groupId!, email }),
     onSuccess: () => {
-      message.success('Đã gửi lời mời thành công!');
+      message.success('Đã gửi lời mời thành công');
       queryClient.invalidateQueries({ queryKey: ['groupDetail', groupId] });
       setOpenAddMember(false);
     },
@@ -65,7 +61,7 @@ const GroupDetailPage = () => {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(group?.inviteCode || '');
-      message.success('Đã sao chép mã mời!');
+      message.success('Đã sao chép mã mời');
     } catch {
       message.error('Không thể sao chép mã mời');
     }
@@ -91,89 +87,80 @@ const GroupDetailPage = () => {
           </Button>
         </Tooltip>,
         isLeader && (
-          <>
-            <Button style={{ marginLeft: 8 }} onClick={() => setOpenEditGroup(true)}>
-              Chỉnh sửa nhóm
-            </Button>
-            <Divider type="vertical" />
-            <Button
-              icon={<UserAddOutlined />}
-              type="primary"
-              onClick={() => setOpenAddMember(true)}
-            >
-              Thêm thành viên
-            </Button>
-          </>
+          <Button key="edit" onClick={() => setOpenEditGroup(true)}>
+            Chỉnh sửa nhóm
+          </Button>
+        ),
+        isLeader && (
+          <Button
+            key="add"
+            icon={<UserAddOutlined />}
+            type="primary"
+            onClick={() => setOpenAddMember(true)}
+          >
+            Thêm thành viên
+          </Button>
         ),
       ]}
     >
-      <GroupInfoCard group={group} />
+      <Card style={{ minHeight: '82vh' }}>
+        <GroupInfoCard group={group} />
 
-      <Tabs
-        defaultActiveKey="members"
-        style={{ marginTop: 24 }}
-        items={[
-          {
-            key: 'members',
-            label: 'Thành viên',
-            children: (
-              <GroupMembersTable
-                group={group}
-                isLeader={isLeader}
-                onUpdate={() =>
-                  queryClient.invalidateQueries({
-                    queryKey: ['groupDetail', groupId],
-                  })
-                }
-              />
-            ),
-          },
-          {
-            key: 'projects',
-            label: 'Dự án',
-            children: (
-              <ProCard bordered style={{ borderRadius: 12 }}>
-                <GroupProjectTable groupId={groupId!} />
-              </ProCard>
-            ),
-          },
-          ...(!isLeader
-            ? [
-                {
-                  key: 'settings',
-                  label: 'Cài đặt',
-                  children: (
-                    <GroupSettings group={group} onDelete={() => leaveGroupMutation.mutate()} />
-                  ),
-                },
-              ]
-            : []),
-          ...(isLeader
-            ? [
-                {
-                  key: 'settings',
-                  label: 'Cài đặt',
-                  children: (
-                    <GroupSettings group={group} onDelete={() => deleteGroupMutation.mutate()} />
-                  ),
-                },
-              ]
-            : []),
-        ]}
-      />
+        <Tabs
+          defaultActiveKey="members"
+          style={{ marginTop: 24 }}
+          items={[
+            {
+              key: 'members',
+              label: 'Thành viên',
+              children: (
+                <GroupMembersTable
+                  group={group}
+                  isLeader={isLeader}
+                  onUpdate={() =>
+                    queryClient.invalidateQueries({ queryKey: ['groupDetail', groupId] })
+                  }
+                />
+              ),
+            },
+            {
+              key: 'projects',
+              label: 'Dự án',
+              children: (
+                <ProCard bordered style={{ borderRadius: 12 }}>
+                  <GroupProjectTable groupId={groupId!} />
+                </ProCard>
+              ),
+            },
+            {
+              key: 'settings',
+              label: 'Cài đặt',
+              children: (
+                <GroupSettings
+                  group={group}
+                  onDelete={() =>
+                    isLeader ? deleteGroupMutation.mutate() : leaveGroupMutation.mutate()
+                  }
+                />
+              ),
+            },
+          ]}
+        />
 
-      <AddMemberModal
-        open={openAddMember}
-        onCancel={() => setOpenAddMember(false)}
-        onSubmit={email => addMemberMutation.mutate(email)}
-        loading={addMemberMutation.isPending}
-      />
-      <GroupEditModal
-        open={openEditGroup}
-        onClose={() => setOpenEditGroup(false)}
-        groupId={groupId!}
-        group={group}
-      />
+        <AddMemberModal
+          open={openAddMember}
+          onCancel={() => setOpenAddMember(false)}
+          onSubmit={email => addMemberMutation.mutate(email)}
+          loading={addMemberMutation.isPending}
+        />
+
+        <GroupEditModal
+          open={openEditGroup}
+          onClose={() => setOpenEditGroup(false)}
+          groupId={groupId!}
+          group={group}
+        />
+      </Card>
     </PageContainer>
   );
 };

@@ -1,4 +1,5 @@
-import { Tabs } from 'antd';
+import { PageContainer } from '@ant-design/pro-components';
+import { Tabs, Card } from 'antd';
 import ProfileSettings from './ProfileSettings';
 import ChangePasswordSettings from './ChangePasswordSettings';
 import SercuritySettings from './SercuritySettings';
@@ -23,8 +24,10 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div style={{ padding: 24, background: '#fff', borderRadius: 8 }}>
-      <Tabs defaultActiveKey="profile" items={items} tabPosition="left" />
-    </div>
+    <PageContainer title="Cài đặt tài khoản">
+      <Card style={{ minHeight: '82vh' }}>
+        <Tabs defaultActiveKey="profile" items={items} tabPosition="left" />
+      </Card>
+    </PageContainer>
   );
 }

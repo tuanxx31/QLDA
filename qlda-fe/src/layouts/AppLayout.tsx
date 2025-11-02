@@ -1,4 +1,4 @@
-import { PageContainer, ProLayout } from '@ant-design/pro-components';
+import { ProLayout } from '@ant-design/pro-components';
 import { Outlet, useNavigate } from 'react-router-dom';
 import {
   DashboardOutlined,
@@ -7,7 +7,7 @@ import {
   TeamOutlined,
   ProjectOutlined,
 } from '@ant-design/icons';
-import { Avatar, Card, Dropdown, Space, type MenuProps } from 'antd';
+import { Avatar, Dropdown, Space, type MenuProps } from 'antd';
 import useAuth from '@/hooks/useAuth';
 export default function AppLayout() {
   const navigate = useNavigate();
@@ -38,7 +38,7 @@ export default function AppLayout() {
 
   return (
     <ProLayout
-      // title="QLDA Sinh viên"
+      title="Quản lý dự án "
       layout="mix"
       menuItemRender={(item, dom) => (
         <div onClick={() => item.path && navigate(item.path)}>{dom}</div>
@@ -63,11 +63,7 @@ export default function AppLayout() {
         </Dropdown>
       )}
     >
-      <PageContainer>
-        <Card style={{ minHeight: '80vh' }}>
           <Outlet />
-        </Card>
-      </PageContainer>
     </ProLayout>
   );
 }

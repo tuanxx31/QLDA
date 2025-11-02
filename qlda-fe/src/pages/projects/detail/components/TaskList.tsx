@@ -17,7 +17,6 @@ import { taskService } from '@/services/task.services';
 import { useParams } from 'react-router-dom';
 
 export default function TaskList({ column }: { column: Column }) {
-
   const { projectId } = useParams<{ projectId: string }>();
 
   const sensors = useSensors(useSensor(PointerSensor));
@@ -27,8 +26,7 @@ export default function TaskList({ column }: { column: Column }) {
   const [newTitle, setNewTitle] = useState('');
 
   const addTask = useMutation({
-    mutationFn: (title: string) =>
-      taskService.create(column.id, { title }),
+    mutationFn: (title: string) => taskService.create(column.id, { title }),
     onSuccess: async () => {
       message.success('Đã thêm thẻ');
       setIsAdding(false);
@@ -59,7 +57,7 @@ export default function TaskList({ column }: { column: Column }) {
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleTaskDragEnd}>
       <SortableContext items={tasks} strategy={rectSortingStrategy}>
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space direction="vertical" style={{ width: '100%', gap: 8, paddingBottom: 8 }}>
           {tasks.map(task => (
             <SortableTask key={task.id} task={task} />
           ))}
