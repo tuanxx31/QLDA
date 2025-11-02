@@ -13,13 +13,13 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { columnService } from '@/services/column.services';
 import type { Column, Task } from '@/types/project-board';
 import AddColumnCard from './components/AddColumnCard';
 import SortableColumn from './components/SortableColumn';
-
+import { debounce } from 'lodash';
 const { Title, Text } = Typography;
 
 export default function ProjectBoardPage() {
@@ -50,7 +50,8 @@ export default function ProjectBoardPage() {
   }, [data]);
 
   const addColumn = useMutation({
-    mutationFn: (name: string) => columnService.create(projectId!, { name }),
+    mutationFn: (name: string) =>
+      columnService.create(projectId!, { name }),
     onSuccess: async () => {
       message.success('Đã thêm cột');
       await qc.invalidateQueries({ queryKey: ['columns', projectId] });
@@ -58,8 +59,19 @@ export default function ProjectBoardPage() {
       setNewColumnName('');
     },
   });
+  
 
-  const handleColumnDragEnd = async (event: DragEndEvent) => {
+  const debouncedUpdateOrder = useRef(
+    debounce(async (reordered: Column[]) => {
+      await Promise.all(
+        reordered.map((c, i) =>
+          columnService.update(projectId!, c.id, { order: i + 1 })
+        )
+      );
+    }, 500) // ⏱ 500ms sau khi ngừng kéo mới gọi API
+  ).current;
+
+  const handleColumnDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -68,10 +80,10 @@ export default function ProjectBoardPage() {
     const reordered = arrayMove(columns, oldIndex, newIndex);
     setColumns(reordered);
 
-    await Promise.all(
-      reordered.map((c, i) => columnService.update(projectId!, c.id, { order: i }))
-    );
+    // ✅ debounce update để chỉ gửi API sau khi user ngừng kéo
+    debouncedUpdateOrder(reordered);
   };
+  
 
   const handleTaskDragStart = (event: DragStartEvent) => {
     const { active } = event;
