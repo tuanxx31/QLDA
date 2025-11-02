@@ -20,7 +20,7 @@ import type { Column, Task } from '@/types/project-board';
 import AddColumnCard from './components/AddColumnCard';
 import SortableColumn from './components/SortableColumn';
 
-const { Title,Text } = Typography;
+const { Title, Text } = Typography;
 
 export default function ProjectBoardPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -30,7 +30,7 @@ export default function ProjectBoardPage() {
 
   const [columns, setColumns] = useState<Column[]>([]);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
-  const [newColumnName, setNewColumnName] = useState("");
+  const [newColumnName, setNewColumnName] = useState('');
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor));
@@ -38,7 +38,7 @@ export default function ProjectBoardPage() {
 
   // 🔹 Lấy dữ liệu cột
   const { data, isLoading } = useQuery({
-    queryKey: ["columns", projectId],
+    queryKey: ['columns', projectId],
     queryFn: () => columnService.getColumns(projectId!),
     enabled: !!projectId,
   });
@@ -54,10 +54,10 @@ export default function ProjectBoardPage() {
   const addColumn = useMutation({
     mutationFn: (name: string) => columnService.create(projectId!, { name }),
     onSuccess: async () => {
-      message.success("Đã thêm cột");
-      await qc.invalidateQueries({ queryKey: ["columns", projectId] });
+      message.success('Đã thêm cột');
+      await qc.invalidateQueries({ queryKey: ['columns', projectId] });
       setIsAddingColumn(false);
-      setNewColumnName("");
+      setNewColumnName('');
     },
   });
 
@@ -66,8 +66,8 @@ export default function ProjectBoardPage() {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const oldIndex = columns.findIndex((c) => c.id === active.id);
-    const newIndex = columns.findIndex((c) => c.id === over.id);
+    const oldIndex = columns.findIndex(c => c.id === active.id);
+    const newIndex = columns.findIndex(c => c.id === over.id);
     const reordered = arrayMove(columns, oldIndex, newIndex);
     setColumns(reordered);
 
@@ -79,9 +79,7 @@ export default function ProjectBoardPage() {
   // 🔹 Khi bắt đầu kéo task
   const handleTaskDragStart = (event: DragStartEvent) => {
     const { active } = event;
-    const found = columns
-      .flatMap((col) => col.tasks ?? [])
-      .find((t) => t.id === active.id);
+    const found = columns.flatMap(col => col.tasks ?? []).find(t => t.id === active.id);
     if (found) setActiveTask(found);
   };
 
@@ -90,32 +88,28 @@ export default function ProjectBoardPage() {
     const { active, over } = event;
     if (!over) return;
 
-    const activeCol = columns.find((col) =>
-      col.tasks?.some((t) => t.id === active.id)
-    );
-    const overCol = columns.find((col) =>
-      col.tasks?.some((t) => t.id === over.id)
-    );
+    const activeCol = columns.find(col => col.tasks?.some(t => t.id === active.id));
+    const overCol = columns.find(col => col.tasks?.some(t => t.id === over.id));
 
     if (!activeCol || !overCol) return;
 
     const activeTasks = [...(activeCol.tasks ?? [])];
     const overTasks = [...(overCol.tasks ?? [])];
 
-    const activeIndex = activeTasks.findIndex((t) => t.id === active.id);
-    const overIndex = overTasks.findIndex((t) => t.id === over.id);
+    const activeIndex = activeTasks.findIndex(t => t.id === active.id);
+    const overIndex = overTasks.findIndex(t => t.id === over.id);
 
     const [movedTask] = activeTasks.splice(activeIndex, 1);
 
     if (activeCol.id === overCol.id) {
       activeTasks.splice(overIndex, 0, movedTask);
-      const updated = columns.map((col) =>
-        col.id === activeCol.id ? { ...col, tasks: activeTasks } : col
+      const updated = columns.map(col =>
+        col.id === activeCol.id ? { ...col, tasks: activeTasks } : col,
       );
       setColumns(updated);
     } else {
       overTasks.splice(overIndex, 0, movedTask);
-      const updated = columns.map((col) => {
+      const updated = columns.map(col => {
         if (col.id === activeCol.id) return { ...col, tasks: activeTasks };
         if (col.id === overCol.id) return { ...col, tasks: overTasks };
         return col;
@@ -129,7 +123,7 @@ export default function ProjectBoardPage() {
   if (isLoading) {
     return (
       <PageContainer>
-        <div style={{ textAlign: "center", padding: "100px 0" }}>
+        <div style={{ textAlign: 'center', padding: '100px 0' }}>
           <Spin size="large" />
         </div>
       </PageContainer>
@@ -155,7 +149,7 @@ export default function ProjectBoardPage() {
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={handleTaskDragStart}
-        onDragEnd={(event) => {
+        onDragEnd={event => {
           handleTaskDragEnd(event);
           handleColumnDragEnd(event);
         }}
@@ -164,12 +158,12 @@ export default function ProjectBoardPage() {
           <Space
             align="start"
             style={{
-              width: "100%",
-              overflowX: "auto",
+              width: '100%',
+              overflowX: 'auto',
               padding: 8,
             }}
           >
-            {columns.map((col) => (
+            {columns.map(col => (
               <SortableColumn key={col.id} column={col} />
             ))}
 
@@ -178,7 +172,7 @@ export default function ProjectBoardPage() {
               setIsAdding={setIsAddingColumn}
               newName={newColumnName}
               setNewName={setNewColumnName}
-              onAdd={(name) => addColumn.mutate(name)}
+              onAdd={name => addColumn.mutate(name)}
             />
           </Space>
         </SortableContext>
@@ -196,9 +190,7 @@ export default function ProjectBoardPage() {
             >
               <Typography.Text strong>{activeTask.title}</Typography.Text>
               <br />
-              <Text type="secondary">
-                {activeTask.description || "Không có mô tả"}
-              </Text>
+              <Text type="secondary">{activeTask.description || 'Không có mô tả'}</Text>
             </Card>
           ) : null}
         </DragOverlay>

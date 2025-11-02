@@ -20,8 +20,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function SortableColumn({ column }: { column: Column }) {
   const { token } = theme.useToken();
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: column.id });
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id: column.id,
+  });
 
   const qc = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();

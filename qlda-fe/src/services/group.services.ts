@@ -1,4 +1,4 @@
-import type { Group, GroupMember, InviteGroupDto } from '@/types/group.type';
+import type { CreateGroupDto, Group, GroupMember, InviteGroupDto } from '@/types/group.type';
 import { api } from './api';
 import type { InviteMemberDto } from '@/types/group.type';
 
@@ -18,7 +18,7 @@ export const groupService = {
     return res.data;
   },
 
-  async createGroup(data: { name: string; description?: string }) {
+  async createGroup(data: CreateGroupDto) {
     const res = await api.post('/groups', data);
     return res.data;
   },

@@ -42,7 +42,7 @@ const ProjectFormModal = ({ open, onClose }: Props) => {
         await mutation.mutateAsync(values);
       }}
     >
-      <ProFormText name="name" label="Tên dự án" placeholder="Nhập tên dự án" required />
+      <ProFormText name="name" label="Tên dự án" placeholder="Nhập tên dự án" rules={[{ required: true, message: 'Vui lòng nhập tên dự án' }]} />
       <ProFormText name="description" label="Mô tả" placeholder="Mô tả ngắn gọn" />
       <ProFormSelect
         name="status"
