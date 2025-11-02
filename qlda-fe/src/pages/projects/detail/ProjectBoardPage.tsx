@@ -36,7 +36,6 @@ export default function ProjectBoardPage() {
   const sensors = useSensors(useSensor(PointerSensor));
 
 
-  // 🔹 Lấy dữ liệu cột
   const { data, isLoading } = useQuery({
     queryKey: ['columns', projectId],
     queryFn: () => columnService.getColumns(projectId!),
@@ -50,7 +49,6 @@ export default function ProjectBoardPage() {
     }
   }, [data]);
 
-  // 🔹 Thêm cột
   const addColumn = useMutation({
     mutationFn: (name: string) => columnService.create(projectId!, { name }),
     onSuccess: async () => {
@@ -61,7 +59,6 @@ export default function ProjectBoardPage() {
     },
   });
 
-  // 🧱 Kéo-thả cột
   const handleColumnDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -76,14 +73,12 @@ export default function ProjectBoardPage() {
     );
   };
 
-  // 🔹 Khi bắt đầu kéo task
   const handleTaskDragStart = (event: DragStartEvent) => {
     const { active } = event;
     const found = columns.flatMap(col => col.tasks ?? []).find(t => t.id === active.id);
     if (found) setActiveTask(found);
   };
 
-  // 🔹 Khi thả task
   const handleTaskDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
@@ -177,7 +172,6 @@ export default function ProjectBoardPage() {
           </Space>
         </SortableContext>
 
-        {/* 🔹 Preview khi kéo */}
         <DragOverlay>
           {activeTask ? (
             <Card
