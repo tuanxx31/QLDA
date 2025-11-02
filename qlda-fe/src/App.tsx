@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from '@/context/AuthProvider';
 import AuthLayout from '@/layouts/AuthLayout';
 import AppLayout from '@/layouts/AppLayout';
 import Login from '@/pages/auth/Login';
@@ -17,7 +16,6 @@ import ProjectBoardPage from './pages/projects/detail/ProjectBoardPage';
 
 export default function App() {
   return (
-    <AuthProvider>
       <Routes>
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
@@ -38,6 +36,5 @@ export default function App() {
           </Route>
         </Route>
       </Routes>
-    </AuthProvider>
   );
 }

@@ -29,6 +29,7 @@ const GroupsPage = () => {
           Tạo nhóm
         </Button>,
       ]}
+      style={{ height: '100%' }}
     >
       <Card style={{ minHeight: '82vh' }}>
         <GroupPendingList

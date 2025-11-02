@@ -12,18 +12,18 @@ const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <AuthProvider>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <ConfigProvider locale={viVN}>
-            <AntdApp>
-              <ProConfigProvider intl={viVNIntl}>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <ProConfigProvider intl={viVNIntl}>
+            <ConfigProvider locale={viVN}>
+              <AntdApp>
                 <App />
-              </ProConfigProvider>
-            </AntdApp>
-          </ConfigProvider>
-        </BrowserRouter>
-      </QueryClientProvider>
-    </AuthProvider>
-  </React.StrictMode>,
+              </AntdApp>
+            </ConfigProvider>
+          </ProConfigProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  </React.StrictMode>
 );
