@@ -8,4 +8,6 @@ export class UserProfileDto {
   @Expose() studentCode: string;
   @Expose() department: string;
   @Expose() createdAt: Date;
+  @Expose() dateOfBirth: Date;
+  @Expose() gender: 'male' | 'female' | 'other';
 }

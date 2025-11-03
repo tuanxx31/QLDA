@@ -1,6 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { App, Spin } from 'antd';
-import { ProForm, ProFormText, ProCard } from '@ant-design/pro-components';
+import {
+  ProForm,
+  ProFormText,
+  ProCard,
+  ProFormDatePicker,
+  ProFormSelect,
+} from '@ant-design/pro-components';
 import { getUserProfile, updateUserProfile } from '@/services/user.services';
 import type { UpdateUserDto } from '@/types/user.type';
 
@@ -49,8 +55,25 @@ const ProfileSettings = () => {
 
         <ProFormText name="email" label="Email" disabled tooltip="Không thể thay đổi email" />
 
+        <ProFormDatePicker
+          name="dateOfBirth"
+          label="Ngày sinh"
+          placeholder="Chọn ngày sinh"
+          fieldProps={{
+            format: 'DD-MM-YYYY',
+          }}
+        />
+        <ProFormSelect
+          name="gender"
+          label="Giới tính"
+          placeholder="Chọn giới tính"
+          options={[
+            { label: 'Nam', value: 'male' },
+            { label: 'Nữ', value: 'female' },
+            { label: 'Khác', value: 'other' },
+          ]}
+        />
         <ProFormText name="studentCode" label="Mã sinh viên" placeholder="Nhập mã sinh viên" />
-
         <ProFormText name="department" label="Khoa" placeholder="Nhập tên khoa" />
       </ProForm>
     </ProCard>

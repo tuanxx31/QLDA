@@ -5,6 +5,8 @@ export interface User {
   avatar: string;
   studentCode: string;
   department: string;
+  gender: 'male' | 'female' | 'other';
+  dateOfBirth: Date;
   createdAt: Date;
 }
 
