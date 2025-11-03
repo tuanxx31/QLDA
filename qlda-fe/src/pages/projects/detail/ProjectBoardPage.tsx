@@ -199,7 +199,7 @@ export default function ProjectBoardPage() {
     >
       <Card
         style={{
-          height: '80vh',
+          height: 'calc(100vh - 200px)',
           display: 'flex',
           flexDirection: 'column',
         }}
