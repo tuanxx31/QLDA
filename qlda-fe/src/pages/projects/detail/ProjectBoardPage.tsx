@@ -199,7 +199,7 @@ export default function ProjectBoardPage() {
     >
       <Card
         style={{
-          height: '82vh',
+          height: '80vh',
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -229,6 +229,7 @@ export default function ProjectBoardPage() {
                 width: '100%',
                 overflowX: 'auto',
                 padding: 8,
+                height: '100%',
               }}
             >
               {columns.map(col => (
