@@ -37,7 +37,7 @@ export default function ProjectBoardPage() {
   const [newColumnName, setNewColumnName] = useState('');
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [activeColumn, setActiveColumn] = useState<Column | null>(null);
-  const [isFullScreen, setIsFullScreen] = useState(false); // 👈 trạng thái toàn màn hình
+  const [isFullScreen, setIsFullScreen] = useState(false); 
 
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -145,7 +145,6 @@ export default function ProjectBoardPage() {
     setActiveTask(null);
   };
 
-  // 🎯 Fullscreen API handler
   useEffect(() => {
     const handleChange = () => {
       setIsFullScreen(!!document.fullscreenElement);
