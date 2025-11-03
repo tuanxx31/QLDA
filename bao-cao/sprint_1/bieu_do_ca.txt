@@ -1,0 +1,33 @@
+cái này hoạt động ok trên trang https://www.planttext.com/ 
+ @startuml
+skinparam dpi 150
+skinparam usecase {
+  BackgroundColor #EEF6FB
+  BorderColor #3B82F6
+  ArrowColor #000000
+  FontSize 16
+}
+skinparam actorStyle stickman
+left to right direction
+
+actor "Người dùng" as User
+
+(Quản lý tài khoản) as MainUC
+
+(Đăng ký tài khoản)
+(Đăng nhập tài khoản)
+(Hiển thị thông tin cá nhân)
+(Chỉnh sửa thông tin cá nhân)
+(Đổi mật khẩu)
+(Đăng xuất tài khoản)
+
+User --> MainUC
+
+MainUC -- (Đăng ký tài khoản)
+MainUC -- (Đăng nhập tài khoản)
+MainUC -- (Hiển thị thông tin cá nhân)
+MainUC -- (Chỉnh sửa thông tin cá nhân)
+MainUC -- (Đổi mật khẩu)
+MainUC -- (Đăng xuất tài khoản)
+
+@enduml

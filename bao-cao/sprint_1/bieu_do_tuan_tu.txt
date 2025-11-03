@@ -1,0 +1,84 @@
+@startuml
+!pragma useUnicode true
+skinparam dpi 150
+skinparam sequence {
+  LifeLineBorderColor #3B82F6
+  LifeLineBackgroundColor #E6F2FF
+  ArrowColor #000000
+  ParticipantFontSize 15
+  BoxFontSize 15
+  ParticipantBorderColor #3B82F6
+  ParticipantBackgroundColor #E6F2FF
+}
+hide footbox
+
+actor "Người dùng" as User
+participant ":Giao diện" as UI
+participant ":Hệ thống" as System
+participant ":Cơ sở dữ liệu" as DB
+
+' --- Người dùng hoạt động suốt quá trình ---
+activate User
+
+' --- Bắt đầu ---
+User -> UI: 1. Yêu cầu quản lý tài khoản
+activate UI
+UI -> System: 2. Lấy danh sách thông tin người dùng
+activate System
+System -> DB: 3. Truy vấn dữ liệu người dùng
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 4. Hiển thị danh sách tài khoản
+deactivate System
+deactivate UI
+
+' --- Đăng ký tài khoản ---
+User -> UI: 5a. Thực hiện đăng ký tài khoản mới
+activate UI
+UI -> System: 5b. Gửi yêu cầu tạo tài khoản
+activate System
+System -> DB: 5c. Thêm dữ liệu người dùng mới
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: [Thành công]
+deactivate System
+deactivate UI
+
+' --- Chỉnh sửa thông tin cá nhân ---
+User -> UI: 6a. Thực hiện chỉnh sửa thông tin
+activate UI
+UI -> System: 6b. Gửi yêu cầu cập nhật
+activate System
+System -> DB: 6c. Cập nhật dữ liệu người dùng
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: [Thành công]
+deactivate System
+deactivate UI
+
+' --- Đổi mật khẩu ---
+User -> UI: 7a. Thực hiện đổi mật khẩu
+activate UI
+UI -> System: 7b. Gửi yêu cầu cập nhật mật khẩu
+activate System
+System -> DB: 7c. Cập nhật mật khẩu vào cơ sở dữ liệu
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: [Thành công]
+deactivate System
+deactivate UI
+
+' --- Đăng xuất ---
+User -> UI: 8. Chọn "Đăng xuất"
+activate UI
+UI -> System: 9. Gửi yêu cầu đăng xuất
+activate System
+System --> UI: [Thành công]
+deactivate System
+deactivate UI
+
+@enduml
