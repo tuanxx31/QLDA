@@ -1,6 +1,10 @@
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Space, Typography, message, Spin, Card, theme } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Button, Space, Typography, message, Spin, Card, theme, Tooltip } from 'antd';
+import {
+  ArrowLeftOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined,
+} from '@ant-design/icons';
 import {
   DndContext,
   closestCenter,
@@ -33,6 +37,7 @@ export default function ProjectBoardPage() {
   const [newColumnName, setNewColumnName] = useState('');
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [activeColumn, setActiveColumn] = useState<Column | null>(null);
+  const [isFullScreen, setIsFullScreen] = useState(false); // 👈 trạng thái toàn màn hình
 
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -45,7 +50,6 @@ export default function ProjectBoardPage() {
     staleTime: Infinity,
   });
 
-  // --- Load initial columns
   useEffect(() => {
     if (data?.data) {
       const sorted = [...data.data].sort((a, b) => a.order - b.order);
@@ -53,28 +57,21 @@ export default function ProjectBoardPage() {
     }
   }, [data]);
 
-  // --- Add column mutation
   const addColumn = useMutation({
     mutationFn: (name: string) => columnService.create(projectId!, { name }),
-    onSuccess: (res) => {
+    onSuccess: res => {
       message.success('Đã thêm cột');
-      setColumns(prev => [
-        ...prev,
-        { ...res.data, order: prev.length + 1, tasks: [] },
-      ]);
+      setColumns(prev => [...prev, { ...res.data, order: prev.length + 1, tasks: [] }]);
       setIsAddingColumn(false);
       setNewColumnName('');
     },
   });
 
-  // --- Debounced update order
   const debouncedUpdateOrder = useRef(
     debounce(async (reordered: Column[]) => {
       try {
         await Promise.all(
-          reordered.map((c, i) =>
-            columnService.update(projectId!, c.id, { order: i + 1 }),
-          ),
+          reordered.map((c, i) => columnService.update(projectId!, c.id, { order: i + 1 })),
         );
       } catch {
         message.error('Không thể lưu thứ tự cột');
@@ -82,13 +79,11 @@ export default function ProjectBoardPage() {
     }, 500),
   ).current;
 
-  // --- Khi bắt đầu kéo cột
   const handleColumnDragStart = (event: DragStartEvent) => {
     const activeCol = columns.find(c => c.id === event.active.id);
     if (activeCol) setActiveColumn(activeCol);
   };
 
-  // --- Khi kết thúc kéo cột
   const handleColumnDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) {
@@ -98,17 +93,16 @@ export default function ProjectBoardPage() {
 
     const oldIndex = columns.findIndex(c => c.id === active.id);
     const newIndex = columns.findIndex(c => c.id === over.id);
-    const reordered = arrayMove(columns, oldIndex, newIndex)
-      .map((c, i) => ({ ...c, order: i + 1 }));
+    const reordered = arrayMove(columns, oldIndex, newIndex).map((c, i) => ({
+      ...c,
+      order: i + 1,
+    }));
 
-    // Cập nhật client ngay
     setColumns(reordered);
-    // Gửi API cập nhật thứ tự
     debouncedUpdateOrder(reordered);
     setActiveColumn(null);
   };
 
-  // --- Task drag giữ nguyên
   const handleTaskDragStart = (event: DragStartEvent) => {
     const { active } = event;
     const found = columns.flatMap(col => col.tasks ?? []).find(t => t.id === active.id);
@@ -135,9 +129,7 @@ export default function ProjectBoardPage() {
     if (activeCol.id === overCol.id) {
       activeTasks.splice(overIndex, 0, movedTask);
       setColumns(cols =>
-        cols.map(col =>
-          col.id === activeCol.id ? { ...col, tasks: activeTasks } : col,
-        ),
+        cols.map(col => (col.id === activeCol.id ? { ...col, tasks: activeTasks } : col)),
       );
     } else {
       overTasks.splice(overIndex, 0, movedTask);
@@ -151,6 +143,25 @@ export default function ProjectBoardPage() {
     }
 
     setActiveTask(null);
+  };
+
+  // 🎯 Fullscreen API handler
+  useEffect(() => {
+    const handleChange = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleChange);
+    return () => document.removeEventListener('fullscreenchange', handleChange);
+  }, []);
+
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        message.error('Không thể bật toàn màn hình');
+      });
+    } else {
+      document.exitFullscreen();
+    }
   };
 
   if (isLoading) {
@@ -177,16 +188,37 @@ export default function ProjectBoardPage() {
           </Title>
         </Space>
       }
+      extra={[
+        <Tooltip title={isFullScreen ? 'Thoát toàn màn hình (Esc)' : 'Toàn màn hình'} key="fs">
+          <Button
+            type="text"
+            icon={isFullScreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+            onClick={toggleFullScreen}
+          />
+        </Tooltip>,
+      ]}
     >
-      <Card style={{ minHeight: '82vh' }}>
+      <Card
+        style={{
+          height: '82vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+        bodyStyle={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          padding: 0,
+        }}
+      >
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
-          onDragStart={(event) => {
+          onDragStart={event => {
             handleTaskDragStart(event);
             handleColumnDragStart(event);
           }}
-          onDragEnd={(event) => {
+          onDragEnd={event => {
             handleTaskDragEnd(event);
             handleColumnDragEnd(event);
           }}
@@ -196,7 +228,6 @@ export default function ProjectBoardPage() {
               align="start"
               style={{
                 width: '100%',
-                minHeight: '100%',
                 overflowX: 'auto',
                 padding: 8,
               }}
@@ -205,7 +236,7 @@ export default function ProjectBoardPage() {
                 <div
                   key={col.id}
                   style={{
-                    opacity: activeColumn?.id === col.id ? 0 : 1, // ẩn cột đang kéo
+                    opacity: activeColumn?.id === col.id ? 0 : 1,
                     transition: 'opacity 0.2s ease',
                   }}
                 >
@@ -224,35 +255,31 @@ export default function ProjectBoardPage() {
           </SortableContext>
 
           <DragOverlay>
-  {activeColumn ? (
-    <div
-      style={{
-        transform: 'rotate(1deg)', // tạo cảm giác "đang cầm"
-        boxShadow: token.boxShadowSecondary,
-        opacity: 0.95,
-      }}
-    >
-      <SortableColumn
-        column={activeColumn}
-        isOverlay // 👈 truyền flag đặc biệt
-      />
-    </div>
-  ) : activeTask ? (
-    <Card
-      style={{
-        borderRadius: 8,
-        background: token.colorBgElevated,
-        boxShadow: token.boxShadowSecondary,
-        width: 250,
-      }}
-    >
-      <Typography.Text strong>{activeTask.title}</Typography.Text>
-      <br />
-      <Text type="secondary">{activeTask.description || 'Không có mô tả'}</Text>
-    </Card>
-  ) : null}
-</DragOverlay>
-
+            {activeColumn ? (
+              <div
+                style={{
+                  transform: 'rotate(1deg)',
+                  boxShadow: token.boxShadowSecondary,
+                  opacity: 0.95,
+                }}
+              >
+                <SortableColumn column={activeColumn} isOverlay />
+              </div>
+            ) : activeTask ? (
+              <Card
+                style={{
+                  borderRadius: 8,
+                  background: token.colorBgElevated,
+                  boxShadow: token.boxShadowSecondary,
+                  width: 250,
+                }}
+              >
+                <Typography.Text strong>{activeTask.title}</Typography.Text>
+                <br />
+                <Text type="secondary">{activeTask.description || 'Không có mô tả'}</Text>
+              </Card>
+            ) : null}
+          </DragOverlay>
         </DndContext>
       </Card>
     </PageContainer>

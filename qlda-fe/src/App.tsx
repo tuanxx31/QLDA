@@ -13,6 +13,7 @@ import GroupDetailPage from './pages/groups/detail';
 import ProjectPage from './pages/projects';
 import ProjectDetailPage from './pages/projects/detail';
 import ProjectBoardPage from './pages/projects/detail/ProjectBoardPage';
+import './styles/app.css';
 
 export default function App() {
   return (
