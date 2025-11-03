@@ -2,6 +2,11 @@ import { PageContainer } from '@ant-design/pro-components';
 import { Typography, Card } from 'antd';
 
 export default function Dashboard() {
+  // return<>
+  // <div>
+  //   <h1>Dashboard</h1>
+  // </div>
+  // </>
   return (
     <PageContainer title="Trang tổng quan">
       <Card style={{ minHeight: '82vh' }}>

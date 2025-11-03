@@ -43,24 +43,18 @@ export default function AppLayout() {
 
   return (
     <div
-      id="app-layout"
       style={{
         height: '100vh',
-        overflow: 'auto',
       }}
     >
       <ProLayout
         title="Quản lý dự án"
         layout="mix"
         fixSiderbar
-        // splitMenus
         location={{ pathname: location.pathname }}
         route={routes}
         menuItemRender={(item, dom) => (
-          <div
-            onClick={() => item.path && navigate(item.path)}
-            style={{ cursor: 'pointer' }}
-          >
+          <div onClick={() => item.path && navigate(item.path)} style={{ cursor: 'pointer' }}>
             {dom}
           </div>
         )}
