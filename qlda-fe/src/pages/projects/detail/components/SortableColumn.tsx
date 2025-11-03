@@ -8,6 +8,8 @@ import {
   Space,
   Spin,
   theme,
+  Typography,
+  type InputRef,
 } from "antd";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { useSortable } from "@dnd-kit/sortable";
@@ -18,30 +20,22 @@ import { useParams } from "react-router-dom";
 import { columnService } from "@/services/column.services";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-export default function SortableColumn({ column }: { column: Column }) {
+const { Text } = Typography;
+
+export default function SortableColumn({ column, isOverlay }: { column: Column, isOverlay?: boolean }) {
   const { token } = theme.useToken();
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
-    id: column.id,
-  });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: column.id ,disabled: isOverlay});
 
   const qc = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();
 
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    minWidth: 300,
-    background: token.colorBgContainer,
-    borderRadius: token.borderRadiusLG,
-    boxShadow: token.boxShadowTertiary,
-  };
-
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(column.name);
-  const inputRef = useRef<typeof Input | null>(null);
+  const inputRef = useRef<InputRef>(null);
 
   useEffect(() => {
-    if (isEditing && inputRef.current) (inputRef.current as any).focus();
+    if (isEditing) inputRef.current?.focus();
   }, [isEditing]);
 
   const removeMutation = useMutation({
@@ -50,9 +44,7 @@ export default function SortableColumn({ column }: { column: Column }) {
       message.success("Đã xóa cột");
       qc.invalidateQueries({ queryKey: ["columns", projectId] });
     },
-    onError: () => {
-      message.error("Không thể xóa cột");
-    },
+    onError: () => message.error("Không thể xóa cột"),
   });
 
   const updateMutation = useMutation({
@@ -63,9 +55,7 @@ export default function SortableColumn({ column }: { column: Column }) {
       qc.invalidateQueries({ queryKey: ["columns", projectId] });
       setIsEditing(false);
     },
-    onError: () => {
-      message.error("Không thể cập nhật tên cột");
-    },
+    onError: () => message.error("Không thể cập nhật tên cột"),
   });
 
   const handleSave = () => {
@@ -76,23 +66,37 @@ export default function SortableColumn({ column }: { column: Column }) {
       setIsEditing(false);
       return;
     }
-    if (trimmed !== column.name) {
-      updateMutation.mutate(trimmed);
-    } else {
-      setIsEditing(false);
-    }
+    if (trimmed !== column.name) updateMutation.mutate(trimmed);
+    else setIsEditing(false);
+  };
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition: isDragging
+      ? "none"
+      : "transform 0.25s ease, box-shadow 0.2s ease, border 0.2s ease",
+    minWidth: 300,
+    background: token.colorBgContainer,
+    borderRadius: token.borderRadiusLG,
+    boxShadow: isDragging ? token.boxShadowSecondary : token.boxShadowTertiary,
+    border: isDragging
+      ? `1px solid ${token.colorPrimaryBorder}`
+      : `1px solid ${token.colorBorderSecondary}`,
   };
 
   return (
     <Card
       ref={setNodeRef}
       style={style}
-      bodyStyle={{ padding: 8, maxHeight: '75vh', overflowY: 'auto' }}
-
+      bodyStyle={{
+        padding: 8,
+        maxHeight: "75vh",
+        overflowY: "auto",
+      }}
       title={
         <div
-          {...attributes}
-          {...listeners}
+          {...(!isEditing ? attributes : {})}
+          {...(!isEditing ? listeners : {})}
           style={{
             display: "flex",
             alignItems: "center",
@@ -102,31 +106,45 @@ export default function SortableColumn({ column }: { column: Column }) {
           }}
         >
           {isEditing ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Space align="center">
               <Input
-                ref={inputRef as any}
+                ref={inputRef}
                 size="small"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 onPressEnter={handleSave}
                 onBlur={handleSave}
                 disabled={updateMutation.isPending}
-                style={{ width: 180 }}
+                style={{
+                  width: 180,
+                  borderRadius: token.borderRadiusSM,
+                }}
               />
               {updateMutation.isPending && <Spin size="small" />}
-            </div>
+            </Space>
           ) : (
-            column.name
+            <Text
+              strong
+              style={{
+                fontSize: 15,
+                color: token.colorTextHeading,
+              }}
+            >
+              {column.name}
+            </Text>
           )}
         </div>
       }
       extra={
-        <Space>
+        <Space size="small">
           {!isEditing && (
             <Button
               type="text"
               icon={<EditOutlined />}
               onClick={() => setIsEditing(true)}
+              style={{
+                color: token.colorTextSecondary,
+              }}
             />
           )}
           <Popconfirm
@@ -134,8 +152,14 @@ export default function SortableColumn({ column }: { column: Column }) {
             onConfirm={() => removeMutation.mutate()}
             okText="Xác nhận"
             cancelText="Hủy"
+            okButtonProps={{ danger: true }}
           >
-            <Button type="text" danger icon={<DeleteOutlined />} />
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              loading={removeMutation.isPending}
+            />
           </Popconfirm>
         </Space>
       }
