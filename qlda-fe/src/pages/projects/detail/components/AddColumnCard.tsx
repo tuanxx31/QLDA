@@ -1,5 +1,7 @@
-import { Button, Card, Input, Space, theme } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { useEffect, useRef } from 'react';
+import { ProCard } from '@ant-design/pro-components';
+import { Button, Input, Space, theme, type InputRef } from 'antd';
+import { PlusOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 
 export default function AddColumnCard({
   isAdding,
@@ -15,39 +17,81 @@ export default function AddColumnCard({
   onAdd: (name: string) => void;
 }) {
   const { token } = theme.useToken();
+  const inputRef = useRef<InputRef>(null);
+
+  useEffect(() => {
+    if (isAdding) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [isAdding]);
+
+  const handleAdd = () => {
+    if (newName.trim()) onAdd(newName.trim());
+  };
 
   return (
-    <Card
+    <ProCard
+      bordered
       style={{
         minWidth: 280,
-        background: token.colorBgLayout,
-        border: `1px dashed ${token.colorBorder}`,
-        borderRadius: token.borderRadiusLG,
         textAlign: 'center',
+        borderStyle: 'dashed',
+        background: token.colorBgContainer,
+        borderColor: token.colorBorderSecondary,
+        transition: 'all 0.2s ease',
+        boxShadow: isAdding ? token.boxShadowSecondary : undefined,
+      }}
+      bodyStyle={{
+        padding: isAdding ? 16 : 8,
       }}
     >
       {isAdding ? (
         <Space direction="vertical" style={{ width: '100%' }}>
           <Input
+            ref={inputRef}
             placeholder="Tên cột..."
             value={newName}
             onChange={e => setNewName(e.target.value)}
-            onPressEnter={() => newName && onAdd(newName)}
+            onPressEnter={handleAdd}
+            maxLength={50}
+            status={!newName.trim() ? 'warning' : undefined}
           />
           <Space>
-            <Button type="primary" size="small" onClick={() => newName && onAdd(newName)}>
+            <Button
+              type="primary"
+              icon={<CheckOutlined />}
+              size="small"
+              disabled={!newName.trim()}
+              onClick={handleAdd}
+            >
               Thêm
             </Button>
-            <Button size="small" onClick={() => setIsAdding(false)}>
+            <Button
+              icon={<CloseOutlined />}
+              size="small"
+              onClick={() => {
+                setNewName('');
+                setIsAdding(false);
+              }}
+            >
               Hủy
             </Button>
           </Space>
         </Space>
       ) : (
-        <Button icon={<PlusOutlined />} type="dashed" block onClick={() => setIsAdding(true)}>
+        <Button
+          type="dashed"
+          icon={<PlusOutlined />}
+          block
+          onClick={() => setIsAdding(true)}
+          style={{
+            height: 40,
+            fontWeight: 500,
+          }}
+        >
           Thêm cột mới
         </Button>
       )}
-    </Card>
+    </ProCard>
   );
 }
