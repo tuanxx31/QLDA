@@ -1,36 +1,48 @@
-import { Modal, Input } from 'antd';
-import { useState } from 'react';
+import { ModalForm, ProFormText } from '@ant-design/pro-components';
+import { message } from 'antd';
+
+interface AddMemberModalProps {
+  open: boolean;
+  onCancel: () => void;
+  onSubmit: (email: string) => Promise<void> | void;
+  loading?: boolean;
+}
 
 export const AddMemberModal = ({
   open,
   onCancel,
   onSubmit,
   loading,
-}: {
-  open: boolean;
-  onCancel: () => void;
-  onSubmit: (email: string) => void;
-  loading?: boolean;
-}) => {
-  const [email, setEmail] = useState('');
-
+}: AddMemberModalProps) => {
   return (
-    <Modal
+    <ModalForm<{ email: string }>
       title="Thêm thành viên vào nhóm"
       open={open}
-      onCancel={onCancel}
-      onOk={() => {
-        onSubmit(email);
-        setEmail('');
+      modalProps={{
+        onCancel,
+        destroyOnClose: true,
+        confirmLoading: loading,
       }}
-      okText="Gửi lời mời"
-      confirmLoading={loading}
+      onFinish={async values => {
+        try {
+          await onSubmit(values.email);
+          message.success('Đã gửi lời mời thành công');
+          return true; // đóng form
+        } catch {
+          message.error('Gửi lời mời thất bại');
+          return false;
+        }
+      }}
     >
-      <Input
+      <ProFormText
+        name="email"
+        label="Email thành viên"
         placeholder="Nhập email thành viên"
-        value={email}
-        onChange={e => setEmail(e.target.value)}
+        rules={[
+          { required: true, message: 'Vui lòng nhập email' },
+          { type: 'email', message: 'Email không hợp lệ' },
+        ]}
       />
-    </Modal>
+    </ModalForm>
   );
 };
