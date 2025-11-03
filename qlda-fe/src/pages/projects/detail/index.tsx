@@ -9,12 +9,14 @@ import ProjectInfoCard from './components/ProjectInfoCard';
 import ProjectMembers from './components/ProjectMembers';
 import MemberAddModal from './components/MemberAddModal';
 import MemberAddFromGroupModal from './components/MemberAddFromGroupModal';
+import useAuth from '@/hooks/useAuth';
 
 const { Title } = Typography;
 
 const ProjectDetailPage = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const auth = useAuth();
   const qc = useQueryClient();
   const [openAddMember, setOpenAddMember] = useState(false);
   const [openAddFromGroup, setOpenAddFromGroup] = useState(false);
@@ -24,6 +26,8 @@ const ProjectDetailPage = () => {
     queryFn: async () => await projectService.getById(projectId!),
     enabled: !!projectId,
   });
+
+  const isLeader = auth.authUser?.id === project?.owner?.id;
 
   if (isLoading) {
     return (
@@ -62,7 +66,7 @@ const ProjectDetailPage = () => {
       }
       subTitle={project.description || 'Không có mô tả'}
       extra={[
-        <Button
+        isLeader && <Button
           key="addMember"
           icon={<UserAddOutlined />}
           type="primary"
@@ -70,7 +74,7 @@ const ProjectDetailPage = () => {
         >
           Thêm thành viên
         </Button>,
-        isGroupProject && (
+        isGroupProject && isLeader && (
           <Button
             key="addFromGroup"
             icon={<UserAddOutlined />}

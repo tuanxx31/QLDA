@@ -3,6 +3,7 @@ import { EditOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import type { Project } from '@/types/project.type';
 import ProjectEditModal from '../../components/ProjectEditModal';
+import useAuth from '@/hooks/useAuth';
 
 const { Text, Paragraph, Title } = Typography;
 
@@ -13,7 +14,7 @@ interface Props {
 
 const ProjectInfoCard = ({ project, onUpdate }: Props) => {
   const [open, setOpen] = useState(false);
-
+  const auth = useAuth();
   const formatDate = (date?: string | null) =>
     date
       ? new Date(date).toLocaleDateString('vi-VN', {
@@ -28,13 +29,17 @@ const ProjectInfoCard = ({ project, onUpdate }: Props) => {
   const getStatusText = (s: string) =>
     s === 'done' ? 'Hoàn thành' : s === 'doing' ? 'Đang thực hiện' : 'Chưa bắt đầu';
 
+  const isLeader = auth.authUser?.id === project.owner?.id;
+
   return (
     <Card
       title={<Title level={4}>Thông tin dự án</Title>}
       extra={
-        <Button type="primary" icon={<EditOutlined />} onClick={() => setOpen(true)}>
-          Chỉnh sửa
-        </Button>
+        isLeader && (
+          <Button type="primary" icon={<EditOutlined />} onClick={() => setOpen(true)}>
+            Chỉnh sửa
+          </Button>
+        )
       }
       style={{ borderRadius: 12 }}
     >
