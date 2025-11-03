@@ -25,6 +25,9 @@ export class User {
   @Column({ nullable: false })
   password: string;
 
+  @Column({ nullable: true })
+  dateOfBirth: Date;
+
   @Column({
     nullable: true,
     default: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
@@ -36,6 +39,9 @@ export class User {
 
   @Column({ nullable: true })
   department: string;
+
+  @Column({ nullable: true })
+  gender: 'male' | 'female' | 'other';
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
