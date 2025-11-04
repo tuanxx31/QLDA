@@ -37,7 +37,7 @@ export default function Login() {
         name="email"
         label="Email"
         placeholder="Nhập email"
-        rules={[{ required: true, message: 'Vui lòng nhập email!' }]}
+        rules={[{ required: true, message: 'Vui lòng nhập email!' }, { type: 'email', message: 'Email không hợp lệ!'   }]}
       />
 
       <ProFormText.Password

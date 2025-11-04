@@ -34,22 +34,68 @@ export default function Register() {
         name="name"
         label="Họ tên"
         placeholder="Nguyễn Văn A"
-        rules={[{ required: true }]}
+        rules={[
+          { required: true, message: 'Vui lòng nhập họ tên!' },
+          { min: 3, message: 'Họ tên phải có ít nhất 3 ký tự!' },
+        ]}
       />
+
       <ProFormText
         name="email"
         label="Email"
         placeholder="abc@student.edu.vn"
-        rules={[{ required: true }]}
+        rules={[
+          { required: true, message: 'Vui lòng nhập email!' },
+          {
+            type: 'email',
+            message: 'Email không hợp lệ!',
+          },
+          // {
+          //   pattern: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
+          //   message: 'Địa chỉ email không đúng định dạng!',
+          // },
+        ]}
       />
+
       <ProFormText.Password
         name="password"
         label="Mật khẩu"
         placeholder="Tối thiểu 6 ký tự"
-        rules={[{ required: true }]}
+        rules={[
+          { required: true, message: 'Vui lòng nhập mật khẩu!' },
+          { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' },
+          // {
+          //   pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/,
+          //   message: 'Mật khẩu cần có ít nhất 1 chữ và 1 số!',
+          // },
+        ]}
       />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+      <ProFormText.Password
+        name="confirmPassword"
+        label="Xác nhận mật khẩu"
+        placeholder="Nhập lại mật khẩu"
+        dependencies={['password']}
+        rules={[
+          { required: true, message: 'Vui lòng xác nhận mật khẩu!' },
+          ({ getFieldValue }) => ({
+            validator(_, value) {
+              if (!value || getFieldValue('password') === value) {
+                return Promise.resolve();
+              }
+              return Promise.reject(new Error('Mật khẩu không khớp!'));
+            },
+          }),
+        ]}
+      />
+
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          marginBottom: 8,
+        }}
+      >
         <Link to="/login">Đã có tài khoản? Đăng nhập</Link>
       </div>
     </LoginFormPage>
