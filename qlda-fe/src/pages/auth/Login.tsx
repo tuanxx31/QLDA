@@ -9,13 +9,15 @@ import { useState } from 'react';
 export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const { message } = App.useApp();
   const navigate = useNavigate();
   const handleSubmit = async (values: LoginParams) => {
     setIsSubmitting(true);
     try {
       const res = await loginService(values);
+      logout();
+      
       login(res.access_token, res.user);
       message.success('Đăng nhập thành công!');
       navigate('/dashboard', { replace: true });
