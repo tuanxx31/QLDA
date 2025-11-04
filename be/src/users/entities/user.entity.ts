@@ -26,7 +26,7 @@ export class User {
   password: string;
 
   @Column({ nullable: true })
-  dateOfBirth: Date;
+  dateOfBirth?: Date;
 
   @Column({
     nullable: true,

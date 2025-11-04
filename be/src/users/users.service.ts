@@ -41,7 +41,11 @@ export class UsersService {
     id: string,
     dto: UpdateUserDto,
   ): Promise<{ message: string }> {
-    await this.userRepository.update(id, dto);
+    console.log({dto});
+    const updatedUser = await this.userRepository.update(id, dto);
+    if (updatedUser.affected === 0) {
+      throw new BadRequestException('Cập nhật thông tin profile thất bại');
+    }
     return { message: 'Thông tin profile đã được cập nhật thành công' };
   }
 

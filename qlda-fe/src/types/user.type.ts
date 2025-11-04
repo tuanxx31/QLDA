@@ -23,6 +23,8 @@ export interface UpdateUserDto {
   avatar: string;
   studentCode: string;
   department: string;
+  gender: 'male' | 'female' | 'other';
+  dateOfBirth: string;
 }
 
 export interface ChangePasswordDto {

@@ -61,6 +61,7 @@ const ProfileSettings = () => {
           placeholder="Chọn ngày sinh"
           fieldProps={{
             format: 'DD-MM-YYYY',
+            valueFormat: 'YYYY-MM-DD',
           }}
         />
         <ProFormSelect
