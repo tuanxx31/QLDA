@@ -1,3 +1,4 @@
+import useAuth from '@/hooks/useAuth';
 import { deleteUser } from '@/services/user.services';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { ProCard } from '@ant-design/pro-components';
@@ -16,9 +17,11 @@ export default function SecuritySettings() {
 
 const DeleteAccount = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const handleDeleteAccount = async () => {
     try {
       await deleteUser();
+      logout();
       message.success('Xóa tài khoản thành công');
       navigate('/login');
     } catch (err: any) {

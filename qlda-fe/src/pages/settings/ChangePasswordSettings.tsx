@@ -11,24 +11,6 @@ const ChangePasswordSettings = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (values: ChangePasswordDto) => {
-    if (values.newPassword !== values.confirmPassword) {
-      message.error('Mật khẩu mới và xác nhận mật khẩu không khớp');
-      return;
-    }
-    if (values.newPassword.length < 6) {
-      message.error('Mật khẩu mới phải có ít nhất 6 ký tự');
-      return;
-    }
-    if (
-      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
-        values.newPassword,
-      )
-    ) {
-      message.error(
-        'Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ cái viết hoa, chữ cái viết thường, số và ký tự đặc biệt',
-      );
-      return;
-    }
     setIsSubmitting(true);
     try {
       await changePassword(values);
@@ -43,22 +25,42 @@ const ChangePasswordSettings = () => {
 
   return (
     <ProForm<ChangePasswordDto> onFinish={handleSubmit} loading={isSubmitting}>
-      <ProFormText
+      <ProFormText.Password
         name="password"
         label="Mật khẩu hiện tại"
+        placeholder="Nhập mật khẩu hiện tại"
         rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại' }]}
       />
-      <ProFormText
+
+      <ProFormText.Password
         name="newPassword"
         label="Mật khẩu mới"
-        rules={[{ required: true, message: 'Vui lòng nhập mật khẩu mới' }]}
+        placeholder="Tối thiểu 6 ký tự"
+        rules={[
+          { required: true, message: 'Vui lòng nhập mật khẩu mới' },
+          { min: 6, message: 'Mật khẩu mới phải có ít nhất 6 ký tự' },
+        ]}
       />
-      <ProFormText
+
+      <ProFormText.Password
         name="confirmPassword"
-        label="Xác nhận mật khẩu"
-        rules={[{ required: true, message: 'Vui lòng xác nhận mật khẩu' }]}
+        label="Xác nhận mật khẩu mới"
+        placeholder="Nhập lại mật khẩu mới"
+        dependencies={['newPassword']}
+        rules={[
+          { required: true, message: 'Vui lòng xác nhận mật khẩu' },
+          ({ getFieldValue }) => ({
+            validator(_, value) {
+              if (!value || getFieldValue('newPassword') === value) {
+                return Promise.resolve();
+              }
+              return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
+            },
+          }),
+        ]}
       />
     </ProForm>
   );
 };
+
 export default ChangePasswordSettings;
