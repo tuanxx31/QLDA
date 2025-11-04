@@ -16,7 +16,7 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core';
 import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { columnService } from '@/services/column.services';
@@ -31,6 +31,7 @@ export default function ProjectBoardPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const { token } = theme.useToken();
+  const queryClient = useQueryClient();
 
   const [columns, setColumns] = useState<Column[]>([]);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
@@ -41,7 +42,7 @@ export default function ProjectBoardPage() {
 
   const sensors = useSensors(useSensor(PointerSensor));
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({ 
     queryKey: ['columns', projectId],
     queryFn: () => columnService.getColumns(projectId!),
     enabled: !!projectId,
@@ -61,6 +62,8 @@ export default function ProjectBoardPage() {
     mutationFn: (name: string) => columnService.create(projectId!, { name }),
     onSuccess: res => {
       message.success('Đã thêm cột');
+      queryClient.invalidateQueries({ queryKey: ['columns', projectId] });
+
       setColumns(prev => [...prev, { ...res.data, order: prev.length + 1, tasks: [] }]);
       setIsAddingColumn(false);
       setNewColumnName('');
