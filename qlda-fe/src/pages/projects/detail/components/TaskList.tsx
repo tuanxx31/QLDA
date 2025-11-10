@@ -47,6 +47,7 @@ export default function TaskList({ column }: { column: Column }) {
     }
     addTask.mutate(trimmed);
     qc.invalidateQueries({ queryKey: ['columns', projectId] });
+    setTasks(prev => [...prev, { id: 'new', title: trimmed, columnId: column.id, status: 'todo', priority: 'low' }]);
   };
 
   const handleTaskDragEnd = (event: DragEndEvent) => {
