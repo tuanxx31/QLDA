@@ -20,11 +20,9 @@ export class SubTask {
   @ColumnField({ default: false })
   completed: boolean;
 
-  /** Thời điểm hoàn thành subtask */
   @ColumnField({ type: 'timestamptz', nullable: true })
   completedAt?: Date;
 
-  /** Thứ tự subtask trong task */
   @ColumnField({ type: 'decimal', precision: 10, scale: 3, default: 0 })
   position: string;
 
