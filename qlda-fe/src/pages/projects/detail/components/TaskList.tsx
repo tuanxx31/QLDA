@@ -46,6 +46,7 @@ export default function TaskList({ column }: { column: Column }) {
       return;
     }
     addTask.mutate(trimmed);
+    qc.invalidateQueries({ queryKey: ['columns', projectId] });
   };
 
   const handleTaskDragEnd = (event: DragEndEvent) => {
