@@ -14,6 +14,7 @@ import { ProjectMembersModule } from './project-members/project-members.module';
 import { ColumnsModule } from './columns/columns.module';
 import { TasksModule } from './tasks/tasks.module';
 import { SubTasksModule } from './sub-tasks/sub-tasks.module';
+import { LabelsModule } from './labels/labels.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { SubTasksModule } from './sub-tasks/sub-tasks.module';
     ColumnsModule,
     TasksModule,
     SubTasksModule,
+    LabelsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
