@@ -20,7 +20,8 @@ export class SubTask {
   @ColumnField({ default: false })
   completed: boolean;
 
-  @ColumnField({ type: 'timestamptz', nullable: true })
+  // 🔹 MySQL không hỗ trợ timestamptz → dùng timestamp
+  @ColumnField({ type: 'timestamp', nullable: true })
   completedAt?: Date;
 
   @ColumnField({ type: 'decimal', precision: 10, scale: 3, default: 0 })

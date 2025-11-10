@@ -12,9 +12,9 @@ import { GroupMemberModule } from './group-member/group-member.module';
 import { ProjectsModule } from './projects/projects.module';
 import { ProjectMembersModule } from './project-members/project-members.module';
 import { ColumnsModule } from './columns/columns.module';
-import { TasksModule } from './tasks/tasks.module';
 import { SubTasksModule } from './sub-tasks/sub-tasks.module';
 import { LabelsModule } from './labels/labels.module';
+import { TaskModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -41,7 +41,7 @@ import { LabelsModule } from './labels/labels.module';
     ProjectsModule,
     ProjectMembersModule,
     ColumnsModule,
-    TasksModule,
+    TaskModule,
     SubTasksModule,
     LabelsModule,
   ],

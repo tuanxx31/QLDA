@@ -30,10 +30,11 @@ export class Task {
   @ColumnField({ type: 'text', nullable: true })
   description?: string;
 
-  @ColumnField({ type: 'timestamptz', nullable: true })
+  // 🔹 MySQL không hỗ trợ timestamptz → dùng timestamp
+  @ColumnField({ type: 'timestamp', nullable: true })
   startDate?: Date;
 
-  @ColumnField({ type: 'timestamptz', nullable: true })
+  @ColumnField({ type: 'timestamp', nullable: true })
   dueDate?: Date;
 
   @ColumnField({
@@ -56,7 +57,8 @@ export class Task {
   @ColumnField({ type: 'float', default: 0 })
   progress: number; // % hoàn thành (dùng cho Sprint 6)
 
-  @ColumnField({ type: 'timestamptz', nullable: true })
+  // 🔹 Cũng đổi về timestamp
+  @ColumnField({ type: 'timestamp', nullable: true })
   completedAt?: Date;
 
   @ColumnField({ name: 'created_by', type: 'uuid', nullable: true })
@@ -92,9 +94,10 @@ export class Task {
   @OneToMany(() => SubTask, (subtask) => subtask.task, { cascade: true })
   subtasks: SubTask[];
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  // 🔹 Chuyển về timestamp cho MySQL
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
 }
