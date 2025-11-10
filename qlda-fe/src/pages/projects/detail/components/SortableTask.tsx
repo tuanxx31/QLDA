@@ -1,11 +1,10 @@
-import { Card, Typography, theme } from 'antd';
+import { Card, theme } from 'antd';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { Task } from '@/types/project-board';
+import TaskCard from './TaskCard';
+import type { Task } from '@/types/task.type';
 
-const { Text } = Typography;
-
-export default function SortableTask({ task }: { task: Task }) {
+export default function SortableTask({ task, onClick }: { task: Task; onClick?: (task: Task) => void }) {
   const { token } = theme.useToken();
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: task.id });
 
@@ -15,15 +14,20 @@ export default function SortableTask({ task }: { task: Task }) {
     borderRadius: token.borderRadius,
     boxShadow: token.boxShadowSecondary,
     background: token.colorBgElevated,
+    cursor: 'pointer',
   };
 
   return (
-    <Card ref={setNodeRef} {...attributes} {...listeners} size="small" hoverable style={style}>
-      <Typography.Text strong>{task.title}</Typography.Text>
-      <br />
-      <Text type="secondary" ellipsis>
-        {task.description || 'Không có mô tả'}
-      </Text>
+    <Card
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      size="small"
+      hoverable
+      style={style}
+      onClick={() => onClick?.(task)}
+    >
+      <TaskCard task={task} onClick={onClick} />
     </Card>
   );
 }

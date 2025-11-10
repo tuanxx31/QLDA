@@ -52,12 +52,7 @@ export default function AddTaskCard({
           disabled={loading}
         />
         <Space>
-          <Button
-            type="primary"
-            size="small"
-            loading={loading}
-            onClick={() => onAdd(newTitle)}
-          >
+          <Button type="primary" size="small" loading={loading} onClick={() => onAdd(newTitle)}>
             Thêm
           </Button>
           <Button size="small" onClick={() => setIsAdding(false)}>

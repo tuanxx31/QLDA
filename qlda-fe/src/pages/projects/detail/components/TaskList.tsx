@@ -9,12 +9,14 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core';
 import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
-import type { Column, Task } from '@/types/project-board';
+import type { Column } from '@/types/project-board';
+import type { Task } from '@/types/task.type';
 import SortableTask from './SortableTask';
 import AddTaskCard from './AddTaskCard';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { taskService } from '@/services/task.services';
 import { useParams } from 'react-router-dom';
+import TaskDetailModal from './TaskDetailModal';
 
 export default function TaskList({ column }: { column: Column }) {
   const { projectId } = useParams<{ projectId: string }>();
@@ -24,9 +26,10 @@ export default function TaskList({ column }: { column: Column }) {
   const [tasks, setTasks] = useState<Task[]>(column.tasks || []);
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
+  const [openTask, setOpenTask] = useState<Task | null>(null);
 
   const addTask = useMutation({
-    mutationFn: (title: string) => taskService.create(column.id, { title }),
+    mutationFn: (title: string) => taskService.create(column.id, title),
     onSuccess: async () => {
       message.success('Đã thêm thẻ');
       setIsAdding(false);
@@ -55,24 +58,30 @@ export default function TaskList({ column }: { column: Column }) {
   };
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleTaskDragEnd}>
-      <SortableContext items={tasks} strategy={rectSortingStrategy}>
-        <Space direction="vertical" style={{ width: '100%', gap: 8, paddingBottom: 8 }}>
-          {tasks.map(task => (
-            <SortableTask key={task.id} task={task} />
-          ))}
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleTaskDragEnd}
+      >
+        <SortableContext items={tasks} strategy={rectSortingStrategy}>
+          <Space direction="vertical" style={{ width: '100%', gap: 8, paddingBottom: 8 }}>
+            {tasks.map(task => (
+              <SortableTask key={task.id} task={task} onClick={setOpenTask} />
+            ))}
 
-          {/* ✅ nút thêm task */}
-          <AddTaskCard
-            isAdding={isAdding}
-            setIsAdding={setIsAdding}
-            newTitle={newTitle}
-            setNewTitle={setNewTitle}
-            onAdd={handleAdd}
-            loading={addTask.isPending}
-          />
-        </Space>
-      </SortableContext>
-    </DndContext>
+            <AddTaskCard
+              isAdding={isAdding}
+              setIsAdding={setIsAdding}
+              newTitle={newTitle}
+              setNewTitle={setNewTitle}
+              onAdd={handleAdd}
+              loading={addTask.isPending}
+            />
+          </Space>
+        </SortableContext>
+      </DndContext>
+      <TaskDetailModal open={!!openTask} task={openTask} onClose={() => setOpenTask(null)} />
+    </>
   );
 }

@@ -1,21 +1,18 @@
-export interface SubTask {
-  id: string;
-  title: string;
-  completed: boolean;
-}
+// ─────────────────────────────────────────────
+// SubTask interface
 
-export interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  status: 'todo' | 'doing' | 'done';
-  priority: 'low' | 'medium' | 'high';
-  subtasks?: SubTask[];
-}
+import type { Task } from "./task.type";
 
+
+// ─────────────────────────────────────────────
+
+// ─────────────────────────────────────────────
+// Column interface
+// ─────────────────────────────────────────────
 export interface Column {
   id: string;
   name: string;
   order: number;
+  projectId?: string;
   tasks?: Task[];
 }
