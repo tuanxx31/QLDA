@@ -1,11 +1,9 @@
+import { IsString, IsOptional, IsDateString, IsEnum, IsUUID, IsArray } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsDate } from 'class-validator';
-import { IsEnum } from 'class-validator';
 
 export class CreateTaskDto {
   @ApiProperty({ example: 'Tên task' })
   @IsString()
-  @IsNotEmpty()
   title: string;
 
   @ApiProperty({ example: 'Mô tả task' })
@@ -15,13 +13,13 @@ export class CreateTaskDto {
 
   @ApiProperty({ example: '2025-01-01' })
   @IsOptional()
-  @IsDate()
-  startDate?: Date;
+  @IsDateString()
+  startDate?: string;
 
   @ApiProperty({ example: '2025-01-01' })
   @IsOptional()
-  @IsDate()
-  dueDate?: Date;
+  @IsDateString()
+  dueDate?: string;
 
   @ApiProperty({ example: 'todo' })
   @IsOptional()
@@ -32,4 +30,18 @@ export class CreateTaskDto {
   @IsOptional()
   @IsEnum(['low', 'medium', 'high'])
   priority?: 'low' | 'medium' | 'high';
+
+  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
+  @IsUUID()
+  columnId: string;
+
+  @ApiProperty({ example: ['123e4567-e89b-12d3-a456-426614174000'] })
+  @IsOptional()
+  @IsArray()
+  assigneeIds?: string[];
+
+  @ApiProperty({ example: ['123e4567-e89b-12d3-a456-426614174000'] })
+  @IsOptional()
+  @IsArray()
+  labelIds?: string[];
 }
