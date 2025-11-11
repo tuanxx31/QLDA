@@ -44,6 +44,7 @@ export default defineConfig([
 
       // ⚙️ Quy tắc khác
       '@typescript-eslint/no-explicit-any': 'off',
+      "no-unused-imports": "warn",
     },
   },
 ]);

@@ -19,10 +19,17 @@ import TaskList from "./TaskList";
 import { useParams } from "react-router-dom";
 import { columnService } from "@/services/column.services";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useDroppable } from "@dnd-kit/core";
 
 const { Text } = Typography;
 
 export default function SortableColumn({ column, isOverlay }: { column: Column, isOverlay?: boolean }) {
+
+  const { setNodeRef: setDropRef, isOver } = useDroppable({
+    id: column.id,
+    data: { type: "column", columnId: column.id },
+  });
+
   const { token } = theme.useToken();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: column.id ,disabled: isOverlay});
@@ -164,7 +171,9 @@ export default function SortableColumn({ column, isOverlay }: { column: Column, 
         </Space>
       }
     >
-      <TaskList column={column} />
+       <div ref={setDropRef}>
+        <TaskList column={column} />
+      </div>
     </Card>
   );
 }

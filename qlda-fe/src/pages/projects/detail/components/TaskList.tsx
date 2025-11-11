@@ -47,63 +47,64 @@ export default function TaskList({ column }: { column: Column }) {
     }
     addTask.mutate(trimmed);
     qc.invalidateQueries({ queryKey: ['columns', projectId] });
-    setTasks(prev => [...prev, { id: 'new', title: trimmed, columnId: column.id, status: 'todo', priority: 'low' }]);
+    setTasks(prev => [
+      ...prev,
+      { id: 'new', title: trimmed, columnId: column.id, status: 'todo', priority: 'low' },
+    ]);
   };
 
   const handleTaskDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-  
+
     const oldIndex = tasks.findIndex(t => t.id === active.id);
     const newIndex = tasks.findIndex(t => t.id === over.id);
-  
+
     if (oldIndex === -1 || newIndex === -1) return;
-  
+
     const reordered = arrayMove(tasks, oldIndex, newIndex);
     setTasks(reordered);
-  
+
     // Lấy 2 task lân cận vị trí mới
     const prevTask = reordered[newIndex - 1];
     const nextTask = reordered[newIndex + 1];
-  
+
     try {
       await taskService.updatePosition(
         active.id as string,
         prevTask?.id,
         nextTask?.id,
-        column.id // nếu sau này có drag sang cột khác
+        column.id, // nếu sau này có drag sang cột khác
       );
     } catch {
       message.error('Không thể lưu vị trí');
     }
   };
-  
-  
 
   return (
     <>
-      <DndContext
+      {/* <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleTaskDragEnd}
-      >
-        <SortableContext items={tasks} strategy={rectSortingStrategy}>
-          <Space direction="vertical" style={{ width: '100%', gap: 8, paddingBottom: 8 }}>
-            {tasks.map(task => (
-              <SortableTask key={task.id} task={task} onClick={setOpenTask} />
-            ))}
+      > */}
+      <SortableContext items={tasks.map(t => t.id)} strategy={rectSortingStrategy}>
+        <Space direction="vertical" style={{ width: '100%', gap: 8, paddingBottom: 8 }}>
+          {tasks.map(task => (
+            <SortableTask key={task.id} task={task} onClick={setOpenTask} />
+          ))}
 
-            <AddTaskCard
-              isAdding={isAdding}
-              setIsAdding={setIsAdding}
-              newTitle={newTitle}
-              setNewTitle={setNewTitle}
-              onAdd={handleAdd}
-              loading={addTask.isPending}
-            />
-          </Space>
-        </SortableContext>
-      </DndContext>
+          <AddTaskCard
+            isAdding={isAdding}
+            setIsAdding={setIsAdding}
+            newTitle={newTitle}
+            setNewTitle={setNewTitle}
+            onAdd={handleAdd}
+            loading={addTask.isPending}
+          />
+        </Space>
+      </SortableContext>
+      {/* </DndContext> */}
       <TaskDetailModal open={!!openTask} task={openTask} onClose={() => setOpenTask(null)} />
     </>
   );
