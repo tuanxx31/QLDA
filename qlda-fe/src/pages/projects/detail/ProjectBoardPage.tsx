@@ -62,8 +62,7 @@ export default function ProjectBoardPage() {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   );
-
-  // Fetch columns
+  
   const { data, isLoading } = useQuery({
     queryKey: ['columns', projectId],
     queryFn: () => columnService.getColumns(projectId!),
@@ -109,7 +108,6 @@ export default function ProjectBoardPage() {
     }, 400),
   ).current;
 
-  // 🧩 Collision detection: ưu tiên task → rect → column
   const collisionDetection: CollisionDetection = args => {
     const activeType = args.active?.data?.current?.type;
     if (activeType === 'task') {
@@ -124,7 +122,6 @@ export default function ProjectBoardPage() {
   const findColumnByTaskId = (taskId: string, cols = columns) =>
     cols.find(col => col.tasks?.some(t => t.id === taskId));
 
-  // ============ DRAG START ============
   const handleDragStart = (event: DragStartEvent) => {
     const type = event.active.data?.current?.type;
     if (type === 'column') {
@@ -137,7 +134,6 @@ export default function ProjectBoardPage() {
     }
   };
 
-  // ============ DRAG OVER ============
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
     if (!over) return;
@@ -175,7 +171,6 @@ export default function ProjectBoardPage() {
     });
   };
 
-  // ============ DRAG END ============
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) {
@@ -186,7 +181,6 @@ export default function ProjectBoardPage() {
 
     const type = active.data?.current?.type;
 
-    // Column reorder
     if (type === 'column') {
       const oldIdx = columns.findIndex(c => c.id === active.id);
       const newIdx = columns.findIndex(c => c.id === over.id);
@@ -201,7 +195,6 @@ export default function ProjectBoardPage() {
       return;
     }
 
-    // Task reorder
     const activeId = String(active.id);
     const overId = String(over.id);
     const fromCol = findColumnByTaskId(activeId);
@@ -242,7 +235,6 @@ export default function ProjectBoardPage() {
     }
   };
 
-  // FULLSCREEN
   useEffect(() => {
     const handle = () => setIsFullScreen(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', handle);

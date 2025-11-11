@@ -65,7 +65,6 @@ export default function TaskList({ column }: { column: Column }) {
     const reordered = arrayMove(tasks, oldIndex, newIndex);
     setTasks(reordered);
 
-    // Lấy 2 task lân cận vị trí mới
     const prevTask = reordered[newIndex - 1];
     const nextTask = reordered[newIndex + 1];
 
@@ -74,7 +73,7 @@ export default function TaskList({ column }: { column: Column }) {
         active.id as string,
         prevTask?.id,
         nextTask?.id,
-        column.id, // nếu sau này có drag sang cột khác
+        column.id,
       );
     } catch {
       message.error('Không thể lưu vị trí');
