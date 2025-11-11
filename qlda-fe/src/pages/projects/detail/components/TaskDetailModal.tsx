@@ -9,6 +9,7 @@ import {
   Input,
   message,
   Spin,
+  Tag,
 } from "antd";
 import {
   ClockCircleOutlined,
@@ -24,6 +25,7 @@ import MemberAddTaskModal from "./MemberAddTaskModal";
 import { taskService } from "@/services/task.services";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import LabelPicker from "./LabelPicker";
+
 const { Title, Text } = Typography;
 
 interface Props {
@@ -50,9 +52,13 @@ export default function TaskDetailModal({
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [savingDesc, setSavingDesc] = useState(false);
 
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [tempTitle, setTempTitle] = useState("");
+
   useEffect(() => {
     setTaskData(task);
     setDescription(task?.description ?? "");
+    setTempTitle(task?.title ?? "");
   }, [task]);
 
   const {
@@ -72,6 +78,7 @@ export default function TaskDetailModal({
     onSuccess: (updated: Task) => {
       setTaskData(updated);
       setDescription(updated.description ?? "");
+      setTempTitle(updated.title);
       onEdit?.(updated);
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       queryClient.invalidateQueries({ queryKey: ["taskAssignees", updated.id] });
@@ -88,6 +95,7 @@ export default function TaskDetailModal({
       const updated = await taskService.getByColumn(taskData.columnId);
       setTaskData(updated);
       setDescription(updated.description ?? "");
+      setTempTitle(updated.title);
       onEdit?.(updated);
       queryClient.invalidateQueries({ queryKey: ["taskAssignees", updated.id] });
     } catch (err) {
@@ -103,6 +111,17 @@ export default function TaskDetailModal({
     } finally {
       setSavingDesc(false);
     }
+  };
+
+  const handleSaveTitle = async () => {
+    if (!taskData?.id) return;
+    const newTitle = tempTitle.trim();
+    if (!newTitle || newTitle === taskData.title) {
+      setEditingTitle(false);
+      return;
+    }
+    await updateTaskMutation.mutateAsync({ id: taskData.id, title: newTitle });
+    setEditingTitle(false);
   };
 
   const handleMemberAddSuccess = async () => {
@@ -140,17 +159,43 @@ export default function TaskDetailModal({
               width: "100%",
             }}
           >
-            <Title level={4} style={{ margin: 0 }}>
-              {taskData.title}
-            </Title>
+            {editingTitle ? (
+              <Input
+                value={tempTitle}
+                onChange={(e) => setTempTitle(e.target.value)}
+                onBlur={handleSaveTitle}
+                onPressEnter={handleSaveTitle}
+                autoFocus
+                style={{
+                  fontSize: 18,
+                  fontWeight: 600,
+                  width: "100%",
+                  maxWidth: 320,
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+                onDoubleClick={() => setEditingTitle(true)}
+              >
+                <Title level={4} style={{ margin: 0 }}>
+                  {taskData.title}
+                </Title>
+                <Tooltip title="Sửa tên công việc">
+                  <Button
+                    type="text"
+                    icon={<EditOutlined />}
+                    onClick={() => setEditingTitle(true)}
+                  />
+                </Tooltip>
+              </div>
+            )}
+
             <Space>
-              <Tooltip title="Chỉnh sửa">
-                <Button
-                  type="text"
-                  icon={<EditOutlined />}
-                  onClick={() => onEdit?.(taskData)}
-                />
-              </Tooltip>
               <Tooltip title="Xóa">
                 <Button
                   danger
@@ -173,23 +218,6 @@ export default function TaskDetailModal({
             }}
           >
             <Button icon={<PlusOutlined />}>Thêm</Button>
-            
-      <LabelPicker
-        open={labelOpen}
-        onClose={() => setLabelOpen(false)}
-        labels={[
-          { id: "1", name: "Done", color: "green" },
-          { id: "2", name: "In Progress", color: "orange" },
-          { id: "3", name: "Bug", color: "red" },
-          { id: "4", name: "Review", color: "purple" },
-          { id: "5", name: "Idea", color: "blue" },
-        ]}
-        selectedIds={taskData.labels?.map((l) => l.id) ?? []}
-        onChange={(ids) => {
-          setTaskData({ ...taskData, labels: taskData.labels?.filter((l) => ids.includes(l.id)) });
-        }}
-        onCreateNew={() => console.log("Tạo nhãn mới")}
-      />
             <Button icon={<TagsOutlined />} onClick={() => setLabelOpen(true)}>
               Nhãn
             </Button>
@@ -197,6 +225,20 @@ export default function TaskDetailModal({
             <Button>Việc cần làm</Button>
             <Button>Đính kèm</Button>
           </div>
+
+          {taskData.labels?.length ? (
+            <Space wrap style={{ marginBottom: 12 }}>
+              {taskData.labels.map((label: any) => (
+                <Tag key={label.id} color={label.color}>
+                  {label.name}
+                </Tag>
+              ))}
+            </Space>
+          ) : (
+            <Text type="secondary" style={{ marginBottom: 12, display: "block" }}>
+              Chưa có nhãn
+            </Text>
+          )}
 
           <div style={{ marginBottom: 16 }}>
             <Text strong>Thành viên:</Text>{" "}
@@ -251,11 +293,19 @@ export default function TaskDetailModal({
               <Button
                 type="primary"
                 onClick={saveDescription}
-                loading={savingDesc || updateTaskMutation.isPending || updateTaskMutation.isSuccess}
+                loading={
+                  savingDesc ||
+                  updateTaskMutation.isPending ||
+                  updateTaskMutation.isSuccess
+                }
               >
                 Lưu mô tả
               </Button>
-              <Button onClick={() => { setDescription(taskData.description ?? ""); }}>
+              <Button
+                onClick={() => {
+                  setDescription(taskData.description ?? "");
+                }}
+              >
                 Hủy
               </Button>
             </Space>
@@ -295,6 +345,27 @@ export default function TaskDetailModal({
         taskId={taskData.id}
         currentAssignees={taskData.assignees?.map((u) => u.id) || []}
         onSuccess={handleMemberAddSuccess}
+      />
+
+      <LabelPicker
+        open={labelOpen}
+        onClose={() => setLabelOpen(false)}
+        labels={[
+          { id: "1", name: "Done", color: "green" },
+          { id: "2", name: "In Progress", color: "orange" },
+          { id: "3", name: "Bug", color: "red" },
+          { id: "4", name: "Review", color: "purple" },
+          { id: "5", name: "Idea", color: "blue" },
+        ]}
+        selectedIds={taskData.labels?.map((l) => l.id) ?? []}
+        onChange={(ids) => {
+          const labels = ids.map(
+            (id) =>
+              ({ id, name: id, color: "blue" } as any)
+          );
+          setTaskData({ ...taskData, labels });
+        }}
+        onCreateNew={() => console.log("Tạo nhãn mới")}
       />
     </>
   );
