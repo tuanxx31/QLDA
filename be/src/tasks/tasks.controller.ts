@@ -38,7 +38,8 @@ export class TaskController {
   @ApiResponse({ status: 201, description: 'Task đã được tạo thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(@Body() dto: CreateTaskDto, @Req() req) {
-    const creatorId = req.user?.id ?? null;
+    const creatorId = req.user?.sub ?? null;
+    console.log('creatorId', creatorId);
     return this.taskService.create(dto, creatorId);
   }
 
@@ -83,8 +84,8 @@ export class TaskController {
   @ApiOperation({ summary: 'Cập nhật vị trí task' })
   @ApiResponse({ status: 200, description: 'Task đã được cập nhật vị trí thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  updatePosition(@Param('id') id: string, @Body() body: { position: number; columnId?: string }) {
-    return this.taskService.updatePosition(id, body.position, body.columnId);
+  updatePosition(@Param('id') id: string, @Body() body: { prevTaskId?: string; nextTaskId?: string; columnId?: string }) {
+    return this.taskService.updatePosition(id, body.prevTaskId, body.nextTaskId, body.columnId);
   }
 
   @Post(':id/subtasks')

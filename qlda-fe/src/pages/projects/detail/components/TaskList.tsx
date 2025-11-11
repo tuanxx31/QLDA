@@ -50,14 +50,35 @@ export default function TaskList({ column }: { column: Column }) {
     setTasks(prev => [...prev, { id: 'new', title: trimmed, columnId: column.id, status: 'todo', priority: 'low' }]);
   };
 
-  const handleTaskDragEnd = (event: DragEndEvent) => {
+  const handleTaskDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-
+  
     const oldIndex = tasks.findIndex(t => t.id === active.id);
     const newIndex = tasks.findIndex(t => t.id === over.id);
-    setTasks(arrayMove(tasks, oldIndex, newIndex));
+  
+    if (oldIndex === -1 || newIndex === -1) return;
+  
+    const reordered = arrayMove(tasks, oldIndex, newIndex);
+    setTasks(reordered);
+  
+    // Lấy 2 task lân cận vị trí mới
+    const prevTask = reordered[newIndex - 1];
+    const nextTask = reordered[newIndex + 1];
+  
+    try {
+      await taskService.updatePosition(
+        active.id as string,
+        prevTask?.id,
+        nextTask?.id,
+        column.id // nếu sau này có drag sang cột khác
+      );
+    } catch {
+      message.error('Không thể lưu vị trí');
+    }
   };
+  
+  
 
   return (
     <>
