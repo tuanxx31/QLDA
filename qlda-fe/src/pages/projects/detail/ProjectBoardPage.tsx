@@ -155,24 +155,37 @@ export default function ProjectBoardPage() {
     const { active, over } = event;
     setActiveTask(null);
     if (!over) return;
-
+  
     const activeId = String(active.id);
     const overId = String(over.id);
-
+  
+    // Tìm cột gốc & cột đích
     const fromCol = findColumnByTaskId(columns, activeId);
-    const toCol = findColumnByTaskId(columns, overId) || columns.find(c => c.id === overId);
-
+    const toCol =
+      findColumnByTaskId(columns, overId) ||
+      columns.find(c => c.id === overId);
+  
     if (!fromCol || !toCol) return;
-
+  
     const fromTasks = [...(fromCol.tasks ?? [])];
     const toTasks = [...(toCol.tasks ?? [])];
+  
+    // Xóa task ra khỏi cột cũ
     const fromIndex = findTaskIndex(fromTasks, activeId);
-    const overIndex = overId === toCol.id ? toTasks.length : findTaskIndex(toTasks, overId);
-
     const [moved] = fromTasks.splice(fromIndex, 1);
-    moved.columnId = toCol.id;
+  
+    // Nếu thả vào cuối cột (over là columnId)
+    const overIndex =
+      overId === toCol.id
+        ? toTasks.length
+        : findTaskIndex(toTasks, overId) >= 0
+        ? findTaskIndex(toTasks, overId)
+        : toTasks.length;
+  
+    // Thêm task vào vị trí mới
     toTasks.splice(overIndex, 0, moved);
-
+    moved.columnId = toCol.id;
+  
     // Cập nhật UI tạm
     setColumns(cols =>
       cols.map(col => {
@@ -181,13 +194,18 @@ export default function ProjectBoardPage() {
         return col;
       }),
     );
-
-    // 🧩 Gửi prev/next task cho API
+  
+    // ✅ Lấy 2 task lân cận trong cột đích
     const prevTask = toTasks[overIndex - 1];
     const nextTask = toTasks[overIndex + 1];
-
+  
     try {
-      await taskService.updatePosition(moved.id, prevTask?.id, nextTask?.id, toCol.id);
+      await taskService.updatePosition(
+        moved.id,
+        prevTask?.id,
+        nextTask?.id,
+        toCol.id,
+      );
       message.success('Đã cập nhật vị trí nhiệm vụ');
     } catch (err) {
       console.error(err);
@@ -196,6 +214,7 @@ export default function ProjectBoardPage() {
       await queryClient.invalidateQueries({ queryKey: ['columns', projectId] });
     }
   };
+  
 
   // ====== Toàn màn hình ======
   useEffect(() => {
@@ -308,44 +327,45 @@ export default function ProjectBoardPage() {
 
           {/* ✅ Overlay đẹp cho cả cột và task */}
           <DragOverlay>
-            {activeColumn ? (
-              <div
-                style={{
-                  transform: 'rotate(1deg)',
-                  boxShadow: token.boxShadowSecondary,
-                  opacity: 0.95,
-                }}
-              >
-                <SortableColumn column={activeColumn} isOverlay />
-              </div>
-            ) : activeTask ? (
-              <Card
-                size="small"
-                bordered
-                style={{
-                  width: 260,
-                  borderRadius: 8,
-                  background: token.colorBgContainer,
-                  boxShadow: token.boxShadowSecondary,
-                  transform: 'rotate(1deg)',
-                  opacity: 0.95,
-                }}
-              >
-                <Typography.Text strong style={{ display: 'block' }}>
-                  {activeTask.title}
-                </Typography.Text>
-                {activeTask.description && (
-                  <Typography.Paragraph
-                    type="secondary"
-                    ellipsis={{ rows: 2 }}
-                    style={{ marginBottom: 0 }}
-                  >
-                    {activeTask.description}
-                  </Typography.Paragraph>
-                )}
-              </Card>
-            ) : null}
-          </DragOverlay>
+  {activeColumn ? (
+    <div
+      style={{
+        transform: 'rotate(1deg)',
+        boxShadow: token.boxShadowSecondary,
+        opacity: 0.95,
+      }}
+    >
+      <SortableColumn column={activeColumn} isOverlay />
+    </div>
+  ) : activeTask ? (
+    <Card
+      size="small"
+      bordered
+      style={{
+        width: 260,
+        borderRadius: 8,
+        background: token.colorBgContainer,
+        boxShadow: token.boxShadowSecondary,
+        transform: 'rotate(1deg)',
+        opacity: 0.95,
+      }}
+    >
+      <Typography.Text strong style={{ display: 'block' }}>
+        {activeTask.title}
+      </Typography.Text>
+      {activeTask.description && (
+        <Typography.Paragraph
+          type="secondary"
+          ellipsis={{ rows: 2 }}
+          style={{ marginBottom: 0 }}
+        >
+          {activeTask.description}
+        </Typography.Paragraph>
+      )}
+    </Card>
+  ) : null}
+</DragOverlay>
+
         </DndContext>
       </Card>
     </PageContainer>
