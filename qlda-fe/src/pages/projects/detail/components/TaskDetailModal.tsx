@@ -23,7 +23,7 @@ import type { Task } from "@/types/task.type";
 import MemberAddTaskModal from "./MemberAddTaskModal";
 import { taskService } from "@/services/task.services";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
+import LabelPicker from "./LabelPicker";
 const { Title, Text } = Typography;
 
 interface Props {
@@ -43,22 +43,18 @@ export default function TaskDetailModal({
 }: Props) {
   const queryClient = useQueryClient();
 
-  // local copy of task (controlled inside modal)
   const [taskData, setTaskData] = useState<Task | null>(task);
-  // controlled description (so changes won't immediately mutate backend)
   const [description, setDescription] = useState<string>("");
 
   const [labelOpen, setLabelOpen] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [savingDesc, setSavingDesc] = useState(false);
 
-  // sync incoming prop once (or whenever it changes)
   useEffect(() => {
     setTaskData(task);
     setDescription(task?.description ?? "");
   }, [task]);
 
-  // fetch assignees for current task (only when we have an id)
   const {
     data: assignees = [],
     isLoading: assigneesLoading,
@@ -67,21 +63,16 @@ export default function TaskDetailModal({
     queryKey: ["taskAssignees", taskData?.id],
     queryFn: () => taskService.getAssignees(taskData!.id),
     enabled: !!taskData?.id,
-    // keep previous to avoid flicker when id changes quickly
-    // keepPreviousData: true,
     staleTime: 1000 * 30,
   });
 
-  // mutation: update task (we use it for description or other small edits)
   const updateTaskMutation = useMutation({
     mutationFn: (payload: Partial<Task> & { id: string }) =>
       taskService.update(payload.id, payload),
     onSuccess: (updated: Task) => {
-      // update local state and inform parent
       setTaskData(updated);
       setDescription(updated.description ?? "");
       onEdit?.(updated);
-      // invalidate queries that may depend on this task
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       queryClient.invalidateQueries({ queryKey: ["taskAssignees", updated.id] });
       message.success("Cập nhật công việc thành công");
@@ -91,7 +82,6 @@ export default function TaskDetailModal({
     },
   });
 
-  // helper to refresh full task from backend by id
   const refreshTask = async () => {
     if (!taskData?.id) return;
     try {
@@ -105,7 +95,6 @@ export default function TaskDetailModal({
     }
   };
 
-  // save description (explicit action)
   const saveDescription = async () => {
     if (!taskData?.id) return;
     setSavingDesc(true);
@@ -116,13 +105,11 @@ export default function TaskDetailModal({
     }
   };
 
-  // when member modal succeeded, refresh task
   const handleMemberAddSuccess = async () => {
     await refreshTask();
     setMemberModalOpen(false);
   };
 
-  // render assignees list (use assignees from query if available, else fallback to taskData.assignees)
   const visibleAssignees = useMemo(() => {
     return assignees?.length ? assignees : taskData?.assignees ?? [];
   }, [assignees, taskData]);
@@ -186,6 +173,23 @@ export default function TaskDetailModal({
             }}
           >
             <Button icon={<PlusOutlined />}>Thêm</Button>
+            
+      <LabelPicker
+        open={labelOpen}
+        onClose={() => setLabelOpen(false)}
+        labels={[
+          { id: "1", name: "Done", color: "green" },
+          { id: "2", name: "In Progress", color: "orange" },
+          { id: "3", name: "Bug", color: "red" },
+          { id: "4", name: "Review", color: "purple" },
+          { id: "5", name: "Idea", color: "blue" },
+        ]}
+        selectedIds={taskData.labels?.map((l) => l.id) ?? []}
+        onChange={(ids) => {
+          setTaskData({ ...taskData, labels: taskData.labels?.filter((l) => ids.includes(l.id)) });
+        }}
+        onCreateNew={() => console.log("Tạo nhãn mới")}
+      />
             <Button icon={<TagsOutlined />} onClick={() => setLabelOpen(true)}>
               Nhãn
             </Button>
@@ -285,7 +289,6 @@ export default function TaskDetailModal({
         </div>
       </Modal>
 
-      {/* Modal thêm thành viên */}
       <MemberAddTaskModal
         open={memberModalOpen}
         onClose={() => setMemberModalOpen(false)}
