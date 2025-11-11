@@ -27,7 +27,7 @@ export default function SortableTask({ task, onClick }: { task: Task; onClick?: 
       style={style}
       onClick={() => onClick?.(task)}
     >
-      <TaskCard task={task} onClick={onClick} />
+      <TaskCard task={task}  onDoubleClick={onClick} />
     </Card>
   );
 }

@@ -18,6 +18,13 @@ export class TaskService {
     @InjectRepository(User) private userRepo: Repository<User>,
   ) {}
 
+  // 🟢 Lấy tất cả  
+  async getAssignees(id: string) {
+    const task = await this.taskRepo.findOne({ where: { id }, relations: ['assignees'] });
+    if (!task) throw new NotFoundException('Task không tồn tại');
+    return task.assignees;
+  }
+
   // 🟢 Lấy tất cả task theo cột
   async findByColumn(columnId: string) {
     return this.taskRepo.find({
@@ -77,25 +84,22 @@ export class TaskService {
       relations: ['assignees'],
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
-
-    task.assignees = await this.userRepo.find({
-      where: { id: In(dto.userIds) },
-    });
-    return this.taskRepo.save(task);
-  }
-
-  // 🟢 Gán nhãn
-  async assignLabels(taskId: string, dto: AssignLabelsDto) {
-    const task = await this.taskRepo.findOne({
-      where: { id: taskId },
-      relations: ['labels'],
-    });
-    if (!task) throw new NotFoundException('Task không tồn tại');
-
-    task.labels = await this.labelRepo.find({
-      where: { id: In(dto.labelIds) },
-    });
-    return this.taskRepo.save(task);
+  
+    // 🟩 Lấy toàn bộ user mới muốn thêm
+    const newUsers = await this.userRepo.find({ where: { id: In(dto.userIds) } });
+  
+    // 🟩 Hợp nhất danh sách assignees cũ + mới, tránh trùng
+    const merged = [
+      ...task.assignees,
+      ...newUsers.filter(
+        (u) => !task.assignees.some((existing) => existing.id === u.id),
+      ),
+    ];
+  
+    task.assignees = merged;
+  
+    // 🟩 Lưu lại task
+    return await this.taskRepo.save(task);
   }
 
   async updatePosition(

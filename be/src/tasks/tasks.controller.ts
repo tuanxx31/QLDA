@@ -23,6 +23,15 @@ import { ApiTags } from '@nestjs/swagger';
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
+  @Get(':id/assignees')
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Lấy danh sách assignees của task' })
+  @ApiResponse({ status: 200, description: 'Danh sách assignees đã được lấy thành công' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  getAssignees(@Param('id') id: string) {
+    return this.taskService.getAssignees(id);
+  }
+
   @Get('column/:columnId')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Lấy danh sách task theo cột' })
