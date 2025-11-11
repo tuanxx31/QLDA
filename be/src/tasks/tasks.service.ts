@@ -17,6 +17,12 @@ export class TaskService {
     @InjectRepository(Label) private labelRepo: Repository<Label>,
     @InjectRepository(User) private userRepo: Repository<User>,
   ) {}
+  
+  async getAssignees(id: string) {
+    const task = await this.taskRepo.findOne({ where: { id }, relations: ['assignees'] });
+    if (!task) throw new NotFoundException('Task không tồn tại');
+    return task.assignees;
+  }
 
   // 🟢 Lấy tất cả task theo cột
   async findByColumn(columnId: string) {
@@ -67,10 +73,24 @@ export class TaskService {
       relations: ['assignees'],
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
-
-    task.assignees = await this.userRepo.find({ where: { id: In(dto.userIds) } });
-    return this.taskRepo.save(task);
+  
+    // 🟩 Lấy toàn bộ user mới muốn thêm
+    const newUsers = await this.userRepo.find({ where: { id: In(dto.userIds) } });
+  
+    // 🟩 Hợp nhất danh sách assignees cũ + mới, tránh trùng
+    const merged = [
+      ...task.assignees,
+      ...newUsers.filter(
+        (u) => !task.assignees.some((existing) => existing.id === u.id),
+      ),
+    ];
+  
+    task.assignees = merged;
+  
+    // 🟩 Lưu lại task
+    return await this.taskRepo.save(task);
   }
+  
 
   // 🟢 Gán nhãn
   async assignLabels(taskId: string, dto: AssignLabelsDto) {

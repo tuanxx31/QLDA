@@ -28,7 +28,7 @@ import { TaskModule } from './tasks/tasks.module';
       port: process.env.DATABASE_PORT
         ? parseInt(process.env.DATABASE_PORT)
         : 3306,
-      username: process.env.DATABASE_USER,
+      username: process.env.DATABASE_USERNAME,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
       entities: [join(__dirname, '**', '*.entity.{ts,js}')],

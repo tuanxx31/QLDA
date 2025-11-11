@@ -1,58 +1,120 @@
-import { Card, Tag, Tooltip, Avatar } from "antd";
-import { ClockCircleOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
+import { Card, Tooltip, Avatar, Badge } from "antd";
+import {
+  BellOutlined,
+  EyeOutlined,
+  UnorderedListOutlined,
+  EditOutlined,
+} from "@ant-design/icons";
 import type { Task } from "@/types/task.type";
+import { useState } from "react";
 
 interface Props {
   task: Task;
+  onDoubleClick?: (task: Task) => void;
   onClick?: (task: Task) => void;
 }
 
-export default function TaskCard({ task, onClick }: Props) {
+export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
+  const [hovered, setHovered] = useState(false);
 
-    const renderLabels = () => {
-        if (!task.labels) return null;
-        return task.labels.map(label => (
-            <Tag key={label.id} color={label.color} style={{ marginBottom: 4 }}>
-                {label.name}
-            </Tag>
-        ));
-    }
-
-    const renderAssignees = () => {
-        if (!task.assignees) return null;
-        return task.assignees.map(u => (
-            <Avatar key={u.id} src={u.avatar}>
-                {u.name?.[0]}
-            </Avatar>
-        ));
-    }
   return (
     <Card
       size="small"
       hoverable
-      style={{ marginBottom: 8 }}
+      style={{
+        marginBottom: 8,
+        borderRadius: 8,
+        background: "#fff",
+        color: "#333",
+        position: "relative",
+        boxShadow: hovered
+          ? "0 2px 8px rgba(0,0,0,0.15)"
+          : "0 1px 3px rgba(0,0,0,0.05)",
+        cursor: "pointer",
+        transition: "all 0.2s ease",
+      }}
+      bodyStyle={{ padding: 10 }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onDoubleClick={() => onDoubleClick?.(task)}
       onClick={() => onClick?.(task)}
-      bodyStyle={{ padding: 8 }}
     >
-      <div className="font-medium" style={{ marginBottom: 4 }}>
-        {task.title}
-      </div>
+      {task.status === 'todo' && (
+        <div
+          style={{
+            position: "absolute",
+            top: 6,
+            left: 8,
+            width: 24,
+            height: 4,
+            borderRadius: 4,
+            backgroundColor: task.status,
+          }}
+        />
+      )}
 
-      {renderLabels()}
+      <div style={{ marginTop: task.status ? 12 : 8 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+          {hovered && (
+            <div
+              style={{
+                width: 16,
+                height: 16,
+                borderRadius: "50%",
+                border: "2px solid #999",
+                marginTop: 4,
+              }}
+            />
+          )}
 
-      {/* Thông tin phụ */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        {task.dueDate && (
-          <Tooltip title="Hạn chót">
-            <span style={{ fontSize: 12, color: "#888" }}>
-              <ClockCircleOutlined style={{ marginRight: 4 }} />
-              {dayjs(task.dueDate).format("DD/MM")}
-            </span>
+          <div
+            style={{
+              flex: 1,
+              fontSize: 14,
+              fontWeight: 500,
+              lineHeight: "18px",
+            }}
+          >
+            {task.title}
+          </div>
+
+         
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginTop: 6,
+            gap: 6,
+          }}
+        >
+          
+
+          <Tooltip title="Xem chi tiết">
+            <EyeOutlined style={{ color: "#999" }} />
           </Tooltip>
-        )}
 
-        {renderAssignees()}
+          <Tooltip title="Danh sách con">
+            <UnorderedListOutlined style={{ color: "#999" }} />
+          </Tooltip>
+
+          <div style={{ flex: 1 }} />
+
+          {task.assignees?.map((u) => (
+            <Avatar
+              key={u.id}
+              size={24}
+              src={u.avatar}
+              style={{
+                border: "1px solid #eee",
+                backgroundColor: "#f5f5f5",
+              }}
+            >
+              {u.name?.[0]}
+            </Avatar>
+          ))}
+        </div>
       </div>
     </Card>
   );

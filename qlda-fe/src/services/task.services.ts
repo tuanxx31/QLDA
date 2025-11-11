@@ -3,7 +3,10 @@ import { api } from './api';
 
 
 export const taskService = {
-  
+  getAssignees: async (id: string) => {
+    const response = await api.get(`/tasks/${id}/assignees`);
+    return response.data;
+  },
   getByColumn: async (columnId: string) => {
     const response = await api.get(`/tasks/column/${columnId}`);
     return response.data;
