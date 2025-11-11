@@ -1,9 +1,21 @@
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Space, Typography, message, Spin, Card, theme, Tooltip } from 'antd';
-import { ArrowLeftOutlined, FullscreenOutlined, FullscreenExitOutlined } from '@ant-design/icons';
+import {
+  Button,
+  Space,
+  Typography,
+  message,
+  Spin,
+  Card,
+  theme,
+  Tooltip,
+} from 'antd';
+import {
+  ArrowLeftOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined,
+} from '@ant-design/icons';
 import {
   DndContext,
-  closestCorners,
   PointerSensor,
   useSensor,
   useSensors,
@@ -11,10 +23,18 @@ import {
   type DragStartEvent,
   type DragOverEvent,
   type DragEndEvent,
+  closestCenter,
+  rectIntersection,
+  pointerWithin,
+  type CollisionDetection,
 } from '@dnd-kit/core';
-import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
+import {
+  arrayMove,
+  SortableContext,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { columnService } from '@/services/column.services';
 import { taskService } from '@/services/task.services';
@@ -24,35 +44,41 @@ import AddColumnCard from './components/AddColumnCard';
 import SortableColumn from './components/SortableColumn';
 import { debounce } from 'lodash';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 export default function ProjectBoardPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const { token } = theme.useToken();
   const queryClient = useQueryClient();
+  const { token } = theme.useToken();
 
   const [columns, setColumns] = useState<Column[]>([]);
+  const [activeColumn, setActiveColumn] = useState<Column | null>(null);
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [newColumnName, setNewColumnName] = useState('');
-  const [activeTask, setActiveTask] = useState<Task | null>(null);
-  const [activeColumn, setActiveColumn] = useState<Column | null>(null);
-  const [isFullScreen, setIsFullScreen] = useState(false);
 
-  const sensors = useSensors(useSensor(PointerSensor));
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  );
 
+  // Fetch columns
   const { data, isLoading } = useQuery({
     queryKey: ['columns', projectId],
     queryFn: () => columnService.getColumns(projectId!),
     enabled: !!projectId,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    staleTime: Infinity,
   });
 
   useEffect(() => {
     if (data?.data) {
       const sorted = [...data.data].sort((a, b) => a.order - b.order);
+      sorted.forEach(c => {
+        if (c.tasks?.length)
+          c.tasks = [...c.tasks].sort(
+            (a: any, b: any) => (a.order ?? 0) - (b.order ?? 0),
+          );
+      });
       setColumns(sorted);
     }
   }, [data]);
@@ -62,186 +88,183 @@ export default function ProjectBoardPage() {
     onSuccess: res => {
       message.success('Đã thêm cột');
       queryClient.invalidateQueries({ queryKey: ['columns', projectId] });
-      setColumns(prev => [...prev, { ...res.data, order: prev.length + 1, tasks: [] }]);
+      setColumns(prev => [
+        ...prev,
+        { ...res.data, order: prev.length + 1, tasks: [] },
+      ]);
       setIsAddingColumn(false);
       setNewColumnName('');
     },
   });
 
   const debouncedUpdateOrder = useRef(
-    debounce(async (reordered: Column[]) => {
+    debounce(async (cols: Column[]) => {
       try {
         await Promise.all(
-          reordered.map((c, i) => columnService.update(projectId!, c.id, { order: i + 1 })),
+          cols.map((c, i) => columnService.update(projectId!, c.id, { order: i + 1 })),
         );
       } catch {
         message.error('Không thể lưu thứ tự cột');
       }
-    }, 500),
+    }, 400),
   ).current;
 
-  // ====== Xử lý kéo cột ======
-  const handleColumnDragStart = (event: DragStartEvent) => {
-    const activeCol = columns.find(c => c.id === event.active.id);
-    if (activeCol) setActiveColumn(activeCol);
+  // 🧩 Collision detection: ưu tiên task → rect → column
+  const collisionDetection: CollisionDetection = args => {
+    const activeType = args.active?.data?.current?.type;
+    if (activeType === 'task') {
+      return pointerWithin(args) || rectIntersection(args) || closestCenter(args);
+    }
+    if (activeType === 'column') {
+      return closestCenter(args);
+    }
+    return rectIntersection(args);
   };
 
-  const handleColumnDragEnd = (event: DragEndEvent) => {
+  const findColumnByTaskId = (taskId: string, cols = columns) =>
+    cols.find(col => col.tasks?.some(t => t.id === taskId));
+
+  // ============ DRAG START ============
+  const handleDragStart = (event: DragStartEvent) => {
+    const type = event.active.data?.current?.type;
+    if (type === 'column') {
+      const col = columns.find(c => c.id === event.active.id);
+      if (col) setActiveColumn(col);
+    }
+    if (type === 'task') {
+      const t = columns.flatMap(c => c.tasks ?? []).find(t => t.id === event.active.id);
+      if (t) setActiveTask(t);
+    }
+  };
+
+  // ============ DRAG OVER ============
+  const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
-    if (!over || active.id === over.id) {
+    if (!over) return;
+    const activeType = active.data?.current?.type;
+    if (activeType !== 'task') return;
+
+    const activeId = String(active.id);
+    const overId = String(over.id);
+
+    setColumns(prev => {
+      const fromCol = findColumnByTaskId(activeId, prev);
+      const toCol = findColumnByTaskId(overId, prev) || prev.find(c => c.id === overId);
+      if (!fromCol || !toCol || fromCol.id === toCol.id) return prev;
+
+      const fromTasks = [...(fromCol.tasks ?? [])];
+      const toTasks = [...(toCol.tasks ?? [])];
+      const fromIdx = fromTasks.findIndex(t => t.id === activeId);
+      if (fromIdx < 0) return prev;
+
+      const overIdx =
+        overId === toCol.id
+          ? toTasks.length
+          : Math.max(0, toTasks.findIndex(t => t.id === overId));
+      const [moved] = fromTasks.splice(fromIdx, 1);
+      moved.columnId = toCol.id;
+      toTasks.splice(overIdx < 0 ? toTasks.length : overIdx, 0, moved);
+
+      return prev.map(c =>
+        c.id === fromCol.id
+          ? { ...c, tasks: fromTasks }
+          : c.id === toCol.id
+          ? { ...c, tasks: toTasks }
+          : c,
+      );
+    });
+  };
+
+  // ============ DRAG END ============
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) {
+      setActiveTask(null);
       setActiveColumn(null);
       return;
     }
 
-    const oldIndex = columns.findIndex(c => c.id === active.id);
-    const newIndex = columns.findIndex(c => c.id === over.id);
-    const reordered = arrayMove(columns, oldIndex, newIndex).map((c, i) => ({
-      ...c,
-      order: i + 1,
-    }));
+    const type = active.data?.current?.type;
 
-    setColumns(reordered);
-    debouncedUpdateOrder(reordered);
-    setActiveColumn(null);
-  };
+    // Column reorder
+    if (type === 'column') {
+      const oldIdx = columns.findIndex(c => c.id === active.id);
+      const newIdx = columns.findIndex(c => c.id === over.id);
+      if (oldIdx === -1 || newIdx === -1) return;
+      const reordered = arrayMove(columns, oldIdx, newIdx).map((c, i) => ({
+        ...c,
+        order: i + 1,
+      }));
+      setColumns(reordered);
+      debouncedUpdateOrder(reordered);
+      setActiveColumn(null);
+      return;
+    }
 
-  // ====== Xử lý kéo task ======
-  const findColumnByTaskId = (cols: Column[], taskId: string) =>
-    cols.find(col => col.tasks?.some(t => t.id === taskId));
-
-  const findTaskIndex = (tasks: Task[], id: string) => tasks.findIndex(t => t.id === id);
-
-  const handleTaskDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    const found = columns.flatMap(col => col.tasks ?? []).find(t => t.id === active.id);
-    if (found) setActiveTask(found);
-  };
-
-  // ⏳ Drag qua cột khác (update UI tạm)
-  const handleTaskDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    if (!over) return;
-  
+    // Task reorder
     const activeId = String(active.id);
     const overId = String(over.id);
-  
-    setColumns(cols => {
-      const fromCol = findColumnByTaskId(cols, activeId);
-      const toCol =
-        findColumnByTaskId(cols, overId) || cols.find(c => c.id === overId);
-      if (!fromCol || !toCol || fromCol.id === toCol.id) return cols;
-  
-      const fromTasks = [...(fromCol.tasks ?? [])];
-      const toTasks = [...(toCol.tasks ?? [])];
-      const fromIndex = findTaskIndex(fromTasks, activeId);
-      const overIndex =
-        overId === toCol.id ? toTasks.length : findTaskIndex(toTasks, overId);
-  
-      const [moved] = fromTasks.splice(fromIndex, 1);
-      moved.columnId = toCol.id;
-      toTasks.splice(overIndex, 0, moved);
-  
-      return cols.map(col => {
-        if (col.id === fromCol.id) return { ...col, tasks: fromTasks };
-        if (col.id === toCol.id) return { ...col, tasks: toTasks };
-        return col;
-      });
-    });
-  };
-  
-
-  // ✅ Thả task (lưu server)
-  const handleTaskDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-    setActiveTask(null);
-    if (!over) return;
-  
-    const activeId = String(active.id);
-    const overId = String(over.id);
-  
-    // Tìm cột gốc & cột đích
-    const fromCol = findColumnByTaskId(columns, activeId);
-    const toCol =
-      findColumnByTaskId(columns, overId) ||
-      columns.find(c => c.id === overId);
-  
+    const fromCol = findColumnByTaskId(activeId);
+    const toCol = findColumnByTaskId(overId) || columns.find(c => c.id === overId);
     if (!fromCol || !toCol) return;
-  
+
     const fromTasks = [...(fromCol.tasks ?? [])];
     const toTasks = [...(toCol.tasks ?? [])];
-  
-    // Xóa task ra khỏi cột cũ
-    const fromIndex = findTaskIndex(fromTasks, activeId);
-    const [moved] = fromTasks.splice(fromIndex, 1);
-  
-    // Nếu thả vào cuối cột (over là columnId)
-    const overIndex =
+    const fromIdx = fromTasks.findIndex(t => t.id === activeId);
+    const [moved] = fromTasks.splice(fromIdx, 1);
+
+    const overIdx =
       overId === toCol.id
         ? toTasks.length
-        : findTaskIndex(toTasks, overId) >= 0
-        ? findTaskIndex(toTasks, overId)
-        : toTasks.length;
-  
-    // Thêm task vào vị trí mới
-    toTasks.splice(overIndex, 0, moved);
+        : Math.max(0, toTasks.findIndex(t => t.id === overId));
+    toTasks.splice(overIdx, 0, moved);
     moved.columnId = toCol.id;
-  
-    // Cập nhật UI tạm
+
     setColumns(cols =>
-      cols.map(col => {
-        if (col.id === fromCol.id) return { ...col, tasks: fromTasks };
-        if (col.id === toCol.id) return { ...col, tasks: toTasks };
-        return col;
-      }),
+      cols.map(c =>
+        c.id === fromCol.id
+          ? { ...c, tasks: fromTasks }
+          : c.id === toCol.id
+          ? { ...c, tasks: toTasks }
+          : c,
+      ),
     );
-  
-    // ✅ Lấy 2 task lân cận trong cột đích
-    const prevTask = toTasks[overIndex - 1];
-    const nextTask = toTasks[overIndex + 1];
-  
+
+    const prevTask = toTasks[overIdx - 1];
+    const nextTask = toTasks[overIdx + 1];
     try {
-      await taskService.updatePosition(
-        moved.id,
-        prevTask?.id,
-        nextTask?.id,
-        toCol.id,
-      );
-      message.success('Đã cập nhật vị trí nhiệm vụ');
-    } catch (err) {
-      console.error(err);
+      await taskService.updatePosition(moved.id, prevTask?.id, nextTask?.id, toCol.id);
+    } catch {
       message.error('Không thể lưu vị trí nhiệm vụ');
     } finally {
-      await queryClient.invalidateQueries({ queryKey: ['columns', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['columns', projectId] });
+      setActiveTask(null);
     }
   };
-  
 
-  // ====== Toàn màn hình ======
+  // FULLSCREEN
   useEffect(() => {
-    const handleChange = () => setIsFullScreen(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange', handleChange);
-    return () => document.removeEventListener('fullscreenchange', handleChange);
+    const handle = () => setIsFullScreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handle);
+    return () => document.removeEventListener('fullscreenchange', handle);
   }, []);
 
   const toggleFullScreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {
-        message.error('Không thể bật toàn màn hình');
-      });
-    } else {
-      document.exitFullscreen();
-    }
+    if (!document.fullscreenElement)
+      document.documentElement.requestFullscreen().catch(() => message.error('Không thể bật fullscreen'));
+    else document.exitFullscreen();
   };
 
-  if (isLoading) {
+  const columnIds = useMemo(() => columns.map(c => c.id), [columns]);
+
+  if (isLoading)
     return (
       <PageContainer>
-        <div style={{ textAlign: 'center', padding: '100px 0' }}>
+        <div style={{ textAlign: 'center', padding: 100 }}>
           <Spin size="large" />
         </div>
       </PageContainer>
     );
-  }
 
   return (
     <PageContainer
@@ -258,7 +281,7 @@ export default function ProjectBoardPage() {
         </Space>
       }
       extra={[
-        <Tooltip title={isFullScreen ? 'Thoát toàn màn hình (Esc)' : 'Toàn màn hình'} key="fs">
+        <Tooltip title={isFullScreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'} key="fs">
           <Button
             type="text"
             icon={isFullScreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
@@ -268,53 +291,29 @@ export default function ProjectBoardPage() {
       ]}
     >
       <Card
-        style={{
-          height: 'calc(100vh - 200px)',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-        bodyStyle={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          padding: 0,
-        }}
+        style={{ height: 'calc(100vh - 200px)', display: 'flex' }}
+        bodyStyle={{ padding: 0, flex: 1 }}
       >
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCorners}
-          onDragStart={event => {
-            handleTaskDragStart(event);
-            handleColumnDragStart(event);
-          }}
-          onDragOver={handleTaskDragOver}
-          onDragEnd={event => {
-            handleTaskDragEnd(event);
-            handleColumnDragEnd(event);
-          }}
+          collisionDetection={collisionDetection}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
         >
-          <SortableContext items={columns.map(c => c.id)} strategy={rectSortingStrategy}>
-            <Space
-              align="start"
-              style={{
-                width: '100%',
-                overflowX: 'auto',
-                padding: 8,
-                height: '100%',
-              }}
-            >
+          <SortableContext items={columnIds} strategy={rectSortingStrategy}>
+            <Space align="start" style={{ overflowX: 'auto', padding: 8, flex: 1 }}>
               {columns.map(col => (
                 <div
                   key={col.id}
                   style={{
-                    opacity: activeColumn?.id === col.id ? 0 : 1,
+                    opacity: activeColumn?.id === col.id ? 0.3 : 1,
                     transition: 'opacity 0.2s ease',
                   }}
                 >
                   <SortableColumn column={col} />
                 </div>
               ))}
-
               <AddColumnCard
                 isAdding={isAddingColumn}
                 setIsAdding={setIsAddingColumn}
@@ -325,47 +324,23 @@ export default function ProjectBoardPage() {
             </Space>
           </SortableContext>
 
-          {/* ✅ Overlay đẹp cho cả cột và task */}
           <DragOverlay>
-  {activeColumn ? (
-    <div
-      style={{
-        transform: 'rotate(1deg)',
-        boxShadow: token.boxShadowSecondary,
-        opacity: 0.95,
-      }}
-    >
-      <SortableColumn column={activeColumn} isOverlay />
-    </div>
-  ) : activeTask ? (
-    <Card
-      size="small"
-      bordered
-      style={{
-        width: 260,
-        borderRadius: 8,
-        background: token.colorBgContainer,
-        boxShadow: token.boxShadowSecondary,
-        transform: 'rotate(1deg)',
-        opacity: 0.95,
-      }}
-    >
-      <Typography.Text strong style={{ display: 'block' }}>
-        {activeTask.title}
-      </Typography.Text>
-      {activeTask.description && (
-        <Typography.Paragraph
-          type="secondary"
-          ellipsis={{ rows: 2 }}
-          style={{ marginBottom: 0 }}
-        >
-          {activeTask.description}
-        </Typography.Paragraph>
-      )}
-    </Card>
-  ) : null}
-</DragOverlay>
-
+            {activeColumn && <SortableColumn column={activeColumn} isOverlay />}
+            {activeTask && (
+              <Card
+                size="small"
+                bordered
+                style={{
+                  width: 260,
+                  borderRadius: 8,
+                  background: token.colorBgContainer,
+                  boxShadow: token.boxShadowSecondary,
+                }}
+              >
+                <Typography.Text strong>{activeTask.title}</Typography.Text>
+              </Card>
+            )}
+          </DragOverlay>
         </DndContext>
       </Card>
     </PageContainer>
