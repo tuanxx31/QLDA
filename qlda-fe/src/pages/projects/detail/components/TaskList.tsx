@@ -83,11 +83,6 @@ export default function TaskList({ column }: { column: Column }) {
 
   return (
     <>
-      {/* <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleTaskDragEnd}
-      > */}
       <SortableContext items={tasks.map(t => t.id)} strategy={rectSortingStrategy}>
         <Space direction="vertical" style={{ width: '100%', gap: 8, paddingBottom: 8 }}>
           {tasks.map(task => (
@@ -104,7 +99,6 @@ export default function TaskList({ column }: { column: Column }) {
           />
         </Space>
       </SortableContext>
-      {/* </DndContext> */}
       <TaskDetailModal open={!!openTask} task={openTask} onClose={() => setOpenTask(null)} />
     </>
   );

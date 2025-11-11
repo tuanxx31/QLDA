@@ -32,7 +32,7 @@ export default function SortableColumn({ column, isOverlay }: { column: Column, 
 
   const { token } = theme.useToken();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: column.id ,disabled: isOverlay});
+    useSortable({ id: column.id ,disabled: isOverlay ,data:{type: "column", columnId: column.id}});
 
   const qc = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();
