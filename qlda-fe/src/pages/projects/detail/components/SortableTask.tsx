@@ -18,16 +18,14 @@ export default function SortableTask({ task, onClick }: { task: Task; onClick?: 
   };
 
   return (
-    <Card
+    <div  
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      size="small"
-      hoverable
       style={style}
       onClick={() => onClick?.(task)}
     >
-      <TaskCard task={task}  onDoubleClick={onClick} />
-    </Card>
+      <TaskCard task={task} onDoubleClick={onClick} />
+    </div>
   );
 }
