@@ -18,14 +18,12 @@ export class TaskService {
     @InjectRepository(User) private userRepo: Repository<User>,
   ) {}
 
-  // 🟢 Lấy tất cả  
   async getAssignees(id: string) {
     const task = await this.taskRepo.findOne({ where: { id }, relations: ['assignees'] });
     if (!task) throw new NotFoundException('Task không tồn tại');
     return task.assignees;
   }
 
-  // 🟢 Lấy tất cả task theo cột
   async findByColumn(columnId: string) {
     return this.taskRepo.find({
       where: { columnId },
@@ -60,7 +58,6 @@ export class TaskService {
   
   
 
-  // 🟢 Cập nhật task
   async update(id: string, dto: UpdateTaskDto) {
     const task = await this.taskRepo.findOne({ where: { id } });
     if (!task) throw new NotFoundException('Task không tồn tại');
@@ -69,7 +66,6 @@ export class TaskService {
     return this.taskRepo.save(task);
   }
 
-  // 🟢 Xóa task
   async remove(id: string) {
     const task = await this.taskRepo.findOne({ where: { id } });
     if (!task) throw new NotFoundException('Task không tồn tại');
@@ -77,7 +73,6 @@ export class TaskService {
     return { message: 'Đã xóa task thành công' };
   }
 
-  // 🟢 Gán người làm
   async assignUsers(taskId: string, dto: AssignUsersDto) {
     const task = await this.taskRepo.findOne({
       where: { id: taskId },
@@ -85,10 +80,8 @@ export class TaskService {
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
   
-    // 🟩 Lấy toàn bộ user mới muốn thêm
     const newUsers = await this.userRepo.find({ where: { id: In(dto.userIds) } });
   
-    // 🟩 Hợp nhất danh sách assignees cũ + mới, tránh trùng
     const merged = [
       ...task.assignees,
       ...newUsers.filter(
@@ -98,7 +91,6 @@ export class TaskService {
   
     task.assignees = merged;
   
-    // 🟩 Lưu lại task
     return await this.taskRepo.save(task);
   }
 
@@ -111,12 +103,10 @@ export class TaskService {
     const task = await this.taskRepo.findOne({ where: { id: taskId } });
     if (!task) throw new NotFoundException('Task không tồn tại');
   
-    // Nếu đổi cột → cập nhật
     if (newColumnId) {
       task.columnId = newColumnId;
     }
   
-    // Lấy 2 task lân cận trong cùng cột (sau khi đổi)
     let prev: Task | null = null;
     let next: Task | null = null;
   
@@ -130,16 +120,12 @@ export class TaskService {
     let newPosition: number;
   
     if (prev && next) {
-      // Giữa 2 task
       newPosition = (parseFloat(prev.position) + parseFloat(next.position)) / 2;
     } else if (prev) {
-      // Sau prev (ở cuối)
       newPosition = parseFloat(prev.position) + 1;
     } else if (next) {
-      // Trước next (ở đầu)
       newPosition = parseFloat(next.position) / 2;
     } else {
-      // Cột trống
       newPosition = 1;
     }
   
@@ -155,7 +141,6 @@ export class TaskService {
   
   
 
-  // 🟢 Thêm subtask
   async addSubTask(taskId: string, title: string) {
     const task = await this.taskRepo.findOne({ where: { id: taskId } });
     if (!task) throw new NotFoundException('Task không tồn tại');
@@ -164,7 +149,6 @@ export class TaskService {
     return this.subRepo.save(sub);
   }
 
-  // 🟢 Cập nhật subtask
   async updateSubTask(id: string, update: Partial<SubTask>) {
     const sub = await this.subRepo.findOne({
       where: { id },
@@ -175,7 +159,6 @@ export class TaskService {
     Object.assign(sub, update);
     await this.subRepo.save(sub);
 
-    // Tự động tính lại progress task
     const total = sub.task.subtasks.length;
     const done = sub.task.subtasks.filter((s) => s.completed).length;
     sub.task.progress = total ? (done / total) * 100 : 0;
