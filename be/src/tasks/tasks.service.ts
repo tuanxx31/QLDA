@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Task } from './entities/task.entity';
@@ -103,33 +103,63 @@ export class TaskService {
     const task = await this.taskRepo.findOne({ where: { id: taskId } });
     if (!task) throw new NotFoundException('Task không tồn tại');
   
+    // Nếu đổi cột → cập nhật columnId ngay
     if (newColumnId) {
       task.columnId = newColumnId;
     }
   
-    let prev: Task | null = null;
-    let next: Task | null = null;
+    // Lấy prev/next
+    const prev = prevTaskId
+      ? await this.taskRepo.findOne({ where: { id: prevTaskId } })
+      : null;
   
-    if (prevTaskId) {
-      prev = await this.taskRepo.findOne({ where: { id: prevTaskId } });
-    }
-    if (nextTaskId) {
-      next = await this.taskRepo.findOne({ where: { id: nextTaskId } });
-    }
+    const next = nextTaskId
+      ? await this.taskRepo.findOne({ where: { id: nextTaskId } })
+      : null;
   
-    let newPosition: number;
-  
-    if (prev && next) {
-      newPosition = (parseFloat(prev.position) + parseFloat(next.position)) / 2;
-    } else if (prev) {
-      newPosition = parseFloat(prev.position) + 1;
-    } else if (next) {
-      newPosition = parseFloat(next.position) / 2;
-    } else {
-      newPosition = 1;
+    // ============= VALIDATE =============
+    // Nếu prev nằm cột khác → bỏ qua
+    if (prev && prev.columnId !== task.columnId) {
+      throw new BadRequestException('prevTaskId không hợp lệ (khác column)');
     }
   
-    task.position = newPosition.toFixed(3);
+    // Nếu next nằm cột khác → bỏ qua
+    if (next && next.columnId !== task.columnId) {
+      throw new BadRequestException('nextTaskId không hợp lệ (khác column)');
+    }
+  
+    let newPosition = 0;
+    const gap = 1000; // offset lớn để hạn chế rebalance
+  
+    const prevPos = prev ? parseFloat(prev.position) : null;
+    const nextPos = next ? parseFloat(next.position) : null;
+  
+    // ============= CASE 1: Giữa 2 task =============
+    if (prevPos !== null && nextPos !== null) {
+      newPosition = (prevPos + nextPos) / 2;
+    }
+  
+    // ============= CASE 2: Cuối list (không có next) =============
+    else if (prevPos !== null && nextPos === null) {
+      newPosition = prevPos + gap;
+    }
+  
+    // ============= CASE 3: Đầu list (không có prev) =============
+    else if (prevPos === null && nextPos !== null) {
+      newPosition = nextPos - gap;
+  
+      // Nếu bị âm → đẩy về 0
+      if (newPosition < 0) newPosition = 0;
+    }
+  
+    // ============= CASE 4: Column rỗng (không prev, không next) =============
+    else {
+      newPosition = gap;
+    }
+  
+    // GÁN GIÁ TRỊ (TypeORM tự convert number → decimal string)
+    task.position = String(newPosition);
+  
     await this.taskRepo.save(task);
   
     return {
@@ -138,6 +168,7 @@ export class TaskService {
       columnId: task.columnId,
     };
   }
+  
   
   
 

@@ -50,9 +50,15 @@ export class ColumnsService {
     return this.columnRepo.find({
       where: { project: { id: projectId } },
       relations: ['tasks', 'tasks.subtasks'],
-      order: { order: 'ASC' },
+      order: {
+        order: 'ASC',
+        tasks: {
+          position: 'ASC',
+        },
+      },
     });
   }
+  
 
   async update(id: string, dto: UpdateColumnDto) {
     const column = await this.columnRepo.findOne({ where: { id } });

@@ -122,12 +122,29 @@ export default function ProjectBoardPage() {
     // Với task: ưu tiên pointerWithin để phát hiện khi hover vào task/column cụ thể
     // Sau đó dùng rectIntersection và closestCenter làm fallback
     if (activeType === 'task') {
+      // Ưu tiên pointerWithin để phát hiện chính xác khi hover vào task hoặc column
       const pointerCollisions = pointerWithin(args);
-      if (pointerCollisions.length > 0) return pointerCollisions;
+      if (pointerCollisions.length > 0) {
+        // Kiểm tra xem có collision với column không (quan trọng cho column rỗng)
+        const columnCollision = pointerCollisions.find(
+          c => c.data?.current?.type === 'column'
+        );
+        if (columnCollision) return [columnCollision];
+        return pointerCollisions;
+      }
       
+      // Fallback: dùng rectIntersection để phát hiện collision với các element
       const rectCollisions = rectIntersection(args);
-      if (rectCollisions.length > 0) return rectCollisions;
+      if (rectCollisions.length > 0) {
+        // Ưu tiên column nếu có
+        const columnCollision = rectCollisions.find(
+          c => c.data?.current?.type === 'column'
+        );
+        if (columnCollision) return [columnCollision];
+        return rectCollisions;
+      }
       
+      // Cuối cùng dùng closestCenter
       return closestCenter(args);
     }
     
@@ -162,15 +179,23 @@ export default function ProjectBoardPage() {
   
     const activeId = String(active.id);
     const overId = String(over.id);
+    const overType = over.data?.current?.type;
   
     setColumns(prev => {
       // Tìm column chứa task đang được kéo
       const fromCol = findColumnByTaskId(activeId, prev);
       if (!fromCol) return prev;
   
-      // Tìm column đích: có thể là column chứa task hoặc chính column đó
-      const overTaskCol = findColumnByTaskId(overId, prev);
-      const toCol = overTaskCol || prev.find(c => c.id === overId);
+      // Tìm column đích: 
+      // - Nếu over là column thì dùng trực tiếp
+      // - Nếu over là task thì tìm column chứa task đó
+      let toCol: Column | undefined;
+      if (overType === 'column') {
+        toCol = prev.find(c => c.id === overId);
+      } else {
+        // over có thể là task hoặc không có type, tìm column chứa task hoặc column có id = overId
+        toCol = findColumnByTaskId(overId, prev) || prev.find(c => c.id === overId);
+      }
       
       if (!toCol || fromCol.id === toCol.id) return prev;
   
@@ -186,8 +211,10 @@ export default function ProjectBoardPage() {
   
       const [moved] = fromTasks.splice(fromIdx, 1);
   
-      // Tính toán vị trí chèn: nếu drop vào column thì thêm vào cuối, nếu drop vào task thì chèn trước task đó
-      const isDropOnColumn = overId === toCol.id;
+      // Tính toán vị trí chèn: 
+      // - Nếu drop vào column (rỗng hoặc không) thì thêm vào cuối
+      // - Nếu drop vào task thì chèn trước task đó
+      const isDropOnColumn = overType === 'column' || overId === toCol.id;
       let overIdx = toTasks.length; // Mặc định là cuối danh sách
       
       if (!isDropOnColumn) {
@@ -216,6 +243,7 @@ export default function ProjectBoardPage() {
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+  
     if (!over) {
       setActiveTask(null);
       setActiveColumn(null);
@@ -223,77 +251,106 @@ export default function ProjectBoardPage() {
     }
   
     const activeType = active.data?.current?.type;
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    const overType = over.data?.current?.type;
   
-    // ------------------------
-    // 1) Drag COLUMN
-    // ------------------------
+    // =========================================
+    // 1) DRAG COLUMN
+    // =========================================
     if (activeType === 'column') {
       setColumns(prev => {
-        const oldIdx = prev.findIndex(c => c.id === active.id);
-        const newIdx = prev.findIndex(c => c.id === over.id);
+        const oldIdx = prev.findIndex(c => c.id === activeId);
+        const newIdx = prev.findIndex(c => c.id === overId);
+  
         if (oldIdx === -1 || newIdx === -1 || oldIdx === newIdx) return prev;
   
         const reordered = arrayMove(prev, oldIdx, newIdx).map((c, i) => ({
           ...c,
           order: i + 1,
         }));
+  
+        // cập nhật DB debounce
         debouncedUpdateOrder(reordered);
+  
         return reordered;
       });
+  
       setActiveColumn(null);
       return;
     }
   
-    // ------------------------
-    // 2) Drag TASK
-    // ------------------------
-    const activeId = String(active.id);
-    const overId = String(over.id);
+    // =========================================
+    // 2) DRAG TASK
+    // =========================================
   
-    // Sử dụng functional update để cập nhật state ngay lập tức
     setColumns(prev => {
-      // Lưu state ban đầu để rollback nếu có lỗi (trong closure)
+      // backup để rollback nếu API lỗi
       const previousState = JSON.parse(JSON.stringify(prev));
-      
+  
       const fromCol = findColumnByTaskId(activeId, prev);
-      const toCol = findColumnByTaskId(overId, prev) || prev.find(c => c.id === overId);
+  
+      // xác định column đích
+      let toCol: Column | undefined;
+      if (overType === 'column') {
+        toCol = prev.find(c => c.id === overId);
+      } else {
+        toCol =
+          findColumnByTaskId(overId, prev) ||
+          prev.find(c => c.id === overId);
+      }
   
       if (!fromCol || !toCol) return prev;
   
-      // Nếu cùng một column và cùng vị trí, không làm gì
+      // ===============================
+      // CASE A: DRAG TRONG CÙNG COLUMN
+      // ===============================
       if (fromCol.id === toCol.id) {
         const tasks = [...(fromCol.tasks ?? [])];
         const fromIdx = tasks.findIndex(t => t.id === activeId);
+  
+        // nếu thả vào column (không phải task)
+        if (overType === 'column' || overId === toCol.id) {
+          // Không reorder, chỉ drop vào column → bỏ qua
+          return prev;
+        }
+  
         const overIdx = tasks.findIndex(t => t.id === overId);
-        
-        if (fromIdx === -1 || overIdx === -1 || fromIdx === overIdx) return prev;
-        
-        // Sắp xếp lại trong cùng column
+        if (fromIdx === -1 || overIdx === -1 || fromIdx === overIdx) {
+          return prev;
+        }
+  
         const reordered = arrayMove(tasks, fromIdx, overIdx);
-        
-        // Tính toán prev/next task để gọi API
+  
+        // prev / next cho API
         const prevTask = reordered[overIdx - 1];
         const nextTask = reordered[overIdx + 1];
-        
-        // Gọi API update position ở background (không block UI)
-        taskService.updatePosition(
-          activeId,
-          prevTask?.id,
-          nextTask?.id,
-          undefined, // Không đổi column
-        ).catch(() => {
-          message.error('Không thể lưu vị trí nhiệm vụ');
-          // Rollback state nếu có lỗi
-          setColumns(previousState);
-          queryClient.invalidateQueries({ queryKey: ['columns', projectId] });
-        });
-        
-        return prev.map(c => 
+  
+        // gọi API update position
+        taskService
+          .updatePosition(
+            activeId,
+            prevTask?.id,
+            nextTask?.id,
+            undefined // không đổi column
+          )
+          .catch(() => {
+            message.error('Không thể lưu vị trí nhiệm vụ');
+            setColumns(previousState);
+            queryClient.invalidateQueries({
+              queryKey: ['columns', projectId],
+            });
+          });
+  
+        return prev.map(c =>
           c.id === fromCol.id ? { ...c, tasks: reordered } : c
         );
       }
   
-      // Di chuyển task giữa các columns
+      // ===============================
+      // CASE B: DRAG SANG COLUMN KHÁC
+      // ===============================
+  
       const fromTasks = [...(fromCol.tasks ?? [])];
       const toTasks = [...(toCol.tasks ?? [])];
   
@@ -303,54 +360,60 @@ export default function ProjectBoardPage() {
       const [moved] = fromTasks.splice(fromIdx, 1);
       moved.columnId = toCol.id;
   
-      // Tính toán vị trí chèn
-      const isDropOnColumn = overId === toCol.id;
-      let overIdx = toTasks.length; // Mặc định là cuối danh sách
-      
+      // xác định vị trí chèn
+      const isDropOnColumn =
+        overType === 'column' || overId === toCol.id;
+  
+      let overIdx = toTasks.length; // mặc định là cuối
+  
       if (!isDropOnColumn) {
-        // Drop vào một task cụ thể
-        const targetTaskIdx = toTasks.findIndex(t => t.id === overId);
-        if (targetTaskIdx !== -1) {
-          overIdx = targetTaskIdx;
-        }
+        const targetIdx = toTasks.findIndex(t => t.id === overId);
+        if (targetIdx !== -1) overIdx = targetIdx;
       }
   
-      // Chèn task vào vị trí đúng
+      // chèn
       const newToTasks = [
         ...toTasks.slice(0, overIdx),
         moved,
         ...toTasks.slice(overIdx),
       ];
   
-      // Tính toán prev/next task để gọi API
-      const prevTask = newToTasks[overIdx - 1];
-      const nextTask = newToTasks[overIdx + 1];
+      // prev / next
+      const prevTask =
+        overIdx > 0 ? newToTasks[overIdx - 1] : undefined;
+      const nextTask =
+        overIdx < newToTasks.length - 1
+          ? newToTasks[overIdx + 1]
+          : undefined;
   
-      // Gọi API update position ở background (không block UI)
-      taskService.updatePosition(
-        moved.id,
-        prevTask?.id,
-        nextTask?.id,
-        toCol.id,
-      ).catch(() => {
-        message.error('Không thể lưu vị trí nhiệm vụ');
-        // Rollback state nếu có lỗi
-        setColumns(previousState);
-        queryClient.invalidateQueries({ queryKey: ['columns', projectId] });
-      });
+      // API update
+      taskService
+        .updatePosition(
+          moved.id,
+          prevTask?.id,
+          nextTask?.id,
+          toCol.id
+        )
+        .catch(() => {
+          message.error('Không thể lưu vị trí nhiệm vụ');
+          setColumns(previousState);
+          queryClient.invalidateQueries({
+            queryKey: ['columns', projectId],
+          });
+        });
   
       return prev.map(c =>
         c.id === fromCol.id
           ? { ...c, tasks: fromTasks }
           : c.id === toCol.id
           ? { ...c, tasks: newToTasks }
-          : c,
+          : c
       );
     });
   
-    // Không invalidate queries - state đã được update local, chỉ refetch khi có lỗi
     setActiveTask(null);
   };
+  
   
 
   const handleDragMove = (_event: DragMoveEvent) => {
