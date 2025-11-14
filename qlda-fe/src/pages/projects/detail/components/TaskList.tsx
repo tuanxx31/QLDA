@@ -1,14 +1,6 @@
 import { useState } from 'react';
 import { Space, message } from 'antd';
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core';
-import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import type { Column } from '@/types/project-board';
 import type { Task } from '@/types/task.type';
 import SortableTask from './SortableTask';
@@ -21,12 +13,13 @@ import TaskDetailModal from './TaskDetailModal';
 export default function TaskList({ column }: { column: Column }) {
   const { projectId } = useParams<{ projectId: string }>();
 
-  const sensors = useSensors(useSensor(PointerSensor));
   const qc = useQueryClient();
-  const [tasks, setTasks] = useState<Task[]>(column.tasks || []);
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [openTask, setOpenTask] = useState<Task | null>(null);
+
+  // Đồng bộ tasks từ column prop thay vì dùng local state
+  const tasks = column.tasks || [];
 
   const addTask = useMutation({
     mutationFn: (title: string) => taskService.create(column.id, title),
@@ -46,43 +39,13 @@ export default function TaskList({ column }: { column: Column }) {
       return;
     }
     addTask.mutate(trimmed);
-    qc.invalidateQueries({ queryKey: ['columns', projectId] });
-    setTasks(prev => [
-      ...prev,
-      { id: 'new', title: trimmed, columnId: column.id, status: 'todo', priority: 'low' },
-    ]);
   };
 
-  const handleTaskDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const oldIndex = tasks.findIndex(t => t.id === active.id);
-    const newIndex = tasks.findIndex(t => t.id === over.id);
-
-    if (oldIndex === -1 || newIndex === -1) return;
-
-    const reordered = arrayMove(tasks, oldIndex, newIndex);
-    setTasks(reordered);
-
-    const prevTask = reordered[newIndex - 1];
-    const nextTask = reordered[newIndex + 1];
-
-    try {
-      await taskService.updatePosition(
-        active.id as string,
-        prevTask?.id,
-        nextTask?.id,
-        column.id,
-      );
-    } catch {
-      message.error('Không thể lưu vị trí');
-    }
-  };
+  const taskIds = tasks.map(t => t.id);
 
   return (
     <>
-      <SortableContext items={tasks.map(t => t.id)} strategy={rectSortingStrategy}>
+      <SortableContext items={taskIds} strategy={rectSortingStrategy}>
         <Space direction="vertical" style={{ width: '100%', gap: 8, paddingBottom: 8 }}>
           {tasks.map(task => (
             <SortableTask key={task.id} task={task} onClick={setOpenTask} />
