@@ -27,12 +27,12 @@ export default function SortableColumn({ column, isOverlay }: { column: Column, 
 
   const { setNodeRef: setDropRef, isOver } = useDroppable({
     id: column.id,
-    data: { type: "column", columnId: column.id },
+    data: { type: "column", columnId: column.id ,name: column.name},
   });
 
   const { token } = theme.useToken();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: column.id ,disabled: isOverlay ,data:{type: "column", columnId: column.id}});
+    useSortable({ id: column.id ,disabled: isOverlay ,data:{type: "column", columnId: column.id ,name: column.name}});
 
   const qc = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();

@@ -90,6 +90,8 @@ export default function ProjectBoardPage() {
     }
   }, [data]);
 
+  
+
   const addColumn = useMutation({
     mutationFn: (name: string) => columnService.create(projectId!, { name }),
     onSuccess: res => {
@@ -243,6 +245,7 @@ export default function ProjectBoardPage() {
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+    console.log("handleDragEnd >>>", { active, over });
   
     if (!over) {
       setActiveTask(null);
@@ -253,12 +256,11 @@ export default function ProjectBoardPage() {
     const activeType = active.data?.current?.type;
     const activeId = String(active.id);
     const overId = String(over.id);
-    const overType = over.data?.current?.type;
   
-    // =========================================
-    // 1) DRAG COLUMN
-    // =========================================
-    if (activeType === 'column') {
+    // =====================================
+    // 1) COLUMN DRAG
+    // =====================================
+    if (activeType === "column") {
       setColumns(prev => {
         const oldIdx = prev.findIndex(c => c.id === activeId);
         const newIdx = prev.findIndex(c => c.id === overId);
@@ -270,7 +272,6 @@ export default function ProjectBoardPage() {
           order: i + 1,
         }));
   
-        // cập nhật DB debounce
         debouncedUpdateOrder(reordered);
   
         return reordered;
@@ -280,66 +281,55 @@ export default function ProjectBoardPage() {
       return;
     }
   
-    // =========================================
-    // 2) DRAG TASK
-    // =========================================
+    // =====================================
+    // 2) TASK DRAG
+    // =====================================
   
     setColumns(prev => {
-      // backup để rollback nếu API lỗi
       const previousState = JSON.parse(JSON.stringify(prev));
-  
       const fromCol = findColumnByTaskId(activeId, prev);
   
-      // xác định column đích
-      let toCol: Column | undefined;
-      if (overType === 'column') {
-        toCol = prev.find(c => c.id === overId);
-      } else {
-        toCol =
-          findColumnByTaskId(overId, prev) ||
-          prev.find(c => c.id === overId);
-      }
+      if (!fromCol) return prev;
   
-      if (!fromCol || !toCol) return prev;
+      // ✔ LUÔN LẤY COLUMN ĐÍCH CHUẨN
+      // task: over.data.current.columnId
+      // column: over.id = columnId
+      const overColumnId = over.data?.current?.columnId ?? overId;
   
-      // ===============================
-      // CASE A: DRAG TRONG CÙNG COLUMN
-      // ===============================
+      const toCol = prev.find(c => c.id === overColumnId);
+  
+      console.log("fromCol >>>", fromCol.id);
+      console.log("toCol >>>", toCol?.id);
+  
+      if (!toCol) return prev;
+  
+      // ==============================
+      // CASE A: DRAG WITHIN SAME COLUMN
+      // ==============================
       if (fromCol.id === toCol.id) {
         const tasks = [...(fromCol.tasks ?? [])];
         const fromIdx = tasks.findIndex(t => t.id === activeId);
   
-        // nếu thả vào column (không phải task)
-        if (overType === 'column' || overId === toCol.id) {
-          // Không reorder, chỉ drop vào column → bỏ qua
-          return prev;
-        }
+        // Không drop lên column container → return
+        if (over.id === fromCol.id) return prev;
   
         const overIdx = tasks.findIndex(t => t.id === overId);
+  
         if (fromIdx === -1 || overIdx === -1 || fromIdx === overIdx) {
           return prev;
         }
   
         const reordered = arrayMove(tasks, fromIdx, overIdx);
   
-        // prev / next cho API
         const prevTask = reordered[overIdx - 1];
         const nextTask = reordered[overIdx + 1];
   
-        // gọi API update position
         taskService
-          .updatePosition(
-            activeId,
-            prevTask?.id,
-            nextTask?.id,
-            undefined // không đổi column
-          )
+          .updatePosition(activeId, prevTask?.id, nextTask?.id)
           .catch(() => {
-            message.error('Không thể lưu vị trí nhiệm vụ');
+            message.error("Không thể lưu vị trí nhiệm vụ");
             setColumns(previousState);
-            queryClient.invalidateQueries({
-              queryKey: ['columns', projectId],
-            });
+            queryClient.invalidateQueries({ queryKey: ["columns", projectId] });
           });
   
         return prev.map(c =>
@@ -347,9 +337,10 @@ export default function ProjectBoardPage() {
         );
       }
   
-      // ===============================
-      // CASE B: DRAG SANG COLUMN KHÁC
-      // ===============================
+      // ==============================
+      // CASE B: DRAG TO DIFFERENT COLUMN
+      // ==============================
+      console.log("CASE B: Move to other column");
   
       const fromTasks = [...(fromCol.tasks ?? [])];
       const toTasks = [...(toCol.tasks ?? [])];
@@ -360,46 +351,38 @@ export default function ProjectBoardPage() {
       const [moved] = fromTasks.splice(fromIdx, 1);
       moved.columnId = toCol.id;
   
-      // xác định vị trí chèn
-      const isDropOnColumn =
-        overType === 'column' || overId === toCol.id;
+      // Xác định vị trí chèn
+      const isDropOnColumn = overId === toCol.id;
   
-      let overIdx = toTasks.length; // mặc định là cuối
-  
+      let overIdx = toTasks.length;
       if (!isDropOnColumn) {
         const targetIdx = toTasks.findIndex(t => t.id === overId);
         if (targetIdx !== -1) overIdx = targetIdx;
       }
   
-      // chèn
       const newToTasks = [
         ...toTasks.slice(0, overIdx),
         moved,
         ...toTasks.slice(overIdx),
       ];
   
-      // prev / next
-      const prevTask =
-        overIdx > 0 ? newToTasks[overIdx - 1] : undefined;
+      const prevTask = overIdx > 0 ? newToTasks[overIdx - 1] : undefined;
       const nextTask =
-        overIdx < newToTasks.length - 1
-          ? newToTasks[overIdx + 1]
-          : undefined;
+        overIdx < newToTasks.length - 1 ? newToTasks[overIdx + 1] : undefined;
   
-      // API update
+      console.log("API updatePosition:", {
+        moved: moved.id,
+        prev: prevTask?.id,
+        next: nextTask?.id,
+        newColumnId: toCol.id,
+      });
+  
       taskService
-        .updatePosition(
-          moved.id,
-          prevTask?.id,
-          nextTask?.id,
-          toCol.id
-        )
+        .updatePosition(moved.id, prevTask?.id, nextTask?.id, toCol.id)
         .catch(() => {
-          message.error('Không thể lưu vị trí nhiệm vụ');
+          message.error("Không thể lưu vị trí nhiệm vụ");
           setColumns(previousState);
-          queryClient.invalidateQueries({
-            queryKey: ['columns', projectId],
-          });
+          queryClient.invalidateQueries({ queryKey: ["columns", projectId] });
         });
   
       return prev.map(c =>

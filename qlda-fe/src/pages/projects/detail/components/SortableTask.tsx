@@ -6,7 +6,7 @@ import type { Task } from '@/types/task.type';
 
 export default function SortableTask({ task, onClick }: { task: Task; onClick?: (task: Task) => void }) {
   const { token } = theme.useToken();
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: task.id ,data:{type: "task", taskId: task.id}});
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: task.id ,data:{type: "task", taskId: task.id ,columnId: task.columnId, title : task.title}});
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
