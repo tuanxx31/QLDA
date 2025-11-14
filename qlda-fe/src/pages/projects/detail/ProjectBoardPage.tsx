@@ -250,8 +250,11 @@ export default function ProjectBoardPage() {
     const activeId = String(active.id);
     const overId = String(over.id);
   
-    // Sử dụng functional update để tránh stale closure
+    // Sử dụng functional update để cập nhật state ngay lập tức
     setColumns(prev => {
+      // Lưu state ban đầu để rollback nếu có lỗi (trong closure)
+      const previousState = JSON.parse(JSON.stringify(prev));
+      
       const fromCol = findColumnByTaskId(activeId, prev);
       const toCol = findColumnByTaskId(overId, prev) || prev.find(c => c.id === overId);
   
@@ -267,6 +270,24 @@ export default function ProjectBoardPage() {
         
         // Sắp xếp lại trong cùng column
         const reordered = arrayMove(tasks, fromIdx, overIdx);
+        
+        // Tính toán prev/next task để gọi API
+        const prevTask = reordered[overIdx - 1];
+        const nextTask = reordered[overIdx + 1];
+        
+        // Gọi API update position ở background (không block UI)
+        taskService.updatePosition(
+          activeId,
+          prevTask?.id,
+          nextTask?.id,
+          undefined, // Không đổi column
+        ).catch(() => {
+          message.error('Không thể lưu vị trí nhiệm vụ');
+          // Rollback state nếu có lỗi
+          setColumns(previousState);
+          queryClient.invalidateQueries({ queryKey: ['columns', projectId] });
+        });
+        
         return prev.map(c => 
           c.id === fromCol.id ? { ...c, tasks: reordered } : c
         );
@@ -305,14 +326,17 @@ export default function ProjectBoardPage() {
       const prevTask = newToTasks[overIdx - 1];
       const nextTask = newToTasks[overIdx + 1];
   
-      // Gọi API update position
+      // Gọi API update position ở background (không block UI)
       taskService.updatePosition(
         moved.id,
-        prevTask?.id ?? null,
-        nextTask?.id ?? null,
+        prevTask?.id,
+        nextTask?.id,
         toCol.id,
       ).catch(() => {
         message.error('Không thể lưu vị trí nhiệm vụ');
+        // Rollback state nếu có lỗi
+        setColumns(previousState);
+        queryClient.invalidateQueries({ queryKey: ['columns', projectId] });
       });
   
       return prev.map(c =>
@@ -324,8 +348,7 @@ export default function ProjectBoardPage() {
       );
     });
   
-    // Invalidate queries sau khi cập nhật
-    queryClient.invalidateQueries({ queryKey: ['columns', projectId] });
+    // Không invalidate queries - state đã được update local, chỉ refetch khi có lỗi
     setActiveTask(null);
   };
   
