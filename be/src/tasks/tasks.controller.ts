@@ -47,7 +47,8 @@ export class TaskController {
   @ApiResponse({ status: 201, description: 'Task đã được tạo thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(@Body() dto: CreateTaskDto, @Req() req) {
-    const creatorId = req.user?.id ?? null;
+    const creatorId = req.user?.sub ?? null;
+    console.log('creatorId', creatorId);
     return this.taskService.create(dto, creatorId);
   }
 
@@ -78,22 +79,22 @@ export class TaskController {
     return this.taskService.assignUsers(id, dto);
   }
 
-  @Patch(':id/labels')
-  @ApiBearerAuth('jwt')
-  @ApiOperation({ summary: 'Gán nhãn task' })
-  @ApiResponse({ status: 200, description: 'Task đã được gán nhãn thành công' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  assignLabels(@Param('id') id: string, @Body() dto: AssignLabelsDto) {
-    return this.taskService.assignLabels(id, dto);
-  }
+  // @Patch(':id/labels')
+  // @ApiBearerAuth('jwt')
+  // @ApiOperation({ summary: 'Gán nhãn task' })
+  // @ApiResponse({ status: 200, description: 'Task đã được gán nhãn thành công' })
+  // @ApiResponse({ status: 401, description: 'Unauthorized' })
+  // assignLabels(@Param('id') id: string, @Body() dto: AssignLabelsDto) {
+  //   return this.taskService.assignLabels(id, dto);
+  // }
 
   @Patch(':id/position')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Cập nhật vị trí task' })
   @ApiResponse({ status: 200, description: 'Task đã được cập nhật vị trí thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  updatePosition(@Param('id') id: string, @Body() body: { position: number; columnId?: string }) {
-    return this.taskService.updatePosition(id, body.position, body.columnId);
+  updatePosition(@Param('id') id: string, @Body() body: { prevTaskId?: string; nextTaskId?: string; columnId?: string }) {
+    return this.taskService.updatePosition(id, body.prevTaskId, body.nextTaskId, body.columnId);
   }
 
   @Post(':id/subtasks')

@@ -21,18 +21,15 @@ export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
     <Card
       size="small"
       hoverable
-      style={{
-        marginBottom: 8,
-        borderRadius: 8,
-        background: "#fff",
-        color: "#333",
-        position: "relative",
-        boxShadow: hovered
-          ? "0 2px 8px rgba(0,0,0,0.15)"
-          : "0 1px 3px rgba(0,0,0,0.05)",
-        cursor: "pointer",
-        transition: "all 0.2s ease",
-      }}
+      // style={{
+      //   // marginBottom: 8,
+      //   // borderRadius: 8,
+      //   // background: "#fff",
+      //   // color: "#333",
+      //   position: "relative",
+      //   cursor: "pointer",
+      //   transition: "all 0.2s ease",
+      // }}
       bodyStyle={{ padding: 10 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
