@@ -195,21 +195,21 @@ export default function ProjectBoardPage() {
     }
 
     // ===== AUTO-SCROLL theo trục X =====
-    if (activatorEvent && 'clientX' in activatorEvent) {
-      const container = scrollContainerRef.current;
-      if (!container) return;
+    // if (activatorEvent && 'clientX' in activatorEvent) {
+    //   const container = scrollContainerRef.current;
+    //   if (!container) return;
 
-      const rect = container.getBoundingClientRect();
-      const { clientX } = activatorEvent;
-      const threshold = 80;
-      const speed = 20;
+    //   const rect = container.getBoundingClientRect();
+    //   const { clientX } = activatorEvent;
+    //   const threshold = 80;
+    //   const speed = 20;
 
-      if (clientX < rect.left + threshold) {
-        container.scrollLeft -= speed;
-      } else if (clientX > rect.right - threshold) {
-        container.scrollLeft += speed;
-      }
-    }
+    //   if (clientX < rect.left + threshold) {
+    //     container.scrollLeft -= speed;
+    //   } else if (clientX > rect.right - threshold) {
+    //     container.scrollLeft += speed;
+    //   }
+    // }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -362,7 +362,7 @@ export default function ProjectBoardPage() {
             </Space>
           </SortableContext>
 
-          <DragOverlay>
+          <DragOverlay adjustScale={false}>
             {activeColumn && <SortableColumn column={activeColumn} isOverlay />}
             {activeTask && (
               <Card

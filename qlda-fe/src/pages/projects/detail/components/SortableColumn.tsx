@@ -11,7 +11,7 @@ import {
   Typography,
   type InputRef,
 } from "antd";
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, HolderOutlined } from "@ant-design/icons";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Column } from "@/types/project-board";
@@ -19,7 +19,6 @@ import TaskList from "./TaskList";
 import { useParams } from "react-router-dom";
 import { columnService } from "@/services/column.services";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useDroppable } from "@dnd-kit/core";
 
 const { Text } = Typography;
 
@@ -31,11 +30,6 @@ export default function SortableColumn({
   isOverlay?: boolean;
 }) {
   const { token } = theme.useToken();
-
-  const { setNodeRef: setDropRef } = useDroppable({
-    id: column.id,
-    data: { type: "column", columnId: column.id },
-  });
 
   const {
     attributes,
@@ -95,13 +89,13 @@ export default function SortableColumn({
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
-    transition: isDragging ? "none" : "transform 0.2s ease",
+    transition: isDragging ? "none" : transition ?? "transform 0.2s ease",
     minWidth: 300,
     opacity: isDragging ? 0.4 : 1,
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef} style={style} {...(!isOverlay ? attributes : {})}>
       <Card
         bodyStyle={{
           padding: 8,
@@ -110,64 +104,74 @@ export default function SortableColumn({
         }}
         title={
           <div
-            {...(!isEditing ? attributes : {})}
-            {...(!isEditing ? listeners : {})}
             style={{
               display: "flex",
               alignItems: "center",
+              justifyContent: "space-between",
               gap: 8,
-              cursor: isEditing ? "text" : "grab",
             }}
           >
-            {isEditing ? (
-              <Space align="center">
-                <Input
-                  ref={inputRef}
-                  size="small"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  onPressEnter={handleSave}
-                  onBlur={handleSave}
-                  disabled={updateMutation.isPending}
-                  style={{ width: 180 }}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {isEditing ? (
+                <Space align="center">
+                  <Input
+                    ref={inputRef}
+                    size="small"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    onPressEnter={handleSave}
+                    onBlur={handleSave}
+                    disabled={updateMutation.isPending}
+                    style={{ width: 180 }}
+                  />
+                  {updateMutation.isPending && <Spin size="small" />}
+                </Space>
+              ) : (
+                <Text strong style={{ fontSize: 15 }}>
+                  {column.name}
+                </Text>
+              )}
+            </div>
+
+            <Space size="small">
+              {/* Drag handle giống EXACT DEMO */}
+              {!isOverlay && !isEditing && (
+                <Button
+                  type="text"
+                  icon={<HolderOutlined />}
+                  {...listeners}
+                  style={{ cursor: "grab" }}
                 />
-                {updateMutation.isPending && <Spin size="small" />}
-              </Space>
-            ) : (
-              <Text strong style={{ fontSize: 15 }}>
-                {column.name}
-              </Text>
-            )}
+              )}
+
+              {!isEditing && (
+                <Button
+                  type="text"
+                  icon={<EditOutlined />}
+                  onClick={() => setIsEditing(true)}
+                />
+              )}
+
+              <Popconfirm
+                title="Xóa cột này?"
+                onConfirm={() => removeMutation.mutate()}
+                okText="Xác nhận"
+                cancelText="Hủy"
+              >
+                <Button
+                  type="text"
+                  danger
+                  icon={<DeleteOutlined />}
+                  loading={removeMutation.isPending}
+                />
+              </Popconfirm>
+            </Space>
           </div>
         }
-        extra={
-          <Space size="small">
-            {!isEditing && (
-              <Button
-                type="text"
-                icon={<EditOutlined />}
-                onClick={() => setIsEditing(true)}
-              />
-            )}
-            <Popconfirm
-              title="Xóa cột này?"
-              onConfirm={() => removeMutation.mutate()}
-              okText="Xác nhận"
-              cancelText="Hủy"
-            >
-              <Button
-                type="text"
-                danger
-                icon={<DeleteOutlined />}
-                loading={removeMutation.isPending}
-              />
-            </Popconfirm>
-          </Space>
-        }
       >
-        <div ref={setDropRef}>
-          <TaskList column={column} />
-        </div>
+        {/* ❌ Không droppable ở đây */}
+        {/* TaskList xử lý droppable và sortable của TASK */}
+        <TaskList column={column} />
       </Card>
     </div>
   );
