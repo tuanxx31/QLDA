@@ -11,7 +11,6 @@ import {
   type DragEndEvent,
   type DragMoveEvent,
   KeyboardSensor,
-  closestCorners,
   pointerWithin,
   rectIntersection,
   type CollisionDetection,
@@ -20,7 +19,6 @@ import {
 import {
   arrayMove,
   SortableContext,
-  rectSortingStrategy,
   sortableKeyboardCoordinates,
   horizontalListSortingStrategy,
 } from '@dnd-kit/sortable';
@@ -34,6 +32,8 @@ import type { Task } from '@/types/task.type';
 import AddColumnCard from './components/AddColumnCard';
 import SortableColumn from './components/SortableColumn';
 import { debounce } from 'lodash';
+import TaskCard from './components/TaskCard';
+import SortableTask from './components/SortableTask';
 
 const { Title } = Typography;
 
@@ -348,19 +348,7 @@ export default function ProjectBoardPage() {
           <DragOverlay adjustScale={false}>
             {activeColumn && <SortableColumn column={activeColumn} isOverlay />}
             {activeTask && (
-              <Card
-                size="small"
-                bordered
-                style={{
-                  width: 260,
-                  borderRadius: 8,
-                  background: token.colorBgContainer,
-                  boxShadow: token.boxShadowSecondary,
-                  opacity: 0.9,
-                }}
-              >
-                <Typography.Text strong>{activeTask.title}</Typography.Text>
-              </Card>
+              <SortableTask task={activeTask} />
             )}
           </DragOverlay>
         </DndContext>
