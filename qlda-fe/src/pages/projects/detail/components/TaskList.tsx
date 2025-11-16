@@ -12,43 +12,50 @@ import TaskDetailModal from './TaskDetailModal';
 
 export default function TaskList({ column }: { column: Column }) {
   const { projectId } = useParams<{ projectId: string }>();
-
   const qc = useQueryClient();
+
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [openTask, setOpenTask] = useState<Task | null>(null);
 
-  // Đồng bộ tasks từ column prop thay vì dùng local state
+  // tasks luôn lấy từ props column để Sync DnD
   const tasks = column.tasks || [];
+  const taskIds = tasks.map(t => t.id);
 
   const addTask = useMutation({
     mutationFn: (title: string) => taskService.create(column.id, title),
+
     onSuccess: async () => {
       message.success('Đã thêm thẻ');
       setIsAdding(false);
       setNewTitle('');
       await qc.invalidateQueries({ queryKey: ['columns', projectId] });
     },
+
     onError: () => message.error('Không thể thêm thẻ'),
   });
 
   const handleAdd = (title: string) => {
     const trimmed = title.trim();
     if (!trimmed) {
-      message.warning('Tên thẻ không được để trống');
-      return;
+      return message.warning('Tên thẻ không được để trống');
     }
     addTask.mutate(trimmed);
   };
 
-  const taskIds = tasks.map(t => t.id);
-
   return (
     <>
       <SortableContext items={taskIds} strategy={rectSortingStrategy}>
-        <Space direction="vertical" style={{ width: '100%', gap: 8, paddingBottom: 8 }}>
+        <Space
+          direction="vertical"
+          style={{ width: '100%', gap: 8, paddingBottom: 8 }}
+        >
           {tasks.map(task => (
-            <SortableTask key={task.id} task={task} onClick={setOpenTask} />
+            <SortableTask
+              key={task.id}
+              task={task}
+              onClick={setOpenTask}
+            />
           ))}
 
           <AddTaskCard
@@ -61,7 +68,12 @@ export default function TaskList({ column }: { column: Column }) {
           />
         </Space>
       </SortableContext>
-      <TaskDetailModal open={!!openTask} task={openTask} onClose={() => setOpenTask(null)} />
+
+      <TaskDetailModal
+        open={!!openTask}
+        task={openTask}
+        onClose={() => setOpenTask(null)}
+      />
     </>
   );
 }

@@ -133,7 +133,8 @@ export class TaskService {
   
     const prevPos = prev ? parseFloat(prev.position) : null;
     const nextPos = next ? parseFloat(next.position) : null;
-  
+    
+    console.log({prevPos}, {nextPos});
     // ============= CASE 1: Giữa 2 task =============
     if (prevPos !== null && nextPos !== null) {
       newPosition = (prevPos + nextPos) / 2;

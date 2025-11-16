@@ -1,40 +1,80 @@
+// src/pages/ProjectBoard/components/SortableTask.tsx
+import React from 'react';
 import { Card, theme } from 'antd';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { HolderOutlined } from '@ant-design/icons';
 import TaskCard from './TaskCard';
 import type { Task } from '@/types/task.type';
 
-export default function SortableTask({ task, onClick }: { task: Task; onClick?: (task: Task) => void }) {
+interface SortableTaskProps {
+  task: Task;
+  onClick?: (task: Task) => void;
+}
+
+const SortableTask: React.FC<SortableTaskProps> = ({ task, onClick }) => {
   const { token } = theme.useToken();
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({
-      id: task.id,
-      data: {
-        type: "task",
-        taskId: task.id,
-        columnId: task.columnId,
-      }
-    });
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: task.id,
+    data: {
+      type: 'task',
+      taskId: task.id,
+      columnId: task.columnId,
+    },
+  });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.6 : 1,
     borderRadius: token.borderRadius,
     background: token.colorBgElevated,
-    boxShadow: token.boxShadowSecondary,
-    cursor: 'grab',
+    boxShadow: isDragging ? token.boxShadowSecondary : token.boxShadowTertiary,
+    cursor: 'default',
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      style={style}
-      onClick={() => onClick?.(task)}
-    >
-      <TaskCard task={task} onDoubleClick={onClick} />
+    <div ref={setNodeRef} style={style}>
+      <Card
+        size="small"
+        bordered={false}
+        bodyStyle={{ padding: 8 }}
+        onClick={() => onClick?.(task)}
+      >
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+          {/* Nội dung task */}
+          <div style={{ flex: 1 }}>
+            <TaskCard task={task} onDoubleClick={onClick} />
+          </div>
+
+          {/* Drag handle riêng */}
+          <div
+            {...attributes}
+            {...listeners}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 4,
+              cursor: 'grab',
+              borderRadius: 4,
+              color: token.colorTextTertiary,
+            }}
+          >
+            <HolderOutlined />
+          </div>
+        </div>
+      </Card>
     </div>
   );
-}
+};
+
+export default React.memo(SortableTask);
