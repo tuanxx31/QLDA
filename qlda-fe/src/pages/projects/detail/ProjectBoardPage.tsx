@@ -50,7 +50,6 @@ export default function ProjectBoardPage() {
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [newColumnName, setNewColumnName] = useState('');
 
-  // Lưu lại columnId gốc của task khi bắt đầu kéo
   const [dragTaskFromColumnId, setDragTaskFromColumnId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -78,7 +77,6 @@ export default function ProjectBoardPage() {
     }
   }, [data]);
 
-  // Tìm column theo id column / id task (giống findValueOfItems của bạn)
   const findColumnById = (colId: string, cols: Column[]) => cols.find(c => c.id === colId);
 
   const findColumnOfTask = (taskId: string, cols: Column[]) =>
@@ -134,7 +132,6 @@ export default function ProjectBoardPage() {
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Giống demo: move task trong handleDragMove
   const handleDragMove = (event: DragMoveEvent) => {
     const { active, over, activatorEvent } = event;
     if (!over) return;
@@ -145,7 +142,6 @@ export default function ProjectBoardPage() {
     const activeId = String(active.id);
     const overId = String(over.id);
 
-    // ===== MOVE TASK (giống logic demo Home.tsx) =====
     if (activeType === 'task' && over && active.id !== over.id) {
       setColumns(prev => {
         const draft = JSON.parse(JSON.stringify(prev)) as Column[];
@@ -161,17 +157,14 @@ export default function ProjectBoardPage() {
         const activeIndex = activeTasks.findIndex(t => t.id === activeId);
         if (activeIndex === -1) return prev;
 
-        // Kéo lên 1 task
         if (overType === 'task') {
           const overIndex = overTasks.findIndex(t => t.id === overId);
           if (overIndex === -1) return prev;
 
           if (activeCol.id === overCol.id) {
-            // cùng cột → arrayMove trong cùng column
             const newTasks = arrayMove(activeTasks, activeIndex, overIndex);
             activeCol.tasks = newTasks;
           } else {
-            // khác cột → remove ở cột cũ, insert vào cột mới
             const [removed] = activeTasks.splice(activeIndex, 1);
             overTasks.splice(overIndex, 0, removed);
             removed.columnId = overCol.id;
@@ -180,11 +173,8 @@ export default function ProjectBoardPage() {
           }
         }
 
-        // Kéo lên container (column body)
         if (overType === 'column') {
           if (activeCol.id === overCol.id) {
-            // cùng cột, kéo trong container → nếu muốn, có thể cho xuống cuối
-            // ở đây tạm không đổi (kéo lên chính cột mình đang ở)
             return prev;
           }
 
@@ -199,22 +189,6 @@ export default function ProjectBoardPage() {
       });
     }
 
-    // ===== AUTO-SCROLL theo trục X =====
-    // if (activatorEvent && 'clientX' in activatorEvent) {
-    //   const container = scrollContainerRef.current;
-    //   if (!container) return;
-
-    //   const rect = container.getBoundingClientRect();
-    //   const { clientX } = activatorEvent;
-    //   const threshold = 80;
-    //   const speed = 20;
-
-    //   if (clientX < rect.left + threshold) {
-    //     container.scrollLeft -= speed;
-    //   } else if (clientX > rect.right - threshold) {
-    //     container.scrollLeft += speed;
-    //   }
-    // }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -231,7 +205,6 @@ export default function ProjectBoardPage() {
     const overId = String(over.id);
     const type = active.data?.current?.type;
 
-    // ===== DRAG COLUMN =====
     if (type === 'column') {
       setColumns(prev => {
         const oldIdx = prev.findIndex(c => c.id === activeId);
@@ -251,11 +224,9 @@ export default function ProjectBoardPage() {
       return;
     }
 
-    // ===== DRAG TASK =====
     setColumns(prev => {
-      const draft = [...prev]; // state sau khi handleDragMove đã cập nhật
+      const draft = [...prev];
 
-      // Tìm column cuối cùng chứa task
       const finalCol = findColumnOfTask(activeId, draft);
       if (!finalCol) return prev;
 
@@ -401,14 +372,11 @@ export default function ProjectBoardPage() {
 
 
 export const horizontalColumnCollision: CollisionDetection = (args) => {
-  // 1. Thử detect theo pointer — chính xác nhất khi drag cột
   const pointer = pointerWithin(args);
   if (pointer.length > 0) return pointer;
 
-  // 2. Nếu không, dùng rectIntersection → tốt khi cột rỗng
   const intersection = rectIntersection(args);
   if (intersection.length > 0) return intersection;
 
-  // 3. Cuối cùng fallback về closestCenter (không được thì thôi)
   return closestCenter(args);
 };

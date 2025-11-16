@@ -95,7 +95,7 @@ export default function SortableColumn({
       }}
     >
       <Card
-        {...(!isOverlay ? attributes : {})} // 👈 PHẢI ĐỂ Ở ĐÂY
+        {...(!isOverlay ? attributes : {})}
         bodyStyle={{
           padding: 8,
           maxHeight: '75vh',
