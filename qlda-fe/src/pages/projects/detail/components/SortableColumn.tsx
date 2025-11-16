@@ -181,19 +181,16 @@ export default function SortableColumn({
             </Space>
           </div>
         }
-        actions={[
-          <AddTaskCard
-            key="add-task"
-            isAdding={isAdding}
-            setIsAdding={setIsAdding}
-            newTitle={newTitle}
-            setNewTitle={setNewTitle}
-            onAdd={handleAddTask}
-            loading={addTaskMutation.isPending}
-          />,
-        ]}
       >
         <TaskList column={column} />
+        <AddTaskCard
+          isAdding={isAdding}
+          setIsAdding={setIsAdding}
+          newTitle={newTitle}
+          setNewTitle={setNewTitle}
+          onAdd={handleAddTask}
+          loading={addTaskMutation.isPending}
+        />
       </Card>
     </div>
   );
