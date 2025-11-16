@@ -12,12 +12,15 @@ import {
   type DragMoveEvent,
   KeyboardSensor,
   closestCorners,
+  pointerWithin,
+  rectIntersection,
 } from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
   rectSortingStrategy,
   sortableKeyboardCoordinates,
+  horizontalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useRef, useMemo } from 'react';
@@ -338,16 +341,28 @@ export default function ProjectBoardPage() {
       >
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCorners}
+          // collisionDetection={closestCorners}
+          collisionDetection={(args) => {
+            const pointer = pointerWithin(args);
+            if (pointer.length > 0) return pointer;
+            return rectIntersection(args);
+          }}
           onDragStart={handleDragStart}
           onDragMove={handleDragMove}
           onDragEnd={handleDragEnd}
         >
-          <SortableContext items={columnIds} strategy={rectSortingStrategy}>
-            <Space
-              align="start"
-              style={{ overflowX: 'auto', padding: 8, flex: 1 }}
+          <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
+            <div
               ref={scrollContainerRef}
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 8,
+                overflowX: 'auto',
+                padding: 8,
+                flex: 1,
+                flexShrink: 0,
+              }}
             >
               {columns.map(col => (
                 <SortableColumn key={col.id} column={col} />
@@ -359,7 +374,7 @@ export default function ProjectBoardPage() {
                 setNewName={setNewColumnName}
                 onAdd={name => addColumn.mutate(name)}
               />
-            </Space>
+            </div>
           </SortableContext>
 
           <DragOverlay adjustScale={false}>

@@ -95,8 +95,15 @@ export default function SortableColumn({
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...(!isOverlay ? attributes : {})}>
+    <div
+      ref={setNodeRef}
+      style={{
+        ...style,
+        flexShrink: 0,
+      }}
+    >
       <Card
+        {...(!isOverlay ? attributes : {})}   // 👈 PHẢI ĐỂ Ở ĐÂY
         bodyStyle={{
           padding: 8,
           maxHeight: "75vh",
@@ -132,9 +139,8 @@ export default function SortableColumn({
                 </Text>
               )}
             </div>
-
+  
             <Space size="small">
-              {/* Drag handle giống EXACT DEMO */}
               {!isOverlay && !isEditing && (
                 <Button
                   type="text"
@@ -143,7 +149,7 @@ export default function SortableColumn({
                   style={{ cursor: "grab" }}
                 />
               )}
-
+  
               {!isEditing && (
                 <Button
                   type="text"
@@ -151,7 +157,7 @@ export default function SortableColumn({
                   onClick={() => setIsEditing(true)}
                 />
               )}
-
+  
               <Popconfirm
                 title="Xóa cột này?"
                 onConfirm={() => removeMutation.mutate()}
@@ -169,10 +175,9 @@ export default function SortableColumn({
           </div>
         }
       >
-        {/* ❌ Không droppable ở đây */}
-        {/* TaskList xử lý droppable và sortable của TASK */}
         <TaskList column={column} />
       </Card>
     </div>
   );
+  
 }
