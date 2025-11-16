@@ -1,3 +1,15 @@
+/* --- Reset CSS để tránh scroll dọc không mong muốn --- */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+#root {
+  height: 100%;
+}
+
 /* --- Thanh cuộn ngang dưới cùng --- */
 ::-webkit-scrollbar {
     height: 8px;
