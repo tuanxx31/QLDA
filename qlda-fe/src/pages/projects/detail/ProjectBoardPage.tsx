@@ -8,20 +8,19 @@ import {
   useSensors,
   DragOverlay,
   type DragStartEvent,
-  type DragOverEvent,
   type DragEndEvent,
-  closestCenter,
-  rectIntersection,
-  pointerWithin,
-  type CollisionDetection,
-  KeyboardSensor,
   type DragMoveEvent,
+  KeyboardSensor,
+  pointerWithin,
+  rectIntersection,
+  type CollisionDetection,
+  closestCenter,
 } from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
-  rectSortingStrategy,
   sortableKeyboardCoordinates,
+  horizontalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useRef, useMemo } from 'react';
@@ -32,7 +31,8 @@ import type { Column } from '@/types/project-board';
 import type { Task } from '@/types/task.type';
 import AddColumnCard from './components/AddColumnCard';
 import SortableColumn from './components/SortableColumn';
-import debounce from 'lodash';
+import { debounce } from 'lodash';
+import SortableTask from './components/SortableTask';
 
 const { Title } = Typography;
 
@@ -48,6 +48,8 @@ export default function ProjectBoardPage() {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [newColumnName, setNewColumnName] = useState('');
+
+  const [dragTaskFromColumnId, setDragTaskFromColumnId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -66,20 +68,24 @@ export default function ProjectBoardPage() {
     if (data?.data) {
       const sorted = [...data.data].sort((a, b) => a.order - b.order);
       sorted.forEach(c => {
-        if (c.tasks?.length)
+        if (c.tasks?.length) {
           c.tasks = [...c.tasks].sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+        }
       });
       setColumns(sorted);
     }
   }, [data]);
 
-  const getColumnOf = (id: string, cols: Column[]) => {
-    // id là column
-    const direct = cols.find(c => c.id === id);
-    if (direct) return direct;
+  const findColumnById = (colId: string, cols: Column[]) => cols.find(c => c.id === colId);
 
-    // id là task
-    return cols.find(c => c.tasks?.some(t => t.id === id));
+  const findColumnOfTask = (taskId: string, cols: Column[]) =>
+    cols.find(c => c.tasks?.some(t => t.id === taskId));
+
+  const getColumnOf = (id: string, type: 'column' | 'task', cols: Column[]): Column | undefined => {
+    if (type === 'column') {
+      return findColumnById(id, cols);
+    }
+    return findColumnOfTask(id, cols);
   };
 
   const addColumn = useMutation({
@@ -105,115 +111,92 @@ export default function ProjectBoardPage() {
     }, 400),
   ).current;
 
-  const collisionDetection: CollisionDetection = args => {
-    const activeType = args.active?.data?.current?.type;
-
-    // Với task: ưu tiên pointerWithin để phát hiện khi hover vào task/column cụ thể
-    // Sau đó dùng rectIntersection và closestCenter làm fallback
-    if (activeType === 'task') {
-      // Ưu tiên pointerWithin để phát hiện chính xác khi hover vào task hoặc column
-      const pointerCollisions = pointerWithin(args);
-      if (pointerCollisions.length > 0) {
-        // Kiểm tra xem có collision với column không (quan trọng cho column rỗng)
-        const columnCollision = pointerCollisions.find(c => c.data?.current?.type === 'column');
-        if (columnCollision) return [columnCollision];
-        return pointerCollisions;
-      }
-
-      // Fallback: dùng rectIntersection để phát hiện collision với các element
-      const rectCollisions = rectIntersection(args);
-      if (rectCollisions.length > 0) {
-        // Ưu tiên column nếu có
-        const columnCollision = rectCollisions.find(c => c.data?.current?.type === 'column');
-        if (columnCollision) return [columnCollision];
-        return rectCollisions;
-      }
-
-      // Cuối cùng dùng closestCenter
-      return closestCenter(args);
-    }
-
-    // Với column: dùng closestCenter để sắp xếp theo vị trí trung tâm
-    if (activeType === 'column') {
-      return closestCenter(args);
-    }
-
-    // Fallback mặc định
-    return rectIntersection(args);
-  };
-
-  const findColumnByTaskId = (taskId: string, cols: Column[] = columns) =>
-    cols.find(col => col.tasks?.some(t => t.id === taskId));
-
   const handleDragStart = (event: DragStartEvent) => {
     const type = event.active.data?.current?.type;
+    const activeId = String(event.active.id);
 
     if (type === 'column') {
-      const col = columns.find(c => c.id === event.active.id);
+      const col = columns.find(c => c.id === activeId);
       if (col) setActiveColumn(col);
     }
 
     if (type === 'task') {
-      const t = columns.flatMap(c => c.tasks ?? []).find(t => t.id === event.active.id);
+      const t = columns.flatMap(c => c.tasks ?? []).find(t => t.id === activeId);
       if (t) setActiveTask(t);
+
+      const fromCol = findColumnOfTask(activeId, columns);
+      setDragTaskFromColumnId(fromCol?.id ?? null);
     }
   };
 
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const handleDragMove = (event: DragMoveEvent) => {
+    const { active, over, activatorEvent } = event;
     if (!over) return;
+
+    const activeType = active.data?.current?.type;
+    const overType = over.data?.current?.type;
 
     const activeId = String(active.id);
     const overId = String(over.id);
 
-    if (active.data?.current?.type !== 'task') return;
+    if (activeType === 'task' && over && active.id !== over.id) {
+      setColumns(prev => {
+        const draft = JSON.parse(JSON.stringify(prev)) as Column[];
 
-    setColumns(prev => {
-      const draft = JSON.parse(JSON.stringify(prev)) as Column[];
+        const activeCol = getColumnOf(activeId, 'task', draft);
+        const overCol = getColumnOf(overId, overType === 'task' ? 'task' : 'column', draft);
 
-      const fromCol = getColumnOf(activeId, draft);
-      const toCol = getColumnOf(overId, draft);
+        if (!activeCol || !overCol) return prev;
 
-      if (!fromCol || !toCol) return prev;
+        const activeTasks = activeCol.tasks ?? [];
+        const overTasks = overCol.tasks ?? [];
 
-      // Cùng cột
-      if (fromCol.id === toCol.id) {
-        const tasks = fromCol.tasks ?? [];
-        const fromIdx = tasks.findIndex(t => t.id === activeId);
-        const overIdx = tasks.findIndex(t => t.id === overId);
+        const activeIndex = activeTasks.findIndex(t => t.id === activeId);
+        if (activeIndex === -1) return prev;
 
-        if (fromIdx === -1 || overIdx === -1) return prev;
+        if (overType === 'task') {
+          const overIndex = overTasks.findIndex(t => t.id === overId);
+          if (overIndex === -1) return prev;
 
-        fromCol.tasks = arrayMove(tasks, fromIdx, overIdx);
+          if (activeCol.id === overCol.id) {
+            const newTasks = arrayMove(activeTasks, activeIndex, overIndex);
+            activeCol.tasks = newTasks;
+          } else {
+            const [removed] = activeTasks.splice(activeIndex, 1);
+            overTasks.splice(overIndex, 0, removed);
+            removed.columnId = overCol.id;
+            activeCol.tasks = activeTasks;
+            overCol.tasks = overTasks;
+          }
+        }
+
+        if (overType === 'column') {
+          if (activeCol.id === overCol.id) {
+            return prev;
+          }
+
+          const [removed] = activeTasks.splice(activeIndex, 1);
+          overTasks.push(removed);
+          removed.columnId = overCol.id;
+          activeCol.tasks = activeTasks;
+          overCol.tasks = overTasks;
+        }
+
         return [...draft];
-      }
+      });
+    }
 
-      // Khác cột
-      const fromTasks = fromCol.tasks ?? [];
-      const toTasks = toCol.tasks ?? [];
-
-      const fromIdx = fromTasks.findIndex(t => t.id === activeId);
-      if (fromIdx === -1) return prev;
-
-      const [moved] = fromTasks.splice(fromIdx, 1);
-
-      let overIdx = toTasks.findIndex(t => t.id === overId);
-      if (overIdx === -1) overIdx = toTasks.length;
-
-      toTasks.splice(overIdx, 0, moved);
-
-      fromCol.tasks = fromTasks;
-      toCol.tasks = toTasks;
-
-      return [...draft];
-    });
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+
     if (!over) {
       setActiveTask(null);
       setActiveColumn(null);
+      setDragTaskFromColumnId(null);
       return;
     }
 
@@ -221,7 +204,6 @@ export default function ProjectBoardPage() {
     const overId = String(over.id);
     const type = active.data?.current?.type;
 
-    // ===== DRAG COLUMN =====
     if (type === 'column') {
       setColumns(prev => {
         const oldIdx = prev.findIndex(c => c.id === activeId);
@@ -241,84 +223,39 @@ export default function ProjectBoardPage() {
       return;
     }
 
-    // ===== DRAG TASK =====
     setColumns(prev => {
-      const draft = JSON.parse(JSON.stringify(prev)) as Column[];
+      const draft = [...prev];
 
-      const fromCol = getColumnOf(activeId, draft);
-      const toCol = getColumnOf(overId, draft);
+      const finalCol = findColumnOfTask(activeId, draft);
+      if (!finalCol) return prev;
 
-      if (!fromCol || !toCol) return prev;
+      const tasks = finalCol.tasks ?? [];
+      const index = tasks.findIndex(t => t.id === activeId);
+      if (index === -1) return prev;
 
-      const fromTasks = fromCol.tasks ?? [];
-      const toTasks = toCol.tasks ?? [];
+      const prevTask = tasks[index - 1];
+      const nextTask = tasks[index + 1];
 
-      const fromIdx = fromTasks.findIndex(t => t.id === activeId);
-      if (fromIdx === -1) return prev;
+      const isSameColumn = dragTaskFromColumnId && dragTaskFromColumnId === finalCol.id;
 
-      const [moved] = fromTasks.splice(fromIdx, 1);
-      moved.columnId = toCol.id;
+      taskService
+        .updatePosition(
+          activeId,
+          prevTask?.id,
+          nextTask?.id,
+          isSameColumn ? undefined : finalCol.id,
+        )
+        .catch(() => {
+          message.error('Không thể lưu vị trí nhiệm vụ');
+          queryClient.invalidateQueries({ queryKey: ['columns', projectId] });
+        });
 
-      let overIdx = -1;
-
-      // CASE 1: Drop lên 1 task
-      if (over.data?.current?.type === 'task') {
-        overIdx = toTasks.findIndex(t => t.id === overId);
-      }
-
-      // CASE 2: Drop vào column
-      else if (over.data?.current?.type === 'column') {
-        // column rỗng
-        if (toTasks.length === 0) overIdx = 0;
-        // column có task → chèn cuối
-        else overIdx = toTasks.length;
-      }
-
-      // fallback
-      if (overIdx === -1) overIdx = toTasks.length;
-
-      toTasks.splice(overIdx, 0, moved);
-
-      const prevTask = toTasks[overIdx - 1];
-      const nextTask = toTasks[overIdx + 1];
-      console.log('overIdx', overIdx);
-      console.log('toTasks', toTasks);
-      console.log({prevTask}, {nextTask});
-      taskService.updatePosition(moved.id, prevTask?.id, nextTask?.id, toCol.id).catch(() => {
-        message.error('Không thể lưu vị trí nhiệm vụ');
-        queryClient.invalidateQueries({ queryKey: ['columns', projectId] });
-      });
-
-      fromCol.tasks = fromTasks;
-      toCol.tasks = toTasks;
-
-      return [...draft];
+      return draft;
     });
 
     setActiveTask(null);
     setActiveColumn(null);
-  };
-
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-
-  const handleDragMove = (event: DragMoveEvent) => {
-    const { activatorEvent } = event;
-    if (!('clientX' in activatorEvent)) return;
-
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const rect = container.getBoundingClientRect();
-    const { clientX } = activatorEvent;
-
-    const threshold = 80;
-    const speed = 20;
-
-    if (clientX < rect.left + threshold) {
-      container.scrollLeft -= speed;
-    } else if (clientX > rect.right - threshold) {
-      container.scrollLeft += speed;
-    }
+    setDragTaskFromColumnId(null);
   };
 
   useEffect(() => {
@@ -371,22 +308,41 @@ export default function ProjectBoardPage() {
       ]}
     >
       <Card
-        style={{ height: 'calc(100vh - 200px)', display: 'flex' }}
-        bodyStyle={{ padding: 0, flex: 1 }}
+        style={{ 
+          height: 'calc(100vh - 185px)', 
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+        bodyStyle={{ 
+          padding: 0, 
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+        }}
       >
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCenter} // có thể giữ như cũ hoặc rectIntersection
+          collisionDetection={horizontalColumnCollision}
           onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
           onDragMove={handleDragMove}
+          onDragEnd={handleDragEnd}
         >
-          <SortableContext items={columnIds} strategy={rectSortingStrategy}>
-            <Space
-              align="start"
-              style={{ overflowX: 'auto', padding: 8, flex: 1 }}
+          <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
+            <div
               ref={scrollContainerRef}
+              className="board-scroll-container"
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 8,
+                overflowX: 'auto',
+                overflowY: 'hidden',
+                padding: 8,
+                flex: 1,
+                flexShrink: 0,
+                minHeight: 0,
+              }}
             >
               {columns.map(col => (
                 <SortableColumn key={col.id} column={col} />
@@ -398,25 +354,13 @@ export default function ProjectBoardPage() {
                 setNewName={setNewColumnName}
                 onAdd={name => addColumn.mutate(name)}
               />
-            </Space>
+            </div>
           </SortableContext>
 
-          <DragOverlay>
+          <DragOverlay adjustScale={false}>
             {activeColumn && <SortableColumn column={activeColumn} isOverlay />}
             {activeTask && (
-              <Card
-                size="small"
-                bordered
-                style={{
-                  width: 260,
-                  borderRadius: 8,
-                  background: token.colorBgContainer,
-                  boxShadow: token.boxShadowSecondary,
-                  opacity: 0.9,
-                }}
-              >
-                <Typography.Text strong>{activeTask.title}</Typography.Text>
-              </Card>
+              <SortableTask task={activeTask} />
             )}
           </DragOverlay>
         </DndContext>
@@ -424,3 +368,15 @@ export default function ProjectBoardPage() {
     </PageContainer>
   );
 }
+
+
+
+export const horizontalColumnCollision: CollisionDetection = (args) => {
+  const pointer = pointerWithin(args);
+  if (pointer.length > 0) return pointer;
+
+  const intersection = rectIntersection(args);
+  if (intersection.length > 0) return intersection;
+
+  return closestCenter(args);
+};

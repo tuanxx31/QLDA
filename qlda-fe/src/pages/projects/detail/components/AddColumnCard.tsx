@@ -34,6 +34,9 @@ export default function AddColumnCard({
       bordered
       style={{
         minWidth: 280,
+        width: 280,
+        flexShrink: 0,
+        alignSelf: 'flex-start',
         textAlign: 'center',
         borderStyle: 'dashed',
         background: token.colorBgContainer,

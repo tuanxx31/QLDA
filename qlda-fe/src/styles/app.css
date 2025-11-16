@@ -1,6 +1,19 @@
+/* --- Reset CSS để tránh scroll dọc không mong muốn --- */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+#root {
+  height: 100%;
+}
+
 /* --- Thanh cuộn ngang dưới cùng --- */
 ::-webkit-scrollbar {
     height: 8px;
+    width: 8px;
   }
   ::-webkit-scrollbar-thumb {
     background-color: rgba(0,0,0,0.25);
@@ -12,3 +25,49 @@
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+
+/* --- Scrollbar đẹp cho cột (vertical scroll) --- */
+.column-scroll-container::-webkit-scrollbar {
+    width: 6px;
+  }
+  .column-scroll-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+  }
+  .column-scroll-container::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0,0,0,0.35);
+  }
+  .column-scroll-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+/* --- Scrollbar đẹp cho board (horizontal scroll) --- */
+.board-scroll-container::-webkit-scrollbar {
+    height: 10px;
+  }
+  .board-scroll-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+  }
+  .board-scroll-container::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0,0,0,0.35);
+  }
+  .board-scroll-container::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.05);
+    border-radius: 5px;
+  }
+
+/* --- Fix Card flex layout để tỉ lệ cột đẹp hơn --- */
+.board-scroll-container .ant-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.board-scroll-container .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}

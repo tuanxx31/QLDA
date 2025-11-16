@@ -1,5 +1,5 @@
-import { Button, Card, Input, Space, theme } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Button, Input, Space, theme } from 'antd';
+import { CloseOutlined, CheckOutlined } from '@ant-design/icons';
 
 interface Props {
   isAdding: boolean;
@@ -9,6 +9,8 @@ interface Props {
   onAdd: (title: string) => void;
   loading?: boolean;
 }
+
+const MAX_TITLE_LENGTH = 255;
 
 export default function AddTaskCard({
   isAdding,
@@ -20,46 +22,90 @@ export default function AddTaskCard({
 }: Props) {
   const { token } = theme.useToken();
 
+  const handleAdd = () => {
+    const trimmed = newTitle.trim();
+    if (trimmed) {
+      onAdd(trimmed);
+    }
+  };
+
   if (!isAdding) {
     return (
       <Button
-        type="dashed"
-        block
-        icon={<PlusOutlined />}
+        type="text"
         onClick={() => setIsAdding(true)}
-        style={{ marginTop: 8 }}
+        style={{
+          width: '100%',
+          textAlign: 'left',
+          color: token.colorTextSecondary,
+          padding: '8px 12px',
+          height: 'auto',
+          borderRadius: token.borderRadius,
+          border: 'none',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.backgroundColor = token.colorFillTertiary;
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.backgroundColor = 'transparent';
+        }}
       >
-        Thêm thẻ
+        + Thêm thẻ
       </Button>
     );
   }
 
   return (
-    <Card
-      size="small"
-      style={{
-        border: `1px dashed ${token.colorBorder}`,
-        background: token.colorBgContainer,
-        marginTop: 8,
-      }}
-    >
-      <Space direction="vertical" style={{ width: '100%' }}>
-        <Input
-          placeholder="Nhập tên thẻ..."
+    <div>
+      <Space direction="vertical" style={{ width: '100%' }} size="small">
+        <Input.TextArea
+          placeholder="Nhập tiêu đề cho thẻ này..."
           value={newTitle}
-          onChange={e => setNewTitle(e.target.value)}
-          onPressEnter={() => onAdd(newTitle)}
+          onChange={e => {
+            const value = e.target.value;
+            if (value.length <= MAX_TITLE_LENGTH) {
+              setNewTitle(value);
+            }
+          }}
+          onPressEnter={e => {
+            if (e.shiftKey) return;
+            e.preventDefault();
+            if (newTitle.trim()) {
+              handleAdd();
+            }
+          }}
           disabled={loading}
+          autoFocus
+          autoSize={{ minRows: 1, maxRows: 2 }}
+          status={!newTitle.trim() ? 'warning' : undefined}
+          style={{
+            resize: 'none',
+          }}
+          maxLength={MAX_TITLE_LENGTH}
         />
         <Space>
-          <Button type="primary" size="small" loading={loading} onClick={() => onAdd(newTitle)}>
+          <Button
+            type="primary"
+            icon={<CheckOutlined />}
+            size="small"
+            disabled={!newTitle.trim()}
+            loading={loading}
+            onClick={handleAdd}
+          >
             Thêm
           </Button>
-          <Button size="small" onClick={() => setIsAdding(false)}>
+          <Button
+            icon={<CloseOutlined />}
+            size="small"
+            onClick={() => {
+              setIsAdding(false);
+              setNewTitle('');
+            }}
+          >
             Hủy
           </Button>
         </Space>
       </Space>
-    </Card>
+    </div>
   );
 }
