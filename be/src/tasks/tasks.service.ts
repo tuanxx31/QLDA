@@ -10,7 +10,7 @@ import { Label } from 'src/labels/entities/label.entity';
 import { User } from 'src/users/entities/user.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { AssignUsersDto, AssignLabelsDto } from './dto/assign.dto';
+import { AssignUsersDto } from './dto/assign.dto';
 import { SubTask } from 'src/sub-tasks/entities/sub-task.entity';
 
 @Injectable()

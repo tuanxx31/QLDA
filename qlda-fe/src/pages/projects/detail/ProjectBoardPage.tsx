@@ -107,46 +107,6 @@ export default function ProjectBoardPage() {
     }, 400),
   ).current;
 
-  const collisionDetection: CollisionDetection = args => {
-    const activeType = args.active?.data?.current?.type;
-
-    // Với task: ưu tiên pointerWithin để phát hiện khi hover vào task/column cụ thể
-    // Sau đó dùng rectIntersection và closestCenter làm fallback
-    if (activeType === 'task') {
-      // Ưu tiên pointerWithin để phát hiện chính xác khi hover vào task hoặc column
-      const pointerCollisions = pointerWithin(args);
-      if (pointerCollisions.length > 0) {
-        // Kiểm tra xem có collision với column không (quan trọng cho column rỗng)
-        const columnCollision = pointerCollisions.find(c => c.data?.current?.type === 'column');
-        if (columnCollision) return [columnCollision];
-        return pointerCollisions;
-      }
-
-      // Fallback: dùng rectIntersection để phát hiện collision với các element
-      const rectCollisions = rectIntersection(args);
-      if (rectCollisions.length > 0) {
-        // Ưu tiên column nếu có
-        const columnCollision = rectCollisions.find(c => c.data?.current?.type === 'column');
-        if (columnCollision) return [columnCollision];
-        return rectCollisions;
-      }
-
-      // Cuối cùng dùng closestCenter
-      return closestCenter(args);
-    }
-
-    // Với column: dùng closestCenter để sắp xếp theo vị trí trung tâm
-    if (activeType === 'column') {
-      return closestCenter(args);
-    }
-
-    // Fallback mặc định
-    return rectIntersection(args);
-  };
-
-  const findColumnByTaskId = (taskId: string, cols: Column[] = columns) =>
-    cols.find(col => col.tasks?.some(t => t.id === taskId));
-
   const handleDragStart = (event: DragStartEvent) => {
     const type = event.active.data?.current?.type;
 
