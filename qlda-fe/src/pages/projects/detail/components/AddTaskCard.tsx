@@ -31,50 +31,32 @@ export default function AddTaskCard({
 
   if (!isAdding) {
     return (
-      <div
+      <Button
+        type="text"
+        onClick={() => setIsAdding(true)}
         style={{
-          position: 'sticky',
-          bottom: 0,
-          backgroundColor: token.colorBgContainer,
-          paddingTop: 8,
-          marginTop: 'auto',
+          width: '100%',
+          textAlign: 'left',
+          color: token.colorTextSecondary,
+          padding: '8px 12px',
+          height: 'auto',
+          borderRadius: token.borderRadius,
+          border: 'none',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.backgroundColor = token.colorFillTertiary;
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.backgroundColor = 'transparent';
         }}
       >
-        <Button
-          type="text"
-          onClick={() => setIsAdding(true)}
-          style={{
-            width: '100%',
-            textAlign: 'left',
-            color: token.colorTextSecondary,
-            padding: '8px 12px',
-            height: 'auto',
-            borderRadius: token.borderRadius,
-            border: 'none',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.backgroundColor = token.colorFillTertiary;
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }}
-        >
-          + Thêm thẻ
-        </Button>
-      </div>
+        + Thêm thẻ
+      </Button>
     );
   }
 
   return (
-    <div
-      style={{
-        position: 'sticky',
-        bottom: 0,
-        backgroundColor: token.colorBgContainer,
-        paddingTop: 8,
-        marginTop: 'auto',
-      }}
-    >
+    <div>
       <Space direction="vertical" style={{ width: '100%' }}>
         <Input.TextArea
           placeholder="Nhập tiêu đề cho thẻ này..."

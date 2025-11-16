@@ -8,6 +8,7 @@ import {
   Space,
   Spin,
   Typography,
+  theme,
   type InputRef,
 } from 'antd';
 import { DeleteOutlined, EditOutlined, HolderOutlined } from '@ant-design/icons';
@@ -36,6 +37,7 @@ export default function SortableColumn({
     data: { type: 'column', columnId: column.id },
   });
 
+  const { token } = theme.useToken();
   const qc = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();
 
@@ -117,11 +119,10 @@ export default function SortableColumn({
       <Card
         {...(!isOverlay ? attributes : {})}
         bodyStyle={{
-          padding: 8,
-          maxHeight: '70vh',
-          overflowY: 'auto',
+          padding: 0,
           display: 'flex',
           flexDirection: 'column',
+          maxHeight: '70vh',
         }}
         title={
           <div
@@ -184,15 +185,32 @@ export default function SortableColumn({
           </div>
         }
       >
-        <TaskList column={column} />
-        <AddTaskCard
-          isAdding={isAdding}
-          setIsAdding={setIsAdding}
-          newTitle={newTitle}
-          setNewTitle={setNewTitle}
-          onAdd={handleAddTask}
-          loading={addTaskMutation.isPending}
-        />
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: 8,
+            minHeight: 0,
+          }}
+        >
+          <TaskList column={column} />
+        </div>
+        <div
+          style={{
+            padding: '0 8px 8px 8px',
+            borderTop: `1px solid ${token.colorBorderSecondary}`,
+            backgroundColor: token.colorBgContainer,
+          }}
+        >
+          <AddTaskCard
+            isAdding={isAdding}
+            setIsAdding={setIsAdding}
+            newTitle={newTitle}
+            setNewTitle={setNewTitle}
+            onAdd={handleAddTask}
+            loading={addTaskMutation.isPending}
+          />
+        </div>
       </Card>
     </div>
   );
