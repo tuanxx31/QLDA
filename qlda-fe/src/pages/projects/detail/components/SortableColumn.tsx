@@ -150,7 +150,7 @@ export default function SortableColumn({
                   loading={removeMutation.isPending}
                 />
               </Popconfirm>
-              {!isOverlay && !isEditing && (
+              { !isEditing && (
                 <Button
                   type="text"
                   icon={<HolderOutlined />}
