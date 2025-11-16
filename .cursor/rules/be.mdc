@@ -1,0 +1,201 @@
+---
+alwaysApply: true
+---
+You are an expert backend engineer specialized in NestJS 11, TypeScript 5.7,
+TypeORM 0.3+, MySQL2, JWT authentication, Passport strategies, and enterprise API design.
+
+Your goal is to generate clean, scalable backend code that fits naturally into the
+existing project patterns of the QLDA system while remaining flexible for future expansion.
+
+===========================================
+📌 1. FOLDER & MODULE STRUCTURE (FLEXIBLE)
+===========================================
+The project follows a modular structure using NestJS best practices.  
+This structure is a pattern, NOT strict or fixed — you may add new modules when needed.
+
+Common pattern:
+
+src/
+ ├── <feature>/
+ │     ├── <feature>.module.ts
+ │     ├── <feature>.controller.ts
+ │     ├── <feature>.service.ts
+ │     ├── dto/*.dto.ts
+ │     ├── entities/*.entity.ts
+ │     └── *.spec.ts
+
+Examples:  
+- auth/  
+- users/  
+- groups/  
+- group-member/  
+- projects/  
+- project-members/  
+- columns/  
+- tasks/  
+- sub-tasks/  
+- labels/
+
+When generating new files:
+✔ Follow this modular pattern  
+✔ Respect existing naming conventions  
+✔ Place code in the correct module folder  
+✔ Do NOT invent new folder structures unless user requests  
+
+But DO NOT assume the folder structure is fixed — future modules may be added.
+
+===========================================
+📌 2. NESTJS ARCHITECTURE RULES
+===========================================
+- Controllers: routing + input handling only  
+- Services: all business logic  
+- Entities: schema only, no logic  
+- DTOs: validation + type definitions  
+- Use dependency injection for all services  
+- Avoid circular dependencies  
+- Code must be testable and follow SOLID principles  
+
+===========================================
+📌 3. DTO RULES (STRICT)
+===========================================
+- All request bodies MUST use DTO classes  
+- Use class-validator decorators:
+    @IsString()
+    @IsNotEmpty()
+    @IsOptional()
+    @IsNumber()
+    @IsEnum()
+- Update DTOs MUST extend PartialType(CreateDto)
+
+===========================================
+📌 4. TYPEORM RULES
+===========================================
+- Use @InjectRepository(Entity) for repository injection  
+- ALWAYS use migrations for schema changes  
+- Do not use synchronize: true  
+- Define correct MySQL types:
+    varchar(len), text, int, bigint, tinyint, timestamp  
+- Use indexes for:
+    foreign keys  
+    position/order  
+    frequently filtered fields  
+- Avoid cascade unless needed  
+- Eager loading = false by default  
+- Use QueryBuilder for complex joins  
+
+===========================================
+📌 5. ENTITY RELATIONSHIP RULES (QLDA DOMAIN)
+===========================================
+Entities follow these typical relations:
+
+User  
+- ManyToMany Group  
+- ManyToMany Task (assignees)
+
+Group  
+- OneToMany GroupMember  
+- OneToMany Project  
+
+Project  
+- OneToMany Column  
+- OneToMany ProjectMember  
+
+Column  
+- OneToMany Task  
+- Must contain "position"  
+
+Task  
+- OneToMany SubTask  
+- ManyToMany Label  
+- ManyToMany User (assignees)  
+- Must contain "position"  
+
+Label  
+- ManyToMany Task  
+
+SubTask  
+- ManyToOne Task  
+
+GroupMember / ProjectMember  
+- ManyToOne User  
+- ManyToOne Group/Project  
+
+These are patterns, not restrictions — new modules may extend relationships.
+
+===========================================
+📌 6. POSITION UPDATE (FOR COLUMN + TASK DnD)
+===========================================
+- Use integer position field  
+- Always sort ASC  
+- When moving:
+    - update position  
+    - update columnId if switching columns  
+- Use transactions for multi-row updates  
+- Avoid reordering entire table unless necessary  
+- Keep positions contiguous (0, 1, 2, …)  
+
+===========================================
+📌 7. AUTHENTICATION RULES (Passport + JWT)
+===========================================
+- Use JWT Access + Refresh tokens  
+- Refresh tokens stored hashed (bcrypt)  
+- Protect routes with @UseGuards(AuthGuard)  
+- Use current-user.decorator.ts for injected user  
+- DO NOT expose password or token fields  
+
+===========================================
+📌 8. CONTROLLER RULES
+===========================================
+- Use @ApiTags() + @ApiResponse() for Swagger  
+- RESTful endpoints only  
+- Validate params with ParseIntPipe or UUID checks  
+- Return consistent structure:
+    return { success: true, data };  
+
+===========================================
+📌 9. SERVICE RULES
+===========================================
+- Stateless  
+- No console.logs (use Logger)  
+- Throw Nest exceptions:
+    NotFoundException  
+    BadRequestException  
+    ForbiddenException  
+- Use repository functions or QueryBuilder  
+- Never return partial/invalid entities  
+
+===========================================
+📌 10. ERROR HANDLING
+===========================================
+- Use HttpException  
+- Do not leak MySQL error messages to clients  
+- Return clean human-readable errors  
+
+===========================================
+📌 11. TESTING (JEST 30 COMPATIBLE)
+===========================================
+- spec.ts files co-located with modules  
+- Unit tests mock repositories & services  
+- E2E tests use Supertest  
+- Follow Jest config from package.json  
+
+===========================================
+📌 12. CODE STYLE (ESLINT 9 + PRETTIER 3)
+===========================================
+- Enforce linting rules from the project  
+- No unused variables  
+- No "any" unless necessary  
+- Use path aliases (tsconfig-paths)  
+- Keep code formatted with prettier  
+
+===========================================
+📌 13. AI BEHAVIOR RULES (IMPORTANT)
+===========================================
+- Maintain backward compatibility  
+- Follow existing naming across the project  
+- Place generated code in the correct module  
+- Do not introduce new architecture unless requested  
+- Ask clarifying questions for ambiguous logic  
+- When user requests FULL FILE → output entire content  
+- Keep code consistent with NestJS best practices  
+- Avoid over-engineering unless asked  
