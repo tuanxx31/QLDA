@@ -96,6 +96,12 @@ export default function TaskDetailModal({
       setTaskData(updated);
       setDescription(updated.description ?? "");
       setTempTitle(updated.title);
+      
+      // Cập nhật initialStatus khi status thay đổi từ "done" về trạng thái khác
+      if (updated.status !== "done" && taskData?.status === "done") {
+        setInitialStatus(updated.status);
+      }
+      
       onEdit?.(updated);
 
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
@@ -144,6 +150,13 @@ export default function TaskDetailModal({
 
   if (!taskData) return null;
 
+  // Màu status indicator
+  const getStatusColor = () => {
+    if (taskData.status === "done") return "#52c41a";
+    if (taskData.status === "doing") return "#1677ff";
+    return "#faad14"; // todo
+  };
+
   return (
     <>
       <Modal
@@ -151,238 +164,335 @@ export default function TaskDetailModal({
         onCancel={onClose}
         footer={null}
         width={850}
-        bodyStyle={{
-          background: "#fff",
-          padding: "20px 24px",
-          display: "flex",
-          gap: 24,
+        styles={{
+          body: {
+            padding: 0,
+            position: "relative",
+          },
         }}
         title={
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              justifyContent: "space-between",
-            }}
-          >
-            {/* CHECK STATUS ICON */}
-            <CheckCircleFilled
-              onClick={() => {
-                const newStatus = taskData.status === "done" ? initialStatus : "done";
-                updateTaskMutation.mutate({
-                  id: taskData.id,
-                  status: newStatus,
-                });
-              }}
-              style={{
-                fontSize: 22,
-                cursor: "pointer",
-                color:
-                  taskData.status === "done" ? "#52c41a" : "rgba(0,0,0,0.3)",
-              }}
-            />
-
-            {/* TITLE */}
-            {editingTitle ? (
-              <Input
-                value={tempTitle}
-                onChange={(e) => setTempTitle(e.target.value)}
-                onBlur={handleSaveTitle}
-                onPressEnter={handleSaveTitle}
-                autoFocus
-                style={{ fontSize: 18, fontWeight: 600, width: "100%" }}
-              />
-            ) : (
+          <div style={{ position: "relative", paddingBottom: 16, paddingRight: 40 }}>
+            {/* STATUS INDICATOR BAR - giống TaskCard */}
+            {taskData.status !== "done" && (
               <div
-                style={{ display: "flex", alignItems: "center", gap: 8 }}
-                onDoubleClick={() => setEditingTitle(true)}
-              >
-                <Title level={4} style={{ margin: 0 }}>
-                  {taskData.title}
-                </Title>
-
-                <Tooltip title="Sửa tên">
-                  <Button
-                    type="text"
-                    icon={<EditOutlined />}
-                    onClick={() => setEditingTitle(true)}
-                  />
-                </Tooltip>
-              </div>
+                style={{
+                  position: "absolute",
+                  top: -24,
+                  left: -24,
+                  right: -24,
+                  height: 4,
+                  backgroundColor: getStatusColor(),
+                  borderRadius: "4px 4px 0 0",
+                }}
+              />
             )}
 
-            <Popconfirm
-              title="Xóa thẻ?"
-              onConfirm={() => deleteTaskMutation.mutate()}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                marginTop: taskData.status !== "done" ? 8 : 0,
+              }}
             >
-              <Button danger type="text" icon={<DeleteOutlined />} />
-            </Popconfirm>
+              {/* CHECK STATUS ICON */}
+              <CheckCircleFilled
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const newStatus =
+                    taskData.status === "done" ? initialStatus : "done";
+                  updateTaskMutation.mutate({
+                    id: taskData.id,
+                    status: newStatus,
+                    completedAt: newStatus === "done" ? new Date().toISOString() : undefined,
+                  });
+                }}
+                style={{
+                  fontSize: 22,
+                  cursor: "pointer",
+                  color:
+                    taskData.status === "done"
+                      ? "#52c41a"
+                      : "rgba(0,0,0,0.3)",
+                  transition: "color 0.2s",
+                  flexShrink: 0,
+                }}
+              />
+
+              {/* TITLE */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {editingTitle ? (
+                  <Input
+                    value={tempTitle}
+                    onChange={(e) => setTempTitle(e.target.value)}
+                    onBlur={handleSaveTitle}
+                    onPressEnter={handleSaveTitle}
+                    autoFocus
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 600,
+                      width: "100%",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                    onDoubleClick={() => setEditingTitle(true)}
+                  >
+                    <Title 
+                      level={4} 
+                      style={{ 
+                        margin: 0, 
+                        flex: 1,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {taskData.title}
+                    </Title>
+
+                    <Tooltip title="Sửa tên">
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<EditOutlined />}
+                        onClick={() => setEditingTitle(true)}
+                        style={{ color: "#999", flexShrink: 0 }}
+                      />
+                    </Tooltip>
+                  </div>
+                )}
+              </div>
+
+              <Space size={4} style={{ flexShrink: 0 }}>
+                <Popconfirm
+                  title="Xóa thẻ?"
+                  onConfirm={() => deleteTaskMutation.mutate()}
+                >
+                  <Button
+                    danger
+                    type="text"
+                    size="small"
+                    icon={<DeleteOutlined />}
+                    style={{ color: "#999" }}
+                  />
+                </Popconfirm>
+              </Space>
+            </div>
           </div>
         }
       >
-        {/* LEFT */}
-        <div style={{ flex: 2, overflowY: "auto", paddingRight: 8 }}>
-          {/* Buttons */}
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              flexWrap: "wrap",
-              marginBottom: 12,
-            }}
-          >
-            <Button icon={<PlusOutlined />}>Thêm</Button>
-            <Button
-              icon={<TagsOutlined />}
-              onClick={() => setLabelOpen(true)}
-            >
-              Nhãn
-            </Button>
-
-            <Button
-              icon={<ClockCircleOutlined />}
-              onClick={() => setDueDateOpen(true)}
-            >
-              Ngày
-            </Button>
-
-            <DueDateModal
-              task={taskData}
-              open={dueDateOpen}
-              onClose={() => setDueDateOpen(false)}
-              onSave={(updated) => setTaskData(updated)}
-            />
-          </div>
-
-          {/* DUE DATE */}
-          {taskData.dueDate && (
-            <div style={{ marginBottom: 14 }}>
-              <Text strong>Ngày hết hạn:</Text>
-
-              <Space
-                style={{
-                  marginLeft: 10,
-                  padding: "3px 10px",
-                  borderRadius: 6,
-                  background: "#fff",
-                  color: "black",
-                  cursor: "pointer",
-                }}
-                onClick={() => setDueDateOpen(true)}
-              >
-                <span>{dueInfo?.formatted}</span>
-
-                {taskData.status === "done" ? (
-                  <Tag color="green" style={{ borderRadius: 4 }}>
-                    Hoàn tất
-                  </Tag>
-                ) : dueInfo?.isOverdue ? (
-                  <Tag color="red" style={{ borderRadius: 4 }}>
-                    Quá hạn
-                  </Tag>
-                ) : null}
-              </Space>
-            </div>
-          )}
-
-          {/* LABELS */}
-          {taskData.labels?.length ? (
-            <Space wrap style={{ marginBottom: 12 }}>
-              {taskData.labels.map((lb) => (
-                <Tag key={lb.id} color={lb.color}>
-                  {lb.name}
-                </Tag>
-              ))}
-            </Space>
-          ) : null}
-
-          {/* MEMBERS */}
-          <div style={{ marginBottom: 16 }}>
-            <Text strong>Thành viên:</Text>{" "}
-            <Space size={4}>
-              {assigneesLoading ? (
-                <Spin size="small" />
-              ) : (
-                visibleAssignees.map((u: any) => (
-                  <Tooltip key={u.id} title={u.name || u.email}>
-                    <Avatar style={{ backgroundColor: "#1677ff" }}>
-                      {(u.name || u.email)?.[0]?.toUpperCase()}
-                    </Avatar>
-                  </Tooltip>
-                ))
-              )}
-
-              <Tooltip title="Thêm thành viên">
-                <Avatar
-                  size={28}
-                  style={{
-                    backgroundColor: "#2f2f2f",
-                    color: "#fff",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => setMemberModalOpen(true)}
-                >
-                  <PlusOutlined />
-                </Avatar>
-              </Tooltip>
-            </Space>
-
-            {assigneesError && (
-              <div style={{ color: "red", marginTop: 6 }}>
-                Không thể tải danh sách
-              </div>
-            )}
-          </div>
-
-          <Divider />
-
-          {/* DESCRIPTION */}
-          <div>
-            <Text strong>Mô tả:</Text>
-            <Input.TextArea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Thêm mô tả..."
-              autoSize={{ minRows: 4 }}
-              style={{ marginTop: 8 }}
-            />
-
-            <Space style={{ marginTop: 8 }}>
-              <Button type="primary" onClick={saveDescription}>
-                Lưu mô tả
-              </Button>
-              <Button
-                onClick={() =>
-                  setDescription(taskData.description ?? "")
-                }
-              >
-                Hủy
-              </Button>
-            </Space>
-          </div>
-        </div>
-
-        {/* RIGHT */}
         <div
           style={{
-            flex: 1,
-            paddingLeft: 16,
-            borderLeft: "1px solid #eee",
+            display: "flex",
+            gap: 24,
+            padding: "20px 24px",
+            minHeight: 400,
           }}
         >
-          <Title level={5}>Nhận xét & hoạt động</Title>
+          {/* LEFT */}
+          <div style={{ flex: 2, overflowY: "auto", paddingRight: 8 }}>
+            {/* Buttons */}
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+                marginBottom: 16,
+              }}
+            >
+              <Button
+                size="small"
+                icon={<TagsOutlined />}
+                onClick={() => setLabelOpen(true)}
+              >
+                Nhãn
+              </Button>
 
-          <Input placeholder="Viết bình luận..." style={{ marginBottom: 12 }} />
+              <Button
+                size="small"
+                icon={<ClockCircleOutlined />}
+                onClick={() => setDueDateOpen(true)}
+              >
+                Ngày hết hạn
+              </Button>
 
-          <div style={{ fontSize: 13, color: "#555" }}>
-            <p>
-              <b>Tuấn Đình</b> đã cập nhật thẻ này
-            </p>
-            <p style={{ fontSize: 12, color: "#888" }}>
-              Cập nhật lúc:{" "}
-              {dayjs(taskData.updatedAt).format("DD/MM/YYYY HH:mm")}
-            </p>
+              <DueDateModal
+                task={taskData}
+                open={dueDateOpen}
+                onClose={() => setDueDateOpen(false)}
+                onSave={(updated) => setTaskData(updated)}
+              />
+            </div>
+
+            {/* DUE DATE */}
+            {taskData.dueDate && (
+              <div style={{ marginBottom: 16 }}>
+                <Text strong style={{ fontSize: 13, color: "#666" }}>
+                  Ngày hết hạn:
+                </Text>
+                <Space
+                  style={{
+                    marginTop: 6,
+                    padding: "4px 12px",
+                    borderRadius: 6,
+                    background: "#f5f5f5",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                  }}
+                  onClick={() => setDueDateOpen(true)}
+                >
+                  <ClockCircleOutlined style={{ color: "#999" }} />
+                  <span style={{ fontSize: 13 }}>{dueInfo?.formatted}</span>
+
+                  {taskData.status === "done" ? (
+                    <Tag color="green" style={{ borderRadius: 4, margin: 0 }}>
+                      Hoàn tất
+                    </Tag>
+                  ) : dueInfo?.isOverdue ? (
+                    <Tag color="red" style={{ borderRadius: 4, margin: 0 }}>
+                      Quá hạn
+                    </Tag>
+                  ) : null}
+                </Space>
+              </div>
+            )}
+
+            {/* LABELS */}
+            {taskData.labels?.length ? (
+              <div style={{ marginBottom: 16 }}>
+                <Text strong style={{ fontSize: 13, color: "#666" }}>
+                  Nhãn:
+                </Text>
+                <Space wrap style={{ marginTop: 6 }}>
+                  {taskData.labels.map((lb) => (
+                    <Tag key={lb.id} color={lb.color} style={{ borderRadius: 4 }}>
+                      {lb.name}
+                    </Tag>
+                  ))}
+                </Space>
+              </div>
+            ) : null}
+
+            {/* MEMBERS */}
+            <div style={{ marginBottom: 16 }}>
+              <Text strong style={{ fontSize: 13, color: "#666" }}>
+                Thành viên:
+              </Text>
+              <Space size={6} style={{ marginTop: 6 }}>
+                {assigneesLoading ? (
+                  <Spin size="small" />
+                ) : (
+                  visibleAssignees.map((u: any) => (
+                    <Tooltip key={u.id} title={u.name || u.email}>
+                      <Avatar
+                        size={24}
+                        style={{
+                          border: "1px solid #eee",
+                          backgroundColor: "#1677ff",
+                          color: "#fff",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {(u.name || u.email)?.[0]?.toUpperCase()}
+                      </Avatar>
+                    </Tooltip>
+                  ))
+                )}
+
+                <Tooltip title="Thêm thành viên">
+                  <Avatar
+                    size={24}
+                    style={{
+                      backgroundColor: "#2f2f2f",
+                      color: "#fff",
+                      cursor: "pointer",
+                      border: "1px solid #eee",
+                    }}
+                    onClick={() => setMemberModalOpen(true)}
+                  >
+                    <PlusOutlined style={{ fontSize: 12 }} />
+                  </Avatar>
+                </Tooltip>
+              </Space>
+
+              {assigneesError && (
+                <div style={{ color: "red", marginTop: 6, fontSize: 12 }}>
+                  Không thể tải danh sách
+                </div>
+              )}
+            </div>
+
+            <Divider style={{ margin: "16px 0" }} />
+
+            {/* DESCRIPTION */}
+            <div>
+              <Text strong style={{ fontSize: 13, color: "#666" }}>
+                Mô tả:
+              </Text>
+              <Input.TextArea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Thêm mô tả..."
+                autoSize={{ minRows: 4 }}
+                style={{
+                  marginTop: 8,
+                  borderRadius: 6,
+                }}
+              />
+
+              <Space style={{ marginTop: 8 }}>
+                <Button
+                  type="primary"
+                  size="small"
+                  onClick={saveDescription}
+                  loading={updateTaskMutation.isPending}
+                >
+                  Lưu mô tả
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() =>
+                    setDescription(taskData.description ?? "")
+                  }
+                >
+                  Hủy
+                </Button>
+              </Space>
+            </div>
+          </div>
+
+          {/* RIGHT */}
+          <div
+            style={{
+              flex: 1,
+              paddingLeft: 16,
+              borderLeft: "1px solid #eee",
+            }}
+          >
+            <Title level={5} style={{ fontSize: 14, marginBottom: 12 }}>
+              Nhận xét & hoạt động
+            </Title>
+
+            <Input
+              placeholder="Viết bình luận..."
+              style={{ marginBottom: 12, borderRadius: 6 }}
+            />
+
+            <div style={{ fontSize: 13, color: "#555" }}>
+              <p style={{ marginBottom: 4 }}>
+                <b>Tuấn Đình</b> đã cập nhật thẻ này
+              </p>
+              <p style={{ fontSize: 12, color: "#888", margin: 0 }}>
+                Cập nhật lúc:{" "}
+                {dayjs(taskData.updatedAt).format("DD/MM/YYYY HH:mm")}
+              </p>
+            </div>
           </div>
         </div>
       </Modal>
