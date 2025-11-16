@@ -19,16 +19,16 @@ export class LabelsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.labelsService.findOne(+id);
+    return this.labelsService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateLabelDto: UpdateLabelDto) {
-    return this.labelsService.update(+id, updateLabelDto);
+    return this.labelsService.update(id, updateLabelDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.labelsService.remove(+id);
+    return this.labelsService.remove(id);
   }
 }

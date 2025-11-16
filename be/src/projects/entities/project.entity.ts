@@ -12,6 +12,7 @@ import { User } from 'src/users/entities/user.entity';
 import { Group } from 'src/groups/entities/group.entity';
 import { ProjectMember } from 'src/project-members/entities/project-member.entity';
 import { ColumnEntity } from 'src/columns/entities/column.entity';
+import { Label } from 'src/labels/entities/label.entity';
 
 @Entity('projects')
 export class Project {
@@ -65,4 +66,7 @@ export class Project {
 
   @OneToMany(() => ColumnEntity, (column) => column.project, { cascade: true })
   columns: ColumnEntity[];
+
+  @OneToMany(() => Label, (label) => label.project, { cascade: true })
+  labels: Label[];
 }

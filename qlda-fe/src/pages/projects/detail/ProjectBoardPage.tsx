@@ -32,7 +32,7 @@ import type { Column } from '@/types/project-board';
 import type { Task } from '@/types/task.type';
 import AddColumnCard from './components/AddColumnCard';
 import SortableColumn from './components/SortableColumn';
-import { debounce } from 'lodash';
+import debounce from 'lodash';
 
 const { Title } = Typography;
 

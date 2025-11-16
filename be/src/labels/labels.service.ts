@@ -1,26 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateLabelDto } from './dto/create-label.dto';
 import { UpdateLabelDto } from './dto/update-label.dto';
+import { Repository } from 'typeorm';
+import { Label } from './entities/label.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class LabelsService {
+  constructor(
+    @InjectRepository(Label)
+    private labelRepo: Repository<Label>,
+  ) {}
+
   create(createLabelDto: CreateLabelDto) {
-    return 'This action adds a new label';
+    const label = this.labelRepo.create(createLabelDto);
+    return this.labelRepo.save(label);
   }
 
   findAll() {
-    return `This action returns all labels`;
+    return this.labelRepo.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} label`;
+  async findOne(id: string) {
+    return this.labelRepo.findOne({ where: { id } });
   }
 
-  update(id: number, updateLabelDto: UpdateLabelDto) {
-    return `This action updates a #${id} label`;
+  async update(id: string, updateLabelDto: UpdateLabelDto) {
+    const label = await this.labelRepo.findOne({ where: { id } });
+    if (!label) throw new NotFoundException('Label not found');
+    Object.assign(label, updateLabelDto);
+    return this.labelRepo.save(label);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} label`;
+  async remove(id: string) {
+    const label = await this.labelRepo.findOne({ where: { id } });
+    if (!label) throw new NotFoundException('Label not found');
+    await this.labelRepo.remove(label);
+    return { message: 'Label removed successfully' };
   }
 }

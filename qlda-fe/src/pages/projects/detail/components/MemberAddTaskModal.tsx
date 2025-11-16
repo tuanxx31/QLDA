@@ -46,8 +46,8 @@ export default function MemberAddTaskModal({
     console.log({ projectId });
 
     const { data: projectMembers = [], isLoading } = useQuery({
-        queryKey: ["projectMembers", projectId],
-        queryFn: () => projectMemberService.getProjectMebers(projectId as string),
+        queryKey: ["projectMembers", projectId,taskId],
+        queryFn: () => projectMemberService.getProjectMebers(projectId as string,taskId),
         enabled: open && !!projectId,
     });
 
@@ -81,6 +81,7 @@ export default function MemberAddTaskModal({
     const addMembersMutation = useMutation({
         mutationFn: (payload: { userIds: string[] }) =>
             taskService.assignUsers(taskId, { userIds: payload.userIds, labelIds: [] }),
+        
         onSuccess: () => {
             message.success("Đã thêm thành viên vào công việc");
             onSuccess?.();
@@ -106,6 +107,7 @@ export default function MemberAddTaskModal({
         addMembersMutation.mutate({ userIds: selectedRowKeys as string[] });
     };
 
+   
     const columns: ColumnsType<MemberLike> = [
         {
             title: "Thành viên",
