@@ -113,7 +113,6 @@ export default function SortableColumn({
       ref={setNodeRef}
       style={{
         ...style,
-        flexShrink: 0,
       }}
     >
       <Card
@@ -122,7 +121,11 @@ export default function SortableColumn({
           padding: 0,
           display: 'flex',
           flexDirection: 'column',
-          maxHeight: '70vh',
+          minHeight: 0,
+        }}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
         }}
         title={
           <div
@@ -186,11 +189,14 @@ export default function SortableColumn({
         }
       >
         <div
+          className="column-scroll-container"
           style={{
-            flex: 1,
+            flex: '1 1 auto',
             overflowY: 'auto',
+            overflowX: 'hidden',
             padding: 8,
             minHeight: 0,
+            maxHeight: 'calc(100vh - 320px)',
           }}
         >
           <TaskList column={column} />

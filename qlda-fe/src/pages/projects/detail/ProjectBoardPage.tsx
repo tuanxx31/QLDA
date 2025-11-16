@@ -309,8 +309,18 @@ export default function ProjectBoardPage() {
       ]}
     >
       <Card
-        style={{ height: 'calc(100vh - 200px)', display: 'flex' }}
-        bodyStyle={{ padding: 0, flex: 1 }}
+        style={{ 
+          height: 'calc(100vh - 200px)', 
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+        bodyStyle={{ 
+          padding: 0, 
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+        }}
       >
         <DndContext
           sensors={sensors}
@@ -322,14 +332,17 @@ export default function ProjectBoardPage() {
           <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
             <div
               ref={scrollContainerRef}
+              className="board-scroll-container"
               style={{
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: 8,
                 overflowX: 'auto',
+                overflowY: 'hidden',
                 padding: 8,
                 flex: 1,
                 flexShrink: 0,
+                minHeight: 0,
               }}
             >
               {columns.map(col => (
