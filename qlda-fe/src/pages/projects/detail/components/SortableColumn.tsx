@@ -196,7 +196,7 @@ export default function SortableColumn({
             overflowX: 'hidden',
             padding: 8,
             minHeight: 0,
-            maxHeight: 'calc(100vh - 320px)',
+            maxHeight: 'calc(100vh - 370px)',
           }}
         >
           <TaskList column={column} />
@@ -206,6 +206,7 @@ export default function SortableColumn({
             padding: '0 8px 8px 8px',
             borderTop: `1px solid ${token.colorBorderSecondary}`,
             backgroundColor: token.colorBgContainer,
+            flexShrink: 0,
           }}
         >
           <AddTaskCard

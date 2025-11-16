@@ -57,7 +57,7 @@ export default function AddTaskCard({
 
   return (
     <div>
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space direction="vertical" style={{ width: '100%' }} size="small">
         <Input.TextArea
           placeholder="Nhập tiêu đề cho thẻ này..."
           value={newTitle}
@@ -76,7 +76,7 @@ export default function AddTaskCard({
           }}
           disabled={loading}
           autoFocus
-          autoSize={{ minRows: 2, maxRows: 4 }}
+          autoSize={{ minRows: 1, maxRows: 2 }}
           status={!newTitle.trim() ? 'warning' : undefined}
           style={{
             resize: 'none',
