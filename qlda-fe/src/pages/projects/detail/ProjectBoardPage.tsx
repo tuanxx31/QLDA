@@ -341,7 +341,6 @@ export default function ProjectBoardPage() {
       >
         <DndContext
           sensors={sensors}
-          // collisionDetection={closestCorners}
           collisionDetection={(args) => {
             const pointer = pointerWithin(args);
             if (pointer.length > 0) return pointer;
