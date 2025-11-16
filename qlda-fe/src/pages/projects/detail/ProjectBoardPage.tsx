@@ -49,6 +49,8 @@ export default function ProjectBoardPage() {
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [newColumnName, setNewColumnName] = useState('');
 
+  const [fromColumn, setFromColumn] = useState<Column | null>(null);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, {
@@ -247,8 +249,36 @@ export default function ProjectBoardPage() {
 
       const fromCol = getColumnOf(activeId, draft);
       const toCol = getColumnOf(overId, draft);
-
+      console.log({fromCol}, {toCol});
       if (!fromCol || !toCol) return prev;
+
+      if (fromCol.id === toCol.id) {
+        console.log('fromCol.id === toCol.id');
+
+        // Lúc này handleDragOver đã reorder tasks đúng rồi
+        // => chỉ cần lấy vị trí hiện tại của activeId trong fromCol.tasks
+        const tasks = fromCol.tasks ?? [];
+        const currentIndex = tasks.findIndex(t => t.id === activeId);
+
+        // Nếu không tìm thấy thì bỏ
+        if (currentIndex === -1) return prev;
+
+        // Nếu thả vào chính column container (không phải task nào)
+        // thì vẫn dùng vị trí hiện tại của task trong mảng
+        const prevTask = tasks[currentIndex - 1];
+        const nextTask = tasks[currentIndex + 1];
+
+        console.log('prev/next trong cùng column', { prevTask, nextTask });
+
+        // Gọi API, không đổi columnId
+        taskService.updatePosition(activeId, prevTask?.id, nextTask?.id, undefined).catch(() => {
+          message.error('Không thể lưu vị trí nhiệm vụ');
+          queryClient.invalidateQueries({ queryKey: ['columns', projectId] });
+        });
+
+        // Không cần gán lại fromCol.tasks vì thứ tự đã được cập nhật trong handleDragOver
+        return prev; // dùng luôn state hiện tại
+      }
 
       const fromTasks = fromCol.tasks ?? [];
       const toTasks = toCol.tasks ?? [];
