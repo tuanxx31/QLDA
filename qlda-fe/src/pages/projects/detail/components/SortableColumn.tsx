@@ -120,6 +120,8 @@ export default function SortableColumn({
           padding: 8,
           maxHeight: '70vh',
           overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
         }}
         title={
           <div

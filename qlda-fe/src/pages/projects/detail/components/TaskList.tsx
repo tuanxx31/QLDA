@@ -15,20 +15,22 @@ export default function TaskList({ column }: { column: Column }) {
 
   return (
     <>
-      <SortableContext items={taskIds} strategy={rectSortingStrategy}>
-        <Space
-          direction="vertical"
-          style={{ width: '100%', gap: 8, paddingBottom: 8 }}
-        >
-          {tasks.map(task => (
-            <SortableTask
-              key={task.id}
-              task={task}
-              onClick={setOpenTask}
-            />
-          ))}
-        </Space>
-      </SortableContext>
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <SortableContext items={taskIds} strategy={rectSortingStrategy}>
+          <Space
+            direction="vertical"
+            style={{ width: '100%', gap: 8 }}
+          >
+            {tasks.map(task => (
+              <SortableTask
+                key={task.id}
+                task={task}
+                onClick={setOpenTask}
+              />
+            ))}
+          </Space>
+        </SortableContext>
+      </div>
 
       <TaskDetailModal
         open={!!openTask}
