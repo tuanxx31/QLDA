@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { ProjectMember } from './entities/project-member.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Project } from 'src/projects/entities/project.entity';
@@ -55,9 +55,10 @@ export class ProjectMembersService {
     return this.projectMemberRepo.save(newMember);
   }
 
-  async getMembers(projectId: string) {
+  async getMembers(projectId: string, membersIdExcludeTask: string[]) {
+    console.log({membersIdExcludeTask});
     const members = await this.projectMemberRepo.find({
-      where: { project: { id: projectId } },
+      where: { project: { id: projectId }, user: { id: Not(In(membersIdExcludeTask)) } },
       relations: ['user', 'project'],
       order: { joinedAt: 'ASC' },
     });

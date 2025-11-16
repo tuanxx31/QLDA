@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -20,11 +21,12 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { ProjectMembersService } from './project-members.service';
 import { CreateProjectMemberDto } from './dto/create-project-member.dto';
 import { UpdateProjectMemberDto } from './dto/update-project-member.dto';
+import { TaskService } from 'src/tasks/tasks.service';
 
 @ApiTags('Project Members')
 @Controller('project-members')
 export class ProjectMembersController {
-  constructor(private readonly projectMembersService: ProjectMembersService) {}
+  constructor(private readonly projectMembersService: ProjectMembersService , private readonly taskService: TaskService) {}
 
   @Get(':projectId')
   @UseGuards(AuthGuard)
@@ -35,8 +37,15 @@ export class ProjectMembersController {
     description: 'Danh sách thành viên được lấy thành công',
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
-  async getMembers(@Param('projectId') projectId: string) {
-    return await this.projectMembersService.getMembers(projectId);
+  async getMembers(@Param('projectId') projectId: string, @Query('taskId') taskId?: string) {
+
+    let membersIdExcludeTask: string[] = [];
+    if (taskId) {
+      const taskAssignees = await this.taskService.getAssignees(taskId);
+      membersIdExcludeTask = taskAssignees.map((assignee) => assignee.id);
+    }
+
+    return await this.projectMembersService.getMembers(projectId, membersIdExcludeTask);
   }
 
   @Post(':projectId')

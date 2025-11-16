@@ -5,10 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProjectMember } from './entities/project-member.entity';
 import { Project } from 'src/projects/entities/project.entity';
 import { User } from 'src/users/entities/user.entity';
+import { TaskService } from 'src/tasks/tasks.service';
+import { Task } from 'src/tasks/entities/task.entity';
+import { SubTask } from 'src/sub-tasks/entities/sub-task.entity';
+import { Label } from 'src/labels/entities/label.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ProjectMember, Project, User])],
+  imports: [TypeOrmModule.forFeature([ProjectMember, Project, User, Task ,SubTask, Label])],
   controllers: [ProjectMembersController],
-  providers: [ProjectMembersService],
+  providers: [ProjectMembersService, TaskService],
 })
 export class ProjectMembersModule {}

@@ -10,6 +10,7 @@ import {
   message,
   Spin,
   Tag,
+  Popconfirm,
 } from "antd";
 import {
   ClockCircleOutlined,
@@ -25,7 +26,7 @@ import MemberAddTaskModal from "./MemberAddTaskModal";
 import { taskService } from "@/services/task.services";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import LabelPicker from "./LabelPicker";
-
+import DueDateModal from "./DateComponet";
 const { Title, Text } = Typography;
 
 interface Props {
@@ -51,9 +52,11 @@ export default function TaskDetailModal({
   const [labelOpen, setLabelOpen] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [savingDesc, setSavingDesc] = useState(false);
-
+  const [dueDateOpen, setDueDateOpen] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState("");
+
+  
 
   useEffect(() => {
     setTaskData(task);
@@ -102,6 +105,15 @@ export default function TaskDetailModal({
       message.error("Không thể tải lại công việc");
     }
   };
+  const deleteTaskMutation = useMutation({
+    mutationFn: () => taskService.delete(taskData!.id),
+    onSuccess: () => {
+      message.success("Đã xóa thẻ");
+      queryClient.invalidateQueries({ queryKey: ["columns"] });
+      onDelete?.(taskData!);
+      onClose();
+    },
+  });
 
   const saveDescription = async () => {
     if (!taskData?.id) return;
@@ -125,7 +137,9 @@ export default function TaskDetailModal({
   };
 
   const handleMemberAddSuccess = async () => {
-    await refreshTask();
+    // await refreshTask();
+    // queryClient.invalidateQueries({ queryKey: ["taskAssignees", taskData?.id] });
+    queryClient.invalidateQueries({ queryKey: ["tasks"] });
     setMemberModalOpen(false);
   };
 
@@ -195,15 +209,13 @@ export default function TaskDetailModal({
               </div>
             )}
 
-            <Space>
-              <Tooltip title="Xóa">
-                <Button
-                  danger
-                  type="text"
-                  icon={<DeleteOutlined />}
-                  onClick={() => onDelete?.(taskData)}
-                />
-              </Tooltip>
+            <Space style={{ margin: 20 }}>
+              <Popconfirm title="Xóa thẻ này?" onConfirm={() => {
+                deleteTaskMutation.mutate();
+
+              }} okText="Xác nhận" cancelText="Hủy">
+                <Button danger type="text" icon={<DeleteOutlined />} />
+              </Popconfirm>
             </Space>
           </div>
         }
@@ -221,7 +233,13 @@ export default function TaskDetailModal({
             <Button icon={<TagsOutlined />} onClick={() => setLabelOpen(true)}>
               Nhãn
             </Button>
-            <Button icon={<ClockCircleOutlined />}>Ngày</Button>
+            <Button icon={<ClockCircleOutlined />} onClick={() => setDueDateOpen(true)}>Ngày</Button>
+            <DueDateModal
+              task={taskData}
+              open={dueDateOpen}
+              onClose={() => setDueDateOpen(false)}
+              onSave={(data) => console.log(data)}
+            />
             <Button>Việc cần làm</Button>
             <Button>Đính kèm</Button>
           </div>
@@ -235,9 +253,7 @@ export default function TaskDetailModal({
               ))}
             </Space>
           ) : (
-            <Text type="secondary" style={{ marginBottom: 12, display: "block" }}>
-              Chưa có nhãn
-            </Text>
+            <></>
           )}
 
           <div style={{ marginBottom: 16 }}>
@@ -254,7 +270,7 @@ export default function TaskDetailModal({
                   </Tooltip>
                 ))
               ) : (
-                <Text type="secondary">Chưa có thành viên</Text>
+                <></>
               )}
 
               <Tooltip title="Thêm thành viên">
@@ -293,11 +309,7 @@ export default function TaskDetailModal({
               <Button
                 type="primary"
                 onClick={saveDescription}
-                loading={
-                  savingDesc ||
-                  updateTaskMutation.isPending ||
-                  updateTaskMutation.isSuccess
-                }
+
               >
                 Lưu mô tả
               </Button>
@@ -367,6 +379,8 @@ export default function TaskDetailModal({
         }}
         onCreateNew={() => console.log("Tạo nhãn mới")}
       />
+
+
     </>
   );
 }

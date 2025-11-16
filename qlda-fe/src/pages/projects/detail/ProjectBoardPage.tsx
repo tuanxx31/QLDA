@@ -32,7 +32,6 @@ import type { Task } from '@/types/task.type';
 import AddColumnCard from './components/AddColumnCard';
 import SortableColumn from './components/SortableColumn';
 import { debounce } from 'lodash';
-import TaskCard from './components/TaskCard';
 import SortableTask from './components/SortableTask';
 
 const { Title } = Typography;

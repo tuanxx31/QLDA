@@ -45,8 +45,8 @@ export const projectService = {
 };
 
 export const projectMemberService = {
-  async getProjectMebers(projectId: string) {
-    const res = await api.get<ProjectMember[]>(`/project-members/${projectId}`);
+  async getProjectMebers(projectId: string,taskId?: string) {
+    const res = await api.get<ProjectMember[]>(`/project-members/${projectId}${taskId ? `?taskId=${taskId}` : ''}`);
     return res.data;
   },
   async remove(projectId: string, userId: string) {
