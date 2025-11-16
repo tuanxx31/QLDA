@@ -59,10 +59,14 @@ export default function TaskDetailModal({
 
   /** Khi mở modal → load lại */
   useEffect(() => {
-    setTaskData(task);
-    setDescription(task?.description ?? "");
-    setTempTitle(task?.title ?? "");
-    setInitialStatus(task?.status ?? 'todo');
+    if (task) {
+      setTaskData(task);
+      setDescription(task.description ?? "");
+      setTempTitle(task.title ?? "");
+      // Nếu task đã là "done", mặc định initialStatus là "todo"
+      // Nếu chưa "done", lưu trạng thái hiện tại
+      setInitialStatus(task.status === "done" ? "todo" : task.status);
+    }
   }, [task]);
 
   /** Load assignees */
@@ -96,15 +100,10 @@ export default function TaskDetailModal({
       setTaskData(updated);
       setDescription(updated.description ?? "");
       setTempTitle(updated.title);
-      
-      // Cập nhật initialStatus khi status thay đổi từ "done" về trạng thái khác
-      if (updated.status !== "done" && taskData?.status === "done") {
-        setInitialStatus(updated.status);
-      }
-      
       onEdit?.(updated);
 
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["columns"] });
       queryClient.invalidateQueries({
         queryKey: ["taskAssignees", updated.id],
       });
@@ -199,8 +198,20 @@ export default function TaskDetailModal({
               <CheckCircleFilled
                 onClick={(e) => {
                   e.stopPropagation();
-                  const newStatus =
-                    taskData.status === "done" ? initialStatus : "done";
+                  if (!taskData?.id) return;
+                  
+                  const currentStatus = taskData.status;
+                  let newStatus: 'todo' | 'doing' | 'done';
+                  
+                  if (currentStatus === "done") {
+                    // Nếu đang "done", quay lại trạng thái trước đó (initialStatus)
+                    newStatus = initialStatus;
+                  } else {
+                    // Nếu chưa "done", chuyển sang "done" và lưu trạng thái hiện tại
+                    newStatus = "done";
+                    setInitialStatus(currentStatus);
+                  }
+                  
                   updateTaskMutation.mutate({
                     id: taskData.id,
                     status: newStatus,
