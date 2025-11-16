@@ -14,6 +14,8 @@ import {
   closestCorners,
   pointerWithin,
   rectIntersection,
+  type CollisionDetection,
+  closestCenter,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -341,11 +343,7 @@ export default function ProjectBoardPage() {
       >
         <DndContext
           sensors={sensors}
-          collisionDetection={(args) => {
-            const pointer = pointerWithin(args);
-            if (pointer.length > 0) return pointer;
-            return rectIntersection(args);
-          }}
+          collisionDetection={horizontalColumnCollision}
           onDragStart={handleDragStart}
           onDragMove={handleDragMove}
           onDragEnd={handleDragEnd}
@@ -399,3 +397,18 @@ export default function ProjectBoardPage() {
     </PageContainer>
   );
 }
+
+
+
+export const horizontalColumnCollision: CollisionDetection = (args) => {
+  // 1. Thử detect theo pointer — chính xác nhất khi drag cột
+  const pointer = pointerWithin(args);
+  if (pointer.length > 0) return pointer;
+
+  // 2. Nếu không, dùng rectIntersection → tốt khi cột rỗng
+  const intersection = rectIntersection(args);
+  if (intersection.length > 0) return intersection;
+
+  // 3. Cuối cùng fallback về closestCenter (không được thì thôi)
+  return closestCenter(args);
+};
