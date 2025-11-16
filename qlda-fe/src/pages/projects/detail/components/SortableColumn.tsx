@@ -7,7 +7,6 @@ import {
   Popconfirm,
   Space,
   Spin,
-  theme,
   Typography,
   type InputRef,
 } from 'antd';
@@ -19,6 +18,8 @@ import TaskList from './TaskList';
 import { useParams } from 'react-router-dom';
 import { columnService } from '@/services/column.services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import AddTaskCard from './AddTaskCard';
+import { taskService } from '@/services/task.services';
 
 const { Text } = Typography;
 
@@ -29,8 +30,6 @@ export default function SortableColumn({
   column: Column;
   isOverlay?: boolean;
 }) {
-  const { token } = theme.useToken();
-
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: column.id,
     disabled: isOverlay,
@@ -43,6 +42,8 @@ export default function SortableColumn({
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(column.name);
   const inputRef = useRef<InputRef>(null);
+  const [isAdding, setIsAdding] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
 
   useEffect(() => {
     if (isEditing) inputRef.current?.focus();
@@ -66,6 +67,25 @@ export default function SortableColumn({
     },
     onError: () => message.error('Không thể cập nhật tên cột'),
   });
+
+  const addTaskMutation = useMutation({
+    mutationFn: (title: string) => taskService.create(column.id, title),
+    onSuccess: async () => {
+      message.success('Đã thêm thẻ');
+      setIsAdding(false);
+      setNewTitle('');
+      await qc.invalidateQueries({ queryKey: ['columns', projectId] });
+    },
+    onError: () => message.error('Không thể thêm thẻ'),
+  });
+
+  const handleAddTask = (title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) {
+      return message.warning('Tên thẻ không được để trống');
+    }
+    addTaskMutation.mutate(trimmed);
+  };
 
   const handleSave = () => {
     const trimmed = newName.trim();
@@ -98,7 +118,7 @@ export default function SortableColumn({
         {...(!isOverlay ? attributes : {})}
         bodyStyle={{
           padding: 8,
-          maxHeight: '75vh',
+          maxHeight: '70vh',
           overflowY: 'auto',
         }}
         title={
@@ -161,6 +181,17 @@ export default function SortableColumn({
             </Space>
           </div>
         }
+        actions={[
+          <AddTaskCard
+            key="add-task"
+            isAdding={isAdding}
+            setIsAdding={setIsAdding}
+            newTitle={newTitle}
+            setNewTitle={setNewTitle}
+            onAdd={handleAddTask}
+            loading={addTaskMutation.isPending}
+          />,
+        ]}
       >
         <TaskList column={column} />
       </Card>
