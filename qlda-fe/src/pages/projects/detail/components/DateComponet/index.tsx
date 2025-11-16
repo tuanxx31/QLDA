@@ -26,20 +26,27 @@ const { Text } = Typography;
 export default function DueDateModal({ task, open, onClose, onSave }: Props) {
   const [form, setForm] = useState({
     startDate: task.startDate ? dayjs(task.startDate) : null,
-    showStartPicker: !!task.startDate, // kiểm soát hiển thị datepicker
+    startTime: task.startDate ? dayjs(task.startDate) : dayjs("00:00", "HH:mm"),
+    showStartPicker: !!task.startDate,
+
     dueDate: task.dueDate ? dayjs(task.dueDate) : dayjs(),
     dueTime: task.dueDate ? dayjs(task.dueDate) : dayjs("00:00", "HH:mm"),
+
     repeat: (task as any).repeat ?? "never",
     remind: (task as any).remind ?? "none",
   });
 
+  // Đồng bộ state khi modal mở lại
   useEffect(() => {
     if (open) {
       setForm({
         startDate: task.startDate ? dayjs(task.startDate) : null,
+        startTime: task.startDate ? dayjs(task.startDate) : dayjs("00:00", "HH:mm"),
         showStartPicker: !!task.startDate,
+
         dueDate: task.dueDate ? dayjs(task.dueDate) : dayjs(),
         dueTime: task.dueDate ? dayjs(task.dueDate) : dayjs("00:00", "HH:mm"),
+
         repeat: (task as any).repeat ?? "never",
         remind: (task as any).remind ?? "none",
       });
@@ -50,20 +57,23 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
     mutationFn: (payload: Partial<Task>) => taskService.update(task.id, payload),
     onSuccess: (updated: Task) => {
       message.success("Đã cập nhật thành công");
-      setForm({
-        startDate: updated.startDate ? dayjs(updated.startDate) : null,
-        showStartPicker: !!updated.startDate,
-        dueDate: updated.dueDate ? dayjs(updated.dueDate) : dayjs(),
-        dueTime: updated.dueDate ? dayjs(updated.dueDate) : dayjs("00:00", "HH:mm"),
-        repeat: (updated as any).repeat ?? "never",
-        remind: (updated as any).remind ?? "none",
-      });
       onSave(updated);
     },
     onError: () => message.error("Lỗi khi cập nhật"),
   });
 
   const handleSave = () => {
+    // Gộp ngày bắt đầu + giờ
+    let finalStart = null;
+    if (form.startDate && form.startTime) {
+      finalStart = dayjs(form.startDate)
+        .hour(form.startTime.hour())
+        .minute(form.startTime.minute())
+        .second(0)
+        .toISOString();
+    }
+
+    // Gộp ngày hết hạn + giờ
     const finalDue = dayjs(form.dueDate)
       .hour(form.dueTime.hour())
       .minute(form.dueTime.minute())
@@ -71,8 +81,9 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
       .toISOString();
 
     const payload: Partial<Task> = {
-      startDate: form.startDate ? dayjs(form.startDate).toISOString() : undefined as any,
-      dueDate: finalDue ? dayjs(finalDue).toISOString() : undefined as any,
+      startDate: finalStart ?? undefined,
+      dueDate: finalDue ?? undefined,
+      
     };
 
     updateMutation.mutate(payload);
@@ -82,22 +93,28 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
   return (
     <Modal title="Ngày" open={open} onCancel={onClose} footer={null} width={370} centered>
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        
         {/* Ngày bắt đầu */}
         <div>
           <Text strong>Ngày bắt đầu</Text>
-          <div style={{ marginTop: 8 }}>
-            {form.showStartPicker ? (
+
+          {form.showStartPicker ? (
+            <Space style={{ marginTop: 8 }}>
               <DatePicker
                 value={form.startDate}
                 onChange={(v) => setForm((f) => ({ ...f, startDate: v }))}
-                style={{ width: "100%" }}
               />
-            ) : (
-              <Button onClick={() => setForm((f) => ({ ...f, showStartPicker: true }))}>
-                Thêm ngày bắt đầu
-              </Button>
-            )}
-          </div>
+              <TimePicker
+                value={form.startTime}
+                onChange={(v) => setForm((f) => ({ ...f, startTime: v }))}
+                format="HH:mm"
+              />
+            </Space>
+          ) : (
+            <Button onClick={() => setForm((f) => ({ ...f, showStartPicker: true }))}>
+              Thêm ngày bắt đầu
+            </Button>
+          )}
         </div>
 
         {/* Ngày hết hạn */}
@@ -151,8 +168,11 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
 
         {/* Footer */}
         <Space style={{ width: "100%", marginTop: 10, justifyContent: "flex-end" }}>
-         
-          <Button  type="primary" loading={updateMutation.isPending} onClick={handleSave}>
+          <Button
+            type="primary"
+            loading={updateMutation.isPending}
+            onClick={handleSave}
+          >
             Lưu
           </Button>
         </Space>

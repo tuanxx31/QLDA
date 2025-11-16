@@ -18,6 +18,7 @@ import {
   DeleteOutlined,
   PlusOutlined,
   TagsOutlined,
+  CheckCircleFilled,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
@@ -27,6 +28,7 @@ import { taskService } from "@/services/task.services";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import LabelPicker from "./LabelPicker";
 import DueDateModal from "./DateComponet";
+
 const { Title, Text } = Typography;
 
 interface Props {
@@ -45,25 +47,25 @@ export default function TaskDetailModal({
   onDelete,
 }: Props) {
   const queryClient = useQueryClient();
-
   const [taskData, setTaskData] = useState<Task | null>(task);
-  const [description, setDescription] = useState<string>("");
+  const [description, setDescription] = useState("");
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [tempTitle, setTempTitle] = useState("");
+  const [initialStatus, setInitialStatus] = useState<'todo' | 'doing' | 'done'>('todo');
 
   const [labelOpen, setLabelOpen] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
-  const [savingDesc, setSavingDesc] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
-  const [editingTitle, setEditingTitle] = useState(false);
-  const [tempTitle, setTempTitle] = useState("");
 
-  
-
+  /** Khi mở modal → load lại */
   useEffect(() => {
     setTaskData(task);
     setDescription(task?.description ?? "");
     setTempTitle(task?.title ?? "");
+    setInitialStatus(task?.status ?? 'todo');
   }, [task]);
 
+  /** Load assignees */
   const {
     data: assignees = [],
     isLoading: assigneesLoading,
@@ -72,59 +74,48 @@ export default function TaskDetailModal({
     queryKey: ["taskAssignees", taskData?.id],
     queryFn: () => taskService.getAssignees(taskData!.id),
     enabled: !!taskData?.id,
-    staleTime: 1000 * 30,
+    staleTime: 30000,
   });
 
+  /** Tính ngày hết hạn + trạng thái */
+  const dueInfo = useMemo(() => {
+    if (!taskData?.dueDate) return null;
+    const d = dayjs(taskData.dueDate);
+    return {
+      formatted: d.format("H:mm DD [thg] MM"),
+      isOverdue: d.isBefore(dayjs()),
+    };
+  }, [taskData]);
+
+  /** Mutation update */
   const updateTaskMutation = useMutation({
     mutationFn: (payload: Partial<Task> & { id: string }) =>
       taskService.update(payload.id, payload),
+
     onSuccess: (updated: Task) => {
       setTaskData(updated);
       setDescription(updated.description ?? "");
       setTempTitle(updated.title);
       onEdit?.(updated);
+
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["taskAssignees", updated.id] });
-      message.success("Cập nhật công việc thành công");
+      queryClient.invalidateQueries({
+        queryKey: ["taskAssignees", updated.id],
+      });
+
+      message.success("Đã cập nhật");
     },
-    onError: () => {
-      message.error("Cập nhật thất bại");
-    },
+
+    onError: () => message.error("Lỗi cập nhật"),
   });
 
-  const refreshTask = async () => {
-    if (!taskData?.id) return;
-    try {
-      const updated = await taskService.getByColumn(taskData.columnId);
-      setTaskData(updated);
-      setDescription(updated.description ?? "");
-      setTempTitle(updated.title);
-      onEdit?.(updated);
-      queryClient.invalidateQueries({ queryKey: ["taskAssignees", updated.id] });
-    } catch (err) {
-      message.error("Không thể tải lại công việc");
-    }
-  };
-  const deleteTaskMutation = useMutation({
-    mutationFn: () => taskService.delete(taskData!.id),
-    onSuccess: () => {
-      message.success("Đã xóa thẻ");
-      queryClient.invalidateQueries({ queryKey: ["columns"] });
-      onDelete?.(taskData!);
-      onClose();
-    },
-  });
-
+  /** Lưu mô tả */
   const saveDescription = async () => {
     if (!taskData?.id) return;
-    setSavingDesc(true);
-    try {
-      await updateTaskMutation.mutateAsync({ id: taskData.id, description });
-    } finally {
-      setSavingDesc(false);
-    }
+    await updateTaskMutation.mutateAsync({ id: taskData.id, description });
   };
 
+  /** Lưu title */
   const handleSaveTitle = async () => {
     if (!taskData?.id) return;
     const newTitle = tempTitle.trim();
@@ -136,16 +127,20 @@ export default function TaskDetailModal({
     setEditingTitle(false);
   };
 
-  const handleMemberAddSuccess = async () => {
-    // await refreshTask();
-    // queryClient.invalidateQueries({ queryKey: ["taskAssignees", taskData?.id] });
-    queryClient.invalidateQueries({ queryKey: ["tasks"] });
-    setMemberModalOpen(false);
-  };
+  /** Xóa */
+  const deleteTaskMutation = useMutation({
+    mutationFn: () => taskService.delete(taskData!.id),
+    onSuccess: () => {
+      message.success("Đã xóa thẻ");
+      queryClient.invalidateQueries({ queryKey: ["columns"] });
+      onDelete?.(taskData!);
+      onClose();
+    },
+  });
 
-  const visibleAssignees = useMemo(() => {
-    return assignees?.length ? assignees : taskData?.assignees ?? [];
-  }, [assignees, taskData]);
+  const visibleAssignees = assignees.length
+    ? assignees
+    : task?.assignees ?? [];
 
   if (!taskData) return null;
 
@@ -158,21 +153,37 @@ export default function TaskDetailModal({
         width={850}
         bodyStyle={{
           background: "#fff",
-          borderRadius: 8,
           padding: "20px 24px",
           display: "flex",
           gap: 24,
-          maxHeight: "80vh",
         }}
         title={
           <div
             style={{
               display: "flex",
-              justifyContent: "space-between",
               alignItems: "center",
-              width: "100%",
+              gap: 10,
+              justifyContent: "space-between",
             }}
           >
+            {/* CHECK STATUS ICON */}
+            <CheckCircleFilled
+              onClick={() => {
+                const newStatus = taskData.status === "done" ? initialStatus : "done";
+                updateTaskMutation.mutate({
+                  id: taskData.id,
+                  status: newStatus,
+                });
+              }}
+              style={{
+                fontSize: 22,
+                cursor: "pointer",
+                color:
+                  taskData.status === "done" ? "#52c41a" : "rgba(0,0,0,0.3)",
+              }}
+            />
+
+            {/* TITLE */}
             {editingTitle ? (
               <Input
                 value={tempTitle}
@@ -180,26 +191,18 @@ export default function TaskDetailModal({
                 onBlur={handleSaveTitle}
                 onPressEnter={handleSaveTitle}
                 autoFocus
-                style={{
-                  fontSize: 18,
-                  fontWeight: 600,
-                  width: "100%",
-                  maxWidth: 320,
-                }}
+                style={{ fontSize: 18, fontWeight: 600, width: "100%" }}
               />
             ) : (
               <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                }}
+                style={{ display: "flex", alignItems: "center", gap: 8 }}
                 onDoubleClick={() => setEditingTitle(true)}
               >
                 <Title level={4} style={{ margin: 0 }}>
                   {taskData.title}
                 </Title>
-                <Tooltip title="Sửa tên công việc">
+
+                <Tooltip title="Sửa tên">
                   <Button
                     type="text"
                     icon={<EditOutlined />}
@@ -209,18 +212,18 @@ export default function TaskDetailModal({
               </div>
             )}
 
-            <Space style={{ margin: 20 }}>
-              <Popconfirm title="Xóa thẻ này?" onConfirm={() => {
-                deleteTaskMutation.mutate();
-
-              }} okText="Xác nhận" cancelText="Hủy">
-                <Button danger type="text" icon={<DeleteOutlined />} />
-              </Popconfirm>
-            </Space>
+            <Popconfirm
+              title="Xóa thẻ?"
+              onConfirm={() => deleteTaskMutation.mutate()}
+            >
+              <Button danger type="text" icon={<DeleteOutlined />} />
+            </Popconfirm>
           </div>
         }
       >
+        {/* LEFT */}
         <div style={{ flex: 2, overflowY: "auto", paddingRight: 8 }}>
+          {/* Buttons */}
           <div
             style={{
               display: "flex",
@@ -230,47 +233,84 @@ export default function TaskDetailModal({
             }}
           >
             <Button icon={<PlusOutlined />}>Thêm</Button>
-            <Button icon={<TagsOutlined />} onClick={() => setLabelOpen(true)}>
+            <Button
+              icon={<TagsOutlined />}
+              onClick={() => setLabelOpen(true)}
+            >
               Nhãn
             </Button>
-            <Button icon={<ClockCircleOutlined />} onClick={() => setDueDateOpen(true)}>Ngày</Button>
+
+            <Button
+              icon={<ClockCircleOutlined />}
+              onClick={() => setDueDateOpen(true)}
+            >
+              Ngày
+            </Button>
+
             <DueDateModal
               task={taskData}
               open={dueDateOpen}
               onClose={() => setDueDateOpen(false)}
-              onSave={(data) => console.log(data)}
+              onSave={(updated) => setTaskData(updated)}
             />
-            <Button>Việc cần làm</Button>
-            <Button>Đính kèm</Button>
           </div>
 
+          {/* DUE DATE */}
+          {taskData.dueDate && (
+            <div style={{ marginBottom: 14 }}>
+              <Text strong>Ngày hết hạn:</Text>
+
+              <Space
+                style={{
+                  marginLeft: 10,
+                  padding: "3px 10px",
+                  borderRadius: 6,
+                  background: "#fff",
+                  color: "black",
+                  cursor: "pointer",
+                }}
+                onClick={() => setDueDateOpen(true)}
+              >
+                <span>{dueInfo?.formatted}</span>
+
+                {taskData.status === "done" ? (
+                  <Tag color="green" style={{ borderRadius: 4 }}>
+                    Hoàn tất
+                  </Tag>
+                ) : dueInfo?.isOverdue ? (
+                  <Tag color="red" style={{ borderRadius: 4 }}>
+                    Quá hạn
+                  </Tag>
+                ) : null}
+              </Space>
+            </div>
+          )}
+
+          {/* LABELS */}
           {taskData.labels?.length ? (
             <Space wrap style={{ marginBottom: 12 }}>
-              {taskData.labels.map((label: any) => (
-                <Tag key={label.id} color={label.color}>
-                  {label.name}
+              {taskData.labels.map((lb) => (
+                <Tag key={lb.id} color={lb.color}>
+                  {lb.name}
                 </Tag>
               ))}
             </Space>
-          ) : (
-            <></>
-          )}
+          ) : null}
 
+          {/* MEMBERS */}
           <div style={{ marginBottom: 16 }}>
             <Text strong>Thành viên:</Text>{" "}
             <Space size={4}>
               {assigneesLoading ? (
                 <Spin size="small" />
-              ) : visibleAssignees?.length ? (
+              ) : (
                 visibleAssignees.map((u: any) => (
                   <Tooltip key={u.id} title={u.name || u.email}>
-                    <Avatar style={{ backgroundColor: "#f56a00" }}>
+                    <Avatar style={{ backgroundColor: "#1677ff" }}>
                       {(u.name || u.email)?.[0]?.toUpperCase()}
                     </Avatar>
                   </Tooltip>
                 ))
-              ) : (
-                <></>
               )}
 
               <Tooltip title="Thêm thành viên">
@@ -287,36 +327,35 @@ export default function TaskDetailModal({
                 </Avatar>
               </Tooltip>
             </Space>
+
             {assigneesError && (
-              <div style={{ marginTop: 8, color: "var(--ant-error-color)" }}>
-                Không thể tải danh sách thành viên
+              <div style={{ color: "red", marginTop: 6 }}>
+                Không thể tải danh sách
               </div>
             )}
           </div>
 
-          <Divider style={{ margin: "12px 0" }} />
+          <Divider />
 
+          {/* DESCRIPTION */}
           <div>
             <Text strong>Mô tả:</Text>
             <Input.TextArea
-              placeholder="Thêm mô tả chi tiết hơn..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              placeholder="Thêm mô tả..."
               autoSize={{ minRows: 4 }}
               style={{ marginTop: 8 }}
             />
-            <Space style={{ marginTop: 8 }}>
-              <Button
-                type="primary"
-                onClick={saveDescription}
 
-              >
+            <Space style={{ marginTop: 8 }}>
+              <Button type="primary" onClick={saveDescription}>
                 Lưu mô tả
               </Button>
               <Button
-                onClick={() => {
-                  setDescription(taskData.description ?? "");
-                }}
+                onClick={() =>
+                  setDescription(taskData.description ?? "")
+                }
               >
                 Hủy
               </Button>
@@ -324,41 +363,31 @@ export default function TaskDetailModal({
           </div>
         </div>
 
+        {/* RIGHT */}
         <div
           style={{
             flex: 1,
-            borderLeft: "1px solid #f0f0f0",
             paddingLeft: 16,
-            overflowY: "auto",
-            maxHeight: "70vh",
+            borderLeft: "1px solid #eee",
           }}
         >
-          <Title level={5} style={{ fontSize: 16 }}>
-            Nhận xét và hoạt động
-          </Title>
+          <Title level={5}>Nhận xét & hoạt động</Title>
+
           <Input placeholder="Viết bình luận..." style={{ marginBottom: 12 }} />
+
           <div style={{ fontSize: 13, color: "#555" }}>
             <p>
-              <b>Tuấn Đình</b> đã thêm <b>tothuy0810</b> vào thẻ này
+              <b>Tuấn Đình</b> đã cập nhật thẻ này
             </p>
-            <p style={{ color: "#888", fontSize: 12 }}>
-              Cập nhật lần cuối:{" "}
-              {taskData.updatedAt
-                ? dayjs(taskData.updatedAt).format("DD/MM/YYYY HH:mm")
-                : "—"}
+            <p style={{ fontSize: 12, color: "#888" }}>
+              Cập nhật lúc:{" "}
+              {dayjs(taskData.updatedAt).format("DD/MM/YYYY HH:mm")}
             </p>
           </div>
         </div>
       </Modal>
 
-      <MemberAddTaskModal
-        open={memberModalOpen}
-        onClose={() => setMemberModalOpen(false)}
-        taskId={taskData.id}
-        currentAssignees={taskData.assignees?.map((u) => u.id) || []}
-        onSuccess={handleMemberAddSuccess}
-      />
-
+      {/* LABEL PICKER */}
       <LabelPicker
         open={labelOpen}
         onClose={() => setLabelOpen(false)}
@@ -369,18 +398,28 @@ export default function TaskDetailModal({
           { id: "4", name: "Review", color: "purple" },
           { id: "5", name: "Idea", color: "blue" },
         ]}
-        selectedIds={taskData.labels?.map((l) => l.id) ?? []}
+        selectedIds={taskData.labels?.map((lb) => lb.id) ?? []}
         onChange={(ids) => {
-          const labels = ids.map(
-            (id) =>
-              ({ id, name: id, color: "blue" } as any)
-          );
+          const labels = ids.map((id) => ({
+            id,
+            name: id,
+            color: "blue",
+          }) as any);
           setTaskData({ ...taskData, labels });
         }}
-        onCreateNew={() => console.log("Tạo nhãn mới")}
       />
 
-
+      {/* MEMBER PICKER */}
+      <MemberAddTaskModal
+        open={memberModalOpen}
+        onClose={() => setMemberModalOpen(false)}
+        taskId={taskData.id}
+        currentAssignees={taskData.assignees?.map((u) => u.id) ?? []}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["tasks"] });
+          setMemberModalOpen(false);
+        }}
+      />
     </>
   );
 }
