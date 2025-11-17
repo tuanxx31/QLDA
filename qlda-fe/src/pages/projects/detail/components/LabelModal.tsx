@@ -7,48 +7,103 @@ import {
     Col,
     theme,
     Card,
+    Space,
+    Popconfirm,
 } from "antd";
 import {
     ArrowLeftOutlined,
     CloseOutlined,
     BgColorsOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+type LabelFormValue = { name: string; color: string | null };
+type Mode = "create" | "edit";
 
 interface Props {
     open: boolean;
+    mode: Mode;
+    initialLabel?: { id: string; name: string; color: string | null };
     onClose: () => void;
     onBack: () => void;
-    onCreate: (label: { name: string; color: string | null }) => void;
+    onSubmit: (label: LabelFormValue) => void;
+    submitLoading?: boolean;
+    onDelete?: () => void;
+    deleteLoading?: boolean;
 }
 
 const COLORS = [
-    "#216e4e", "#7f5f01", "#9e4c00", "#ae2e24", "#803fa5",
-    "#164b35", "#533f04", "#693200", "#5d1f1a", "#48245d",
-    "#7ee2b8", "#eed12b", "#cecfd2", "#fd9891", "#d8a0f7",
-    "#1558bc", "#206a83", "#4c6b1f", "#943d73", "#63666b",
-    "#123263", "#22C55E", "#37471f", "#50253f", "#4b4d51",
-    "#8fb8f6", "#9dd9ee", "#b3df72", "#f797d2", "#a9abaf",
-
+    "#216e4e",
+    "#7f5f01",
+    "#9e4c00",
+    "#ae2e24",
+    "#803fa5",
+    "#164b35",
+    "#533f04",
+    "#693200",
+    "#5d1f1a",
+    "#48245d",
+    "#7ee2b8",
+    "#eed12b",
+    "#cecfd2",
+    "#fd9891",
+    "#d8a0f7",
+    "#1558bc",
+    "#206a83",
+    "#4c6b1f",
+    "#943d73",
+    "#63666b",
+    "#123263",
+    "#22C55E",
+    "#37471f",
+    "#50253f",
+    "#4b4d51",
+    "#8fb8f6",
+    "#9dd9ee",
+    "#b3df72",
+    "#f797d2",
+    "#a9abaf",
 ];
 
-export default function CreateLabelModal({
+export default function LabelModal({
     open,
+    mode,
+    initialLabel,
     onClose,
     onBack,
-    onCreate,
+    onSubmit,
+    submitLoading,
+    onDelete,
+    deleteLoading,
 }: Props) {
     const [name, setName] = useState("");
     const [color, setColor] = useState<string | null>(null);
     const { token } = theme.useToken();
 
-    const handleCreate = () => {
-        if (!name.trim()) return;
-        onCreate({ name: name.trim(), color });
+    const isEditMode = mode === "edit";
+
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        if (isEditMode && initialLabel) {
+            setName(initialLabel.name || "");
+            setColor(initialLabel.color || null);
+            return;
+        }
+
         setName("");
         setColor(null);
-        onClose();
+    }, [open, isEditMode, initialLabel]);
+
+    const handleSubmit = () => {
+        if (!name.trim()) return;
+        onSubmit({ name: name.trim(), color });
     };
+
+    const title = useMemo(() => (isEditMode ? "Chỉnh sửa nhãn" : "Tạo nhãn mới"), [isEditMode]);
+    const showBackButton = !isEditMode;
 
     return (
         <Modal
@@ -64,13 +119,15 @@ export default function CreateLabelModal({
                         gap: 8,
                     }}
                 >
-                    <Button
-                        icon={<ArrowLeftOutlined />}
-                        type="text"
-                        onClick={onBack}
-                        style={{ marginLeft: -8 }}
-                    />
-                    <span style={{ fontWeight: 500 }}>Tạo nhãn mới</span>
+                    {showBackButton && (
+                        <Button
+                            icon={<ArrowLeftOutlined />}
+                            type="text"
+                            onClick={onBack}
+                            style={{ marginLeft: -8 }}
+                        />
+                    )}
+                    <span style={{ fontWeight: 500 }}>{title}</span>
                 </div>
             }
         >
@@ -146,7 +203,6 @@ export default function CreateLabelModal({
                                     />
                                 </Tooltip>
                             </Col>
-
                         </Col>
                     ))}
                 </Row>
@@ -162,16 +218,36 @@ export default function CreateLabelModal({
                 Gỡ bỏ màu
             </Button>
 
-            <div style={{ marginTop: 16 }}>
+            <Space
+                direction="vertical"
+                style={{ width: "100%", marginTop: 16 }}
+                size="middle"
+            >
                 <Button
                     type="primary"
                     block
-                    onClick={handleCreate}
+                    onClick={handleSubmit}
                     disabled={!name.trim()}
+                    loading={submitLoading}
                 >
-                    Tạo mới
+                    {isEditMode ? "Lưu thay đổi" : "Tạo mới"}
                 </Button>
-            </div>
+
+                {isEditMode && onDelete && (
+                    <Popconfirm
+                        title="Xóa nhãn"
+                        description="Bạn có chắc muốn xóa nhãn này?"
+                        okText="Xóa"
+                        cancelText="Hủy"
+                        okButtonProps={{ danger: true, loading: deleteLoading }}
+                        onConfirm={onDelete}
+                    >
+                        <Button block danger type="text">
+                            Xóa nhãn
+                        </Button>
+                    </Popconfirm>
+                )}
+            </Space>
         </Modal>
     );
 }

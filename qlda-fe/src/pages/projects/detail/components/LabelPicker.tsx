@@ -9,7 +9,7 @@ import {
     message,
 } from "antd";
 import { EditOutlined } from "@ant-design/icons";
-import CreateLabelModal from "./LabelModal";
+import LabelModal from "./LabelModal";
 import { labelService } from "@/services/label.services";
 import { taskService } from "@/services/task.services";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -27,7 +27,6 @@ interface Props {
     taskId: string;
     selectedIds: string[];
     onTaskUpdate?: (task: any) => void;
-    onCreateNew?: () => void;
 }
 export default function LabelPicker({
     open,
@@ -38,6 +37,8 @@ export default function LabelPicker({
 }: Props) {
     const [createOpen, setCreateOpen] = useState(false);
     const [localSelectedIds, setLocalSelectedIds] = useState<string[]>(selectedIds);
+    const [editOpen, setEditOpen] = useState(false);
+    const [editingLabel, setEditingLabel] = useState<Label | null>(null);
     const queryClient = useQueryClient();
     const { projectId } = useParams<{ projectId: string }>();
 
@@ -68,7 +69,6 @@ export default function LabelPicker({
             if (updatedTask && onTaskUpdate) {
                 onTaskUpdate(updatedTask);
             }
-            message.success("Đã gán nhãn");
         },
         onError: () => {
             message.error("Không thể gán nhãn");
@@ -90,7 +90,6 @@ export default function LabelPicker({
             if (updatedTask && onTaskUpdate) {
                 onTaskUpdate(updatedTask);
             }
-            message.success("Đã bỏ gán nhãn");
         },
         onError: () => {
             message.error("Không thể bỏ gán nhãn");
@@ -119,12 +118,50 @@ export default function LabelPicker({
                 
                 assignLabelsMutation.mutate([data.id]);
             }
-            message.success("Tạo nhãn thành công");
         },
         onError: () => {
             message.error("Không thể tạo nhãn");
         },
     });
+
+    const updateLabelMutation = useMutation({
+        mutationFn: ({ id, name, color }: { id: string; name: string; color: string }) =>
+            labelService.updateLabel(id, name, color),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["labels", projectId] });
+            queryClient.invalidateQueries({ queryKey: ["tasks"] });
+            queryClient.invalidateQueries({ queryKey: ["columns"] });
+            setEditOpen(false);
+            setEditingLabel(null);
+
+        },
+        onError: () => {
+            message.error("Không thể cập nhật nhãn");
+        },
+    });
+
+    const deleteLabelMutation = useMutation({
+        mutationFn: (id: string) => labelService.deleteLabel(id),
+        onSuccess: (_, labelId) => {
+            queryClient.invalidateQueries({ queryKey: ["labels", projectId] });
+            queryClient.invalidateQueries({ queryKey: ["tasks"] });
+            queryClient.invalidateQueries({ queryKey: ["columns"] });
+            setLocalSelectedIds((prev) => prev.filter((id) => id !== labelId));
+            if (editingLabel?.id === labelId) {
+                setEditOpen(false);
+                setEditingLabel(null);
+            }
+        },
+        onError: () => {
+            message.error("Không thể xóa nhãn");
+        },
+    });
+
+    const handleEditClick = (label: Label) => {
+        setEditingLabel(label);
+        setEditOpen(true);
+    };
+
     return (
         <Modal
             open={open}
@@ -192,14 +229,17 @@ export default function LabelPicker({
                                     {label.name || ""}
                                 </div>
                             </Space>
-                            <Tooltip title="Chỉnh sửa nhãn">
-                                <EditOutlined
-                                    style={{
-                                        cursor: "pointer",
-                                        color: "#aaa",
-                                    }}
-                                />
-                            </Tooltip>
+                            <Space>
+                                <Tooltip title="Chỉnh sửa nhãn">
+                                    <EditOutlined
+                                        style={{
+                                            cursor: "pointer",
+                                            color: "#aaa",
+                                        }}
+                                        onClick={() => handleEditClick(label)}
+                                    />
+                                </Tooltip>
+                            </Space>
                         </div>
                     ))
                 )}
@@ -219,11 +259,13 @@ export default function LabelPicker({
                 Tạo nhãn mới
             </Button>
 
-            <CreateLabelModal
+            <LabelModal
                 open={createOpen}
+                mode="create"
                 onClose={() => setCreateOpen(false)}
                 onBack={() => setCreateOpen(false)}
-                onCreate={(newLabel) => {
+                submitLoading={createLabelMutation.isPending}
+                onSubmit={(newLabel) => {
                     if (!newLabel.color) {
                         message.error("Vui lòng chọn màu cho nhãn");
                         return;
@@ -236,6 +278,41 @@ export default function LabelPicker({
                         }
                     );
                     setCreateOpen(false);
+                }}
+            />
+            <LabelModal
+                open={editOpen}
+                mode="edit"
+                onClose={() => {
+                    setEditOpen(false);
+                    setEditingLabel(null);
+                }}
+                onBack={() => {
+                    setEditOpen(false);
+                    setEditingLabel(null);
+                }}
+                initialLabel={
+                    editingLabel
+                        ? { id: editingLabel.id, name: editingLabel.name, color: editingLabel.color }
+                        : undefined
+                }
+                submitLoading={updateLabelMutation.isPending}
+                deleteLoading={deleteLabelMutation.isPending}
+                onSubmit={(updatedLabel) => {
+                    if (!editingLabel) return;
+                    if (!updatedLabel.color) {
+                        message.error("Vui lòng chọn màu cho nhãn");
+                        return;
+                    }
+                    updateLabelMutation.mutate({
+                        id: editingLabel.id,
+                        name: updatedLabel.name,
+                        color: updatedLabel.color,
+                    });
+                }}
+                onDelete={() => {
+                    if (!editingLabel) return;
+                    deleteLabelMutation.mutate(editingLabel.id);
                 }}
             />
         </Modal>
