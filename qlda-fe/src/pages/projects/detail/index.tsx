@@ -9,6 +9,7 @@ import ProjectInfoCard from './components/ProjectInfoCard';
 import ProjectMembers from './components/ProjectMembers';
 import MemberAddModal from './components/MemberAddModal';
 import MemberAddFromGroupModal from './components/MemberAddFromGroupModal';
+import ProgressDashboard from './components/ProgressDashboard';
 import useAuth from '@/hooks/useAuth';
 
 const { Title } = Typography;
@@ -94,6 +95,7 @@ const ProjectDetailPage = () => {
             project={project}
             onUpdate={() => qc.invalidateQueries({ queryKey: ['project', projectId] })}
           />
+          <ProgressDashboard projectId={projectId!} />
           <ProjectMembers projectId={projectId!} />
         </Space>
       </Card>

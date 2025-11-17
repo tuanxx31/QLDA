@@ -20,7 +20,7 @@ export interface Task {
   id: string;
   title: string;
   description?: string;
-  status: 'todo' | 'doing' | 'done';
+  status: 'todo' | 'done';
   priority: 'low' | 'medium' | 'high';
 
   startDate?: string; // ISO timestamp
@@ -45,7 +45,7 @@ export interface Task {
 export interface CreateTaskDto {
   title: string;
   description?: string;
-  status?: 'todo' | 'doing' | 'done';
+  status?: 'todo' | 'done';
   priority?: 'low' | 'medium' | 'high';
   startDate?: string;
   dueDate?: string;
@@ -56,7 +56,7 @@ export interface CreateTaskDto {
 }
 
 export interface UpdateTaskDto extends Partial<CreateTaskDto> {
-    status?: 'todo' | 'doing' | 'done';
+    status?: 'todo' | 'done';
     completedAt?: string;
 }
 

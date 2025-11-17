@@ -15,6 +15,8 @@ import type { ColumnsType } from "antd/es/table";
 import { projectMemberService } from "@/services/project.services";
 import { taskService } from "@/services/task.services";
 import { useParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { invalidateProgressQueries } from "@/utils/invalidateProgress";
 
 interface Props {
     open: boolean;
@@ -39,6 +41,7 @@ export default function MemberAddTaskModal({
     currentAssignees = [],
 }: Props) {
     const { projectId } = useParams();
+    const queryClient = useQueryClient();
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const [search, setSearch] = useState("");
     const [pageSize, setPageSize] = useState(8);
@@ -84,6 +87,10 @@ export default function MemberAddTaskModal({
         
         onSuccess: () => {
             message.success("Đã thêm thành viên vào công việc");
+            queryClient.invalidateQueries({ queryKey: ["columns"] });
+            if (projectId) {
+                invalidateProgressQueries(queryClient, projectId);
+            }
             onSuccess?.();
             onClose();
         },

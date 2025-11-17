@@ -4,6 +4,8 @@ import type { Task } from "@/types/task.type";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { taskService } from "@/services/task.services";
 import { message } from "antd";
+import { useParams } from "react-router-dom";
+import { invalidateProgressQueries } from "@/utils/invalidateProgress";
 
 interface Props {
   task: Task;
@@ -13,10 +15,11 @@ interface Props {
 
 export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
   const queryClient = useQueryClient();
+  const { projectId } = useParams<{ projectId: string }>();
 
   // Mutation để update status
   const updateStatusMutation = useMutation({
-    mutationFn: (newStatus: 'todo' | 'doing' | 'done') =>
+    mutationFn: (newStatus: 'todo' | 'done') =>
       taskService.update(task.id, {
         status: newStatus,
         completedAt: newStatus === "done" ? new Date().toISOString() : undefined,
@@ -24,6 +27,9 @@ export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       queryClient.invalidateQueries({ queryKey: ["columns"] });
+      if (projectId) {
+        invalidateProgressQueries(queryClient, projectId);
+      }
     },
     onError: () => {
       message.error("Không thể cập nhật trạng thái");

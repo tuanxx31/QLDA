@@ -44,3 +44,36 @@ export interface CreateProjectMemberDto {
   email: string;
   role: 'viewer' | 'editor' | 'leader';
 }
+
+export interface ProjectProgress {
+  totalTasks: number;
+  doneTasks: number;
+  todoTasks: number;
+  progress: number;
+}
+
+export interface ColumnProgress {
+  columnId: string;
+  columnName: string;
+  totalTasks: number;
+  doneTasks: number;
+  todoTasks: number;
+  progress: number;
+}
+
+export interface UserProgress {
+  userId: string;
+  avatar: string;
+  name: string;
+  totalTasks: number;
+  doneTasks: number;
+  todoTasks: number;
+  progress: number;
+}
+
+export interface DeadlineSummary {
+  overdue: number;
+  dueSoon: number;
+  completedOnTime: number;
+  completedLate: number;
+}

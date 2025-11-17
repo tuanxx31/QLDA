@@ -28,6 +28,8 @@ import { taskService } from "@/services/task.services";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import LabelPicker from "./LabelPicker";
 import DueDateModal from "./DateComponet";
+import { useParams } from "react-router-dom";
+import { invalidateProgressQueries } from "@/utils/invalidateProgress";
 
 const { Title, Text } = Typography;
 
@@ -47,11 +49,12 @@ export default function TaskDetailModal({
   onDelete,
 }: Props) {
   const queryClient = useQueryClient();
+  const { projectId } = useParams<{ projectId: string }>();
   const [taskData, setTaskData] = useState<Task | null>(task);
   const [description, setDescription] = useState("");
   const [editingTitle, setEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState("");
-  const [initialStatus, setInitialStatus] = useState<'todo' | 'doing' | 'done'>('todo');
+  const [initialStatus, setInitialStatus] = useState<'todo' | 'done'>('todo');
 
   const [labelOpen, setLabelOpen] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
@@ -107,6 +110,9 @@ export default function TaskDetailModal({
       queryClient.invalidateQueries({
         queryKey: ["taskAssignees", updated.id],
       });
+      if (projectId) {
+        invalidateProgressQueries(queryClient, projectId);
+      }
 
       message.success("Đã cập nhật");
     },
@@ -138,6 +144,9 @@ export default function TaskDetailModal({
     onSuccess: () => {
       message.success("Đã xóa thẻ");
       queryClient.invalidateQueries({ queryKey: ["columns"] });
+      if (projectId) {
+        invalidateProgressQueries(queryClient, projectId);
+      }
       onDelete?.(taskData!);
       onClose();
     },
@@ -152,7 +161,6 @@ export default function TaskDetailModal({
   // Màu status indicator
   const getStatusColor = () => {
     if (taskData.status === "done") return "#52c41a";
-    if (taskData.status === "doing") return "#1677ff";
     return "#faad14"; // todo
   };
 
@@ -201,7 +209,7 @@ export default function TaskDetailModal({
                   if (!taskData?.id) return;
                   
                   const currentStatus = taskData.status;
-                  let newStatus: 'todo' | 'doing' | 'done';
+                  let newStatus: 'todo' | 'done';
                   
                   if (currentStatus === "done") {
                     // Nếu đang "done", quay lại trạng thái trước đó (initialStatus)

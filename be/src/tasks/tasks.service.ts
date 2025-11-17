@@ -48,15 +48,17 @@ export class TaskService {
 
     const nextPosition = ((parseFloat(maxPosition?.max) || 0) + 1).toFixed(3);
 
+    const { assigneeIds, labelIds, ...taskData } = dto;
+
     const task = this.taskRepo.create({
-      ...dto,
+      ...taskData,
       position: nextPosition,
       createdBy: creatorId,
-      assignees: dto.assigneeIds
-        ? await this.userRepo.find({ where: { id: In(dto.assigneeIds) } })
+      assignees: assigneeIds
+        ? await this.userRepo.find({ where: { id: In(assigneeIds) } })
         : [],
-      labels: dto.labelIds
-        ? await this.labelRepo.find({ where: { id: In(dto.labelIds) } })
+      labels: labelIds
+        ? await this.labelRepo.find({ where: { id: In(labelIds) } })
         : [],
     });
 

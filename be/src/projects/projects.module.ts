@@ -6,10 +6,21 @@ import { Project } from './entities/project.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Group } from 'src/groups/entities/group.entity';
 import { ProjectMember } from 'src/project-members/entities/project-member.entity';
+import { Task } from 'src/tasks/entities/task.entity';
+import { ColumnEntity } from 'src/columns/entities/column.entity';
 
 @Module({
   controllers: [ProjectsController],
   providers: [ProjectsService],
-  imports: [TypeOrmModule.forFeature([Project, User, Group, ProjectMember])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Project,
+      User,
+      Group,
+      ProjectMember,
+      Task,
+      ColumnEntity,
+    ]),
+  ],
 })
 export class ProjectsModule {}

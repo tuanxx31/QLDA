@@ -19,6 +19,10 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { ProjectProgressDto } from './dto/project-progress.dto';
+import { ColumnProgressDto } from './dto/column-progress.dto';
+import { UserProgressDto } from './dto/user-progress.dto';
+import { DeadlineSummaryDto } from './dto/deadline-summary.dto';
 
 @ApiTags('Projects')
 @Controller('projects')
@@ -77,6 +81,62 @@ export class ProjectsController {
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
   async findOne(@Param('id') id: string) {
     return await this.projectsService.findOne(id);
+  }
+
+  @Get(':id/progress')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Lấy tiến trình tổng của dự án' })
+  @ApiResponse({
+    status: 200,
+    description: 'Tiến trình dự án được lấy thành công',
+    type: ProjectProgressDto,
+  })
+  @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
+  async getProjectProgress(@Param('id') id: string) {
+    return await this.projectsService.getProjectProgress(id);
+  }
+
+  @Get(':id/progress/columns')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Lấy tiến trình theo từng cột' })
+  @ApiResponse({
+    status: 200,
+    description: 'Tiến trình theo cột được lấy thành công',
+    type: [ColumnProgressDto],
+  })
+  @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
+  async getColumnProgress(@Param('id') id: string) {
+    return await this.projectsService.getColumnProgress(id);
+  }
+
+  @Get(':id/progress/users')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Lấy tiến trình theo người thực hiện' })
+  @ApiResponse({
+    status: 200,
+    description: 'Tiến trình theo user được lấy thành công',
+    type: [UserProgressDto],
+  })
+  @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
+  async getUserProgress(@Param('id') id: string) {
+    return await this.projectsService.getUserProgress(id);
+  }
+
+  @Get(':id/progress/deadline-summary')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Lấy thống kê deadline' })
+  @ApiResponse({
+    status: 200,
+    description: 'Thống kê deadline được lấy thành công',
+    type: DeadlineSummaryDto,
+  })
+  @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
+  async getDeadlineSummary(@Param('id') id: string) {
+    return await this.projectsService.getDeadlineSummary(id);
   }
 
   @Patch(':id')

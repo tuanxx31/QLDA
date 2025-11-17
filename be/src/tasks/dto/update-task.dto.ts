@@ -5,8 +5,8 @@ import { ApiProperty } from '@nestjs/swagger';
 export class UpdateTaskDto extends PartialType(CreateTaskDto) {
   @ApiProperty({ example: 'todo' })
   @IsOptional()
-  @IsEnum(['todo', 'doing', 'done'])
-  status?: 'todo' | 'doing' | 'done';
+  @IsEnum(['todo', 'done'])
+  status?: 'todo' | 'done';
 
   @ApiProperty({ example: '2025-01-01' })
   @IsOptional()
