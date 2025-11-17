@@ -2,7 +2,7 @@ import { useState, useEffect, type ReactNode } from "react";
 import { Modal, DatePicker, TimePicker, Button, Space, Typography, message } from "antd";
 import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Task } from "@/types/task.type";
 import { taskService } from "@/services/task.services";
 
@@ -17,6 +17,7 @@ const { Text } = Typography;
 const getZeroTime = () => dayjs("00:00", "HH:mm");
 
 export default function DueDateModal({ task, open, onClose, onSave }: Props) {
+  const qc = useQueryClient();
   const [form, setForm] = useState({
     startDate: task.startDate ? dayjs(task.startDate) : null,
     startTime: task.startDate ? dayjs(task.startDate) : getZeroTime(),
@@ -49,8 +50,9 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
   const updateMutation = useMutation({
     mutationFn: (payload: Partial<Task>) => taskService.update(task.id, payload),
     onSuccess: (updated: Task) => {
-      message.success("Đã cập nhật thành công");
+      // message.success("Đã cập nhật thành công");
       onSave(updated);
+      qc.invalidateQueries({ queryKey: ["columns"] });
     },
     onError: () => message.error("Lỗi khi cập nhật"),
   });
