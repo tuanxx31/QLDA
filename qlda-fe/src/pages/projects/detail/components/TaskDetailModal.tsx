@@ -590,10 +590,12 @@ export default function TaskDetailModal({
         open={memberModalOpen}
         onClose={() => setMemberModalOpen(false)}
         taskId={taskData.id}
-        currentAssignees={taskData.assignees?.map((u) => u.id) ?? []}
+        currentAssignees={visibleAssignees.map((u: any) => u.id)}
         onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["taskAssignees", taskData.id] });
+          queryClient.invalidateQueries({ queryKey: ["task", taskData.id] });
           queryClient.invalidateQueries({ queryKey: ["tasks"] });
-          setMemberModalOpen(false);
+          queryClient.invalidateQueries({ queryKey: ["columns"] });
         }}
       />
     </>

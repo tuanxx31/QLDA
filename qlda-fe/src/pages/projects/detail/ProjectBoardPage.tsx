@@ -34,6 +34,7 @@ import SortableColumn from './components/SortableColumn';
 import { debounce } from 'lodash';
 import SortableTask from './components/SortableTask';
 import { invalidateProgressQueries } from '@/utils/invalidateProgress';
+import { usePageContentHeight } from '@/hooks/usePageContentHeight';
 
 const { Title } = Typography;
 
@@ -42,7 +43,7 @@ export default function ProjectBoardPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { token } = theme.useToken();
-
+  const { minHeight } = usePageContentHeight();
   const [columns, setColumns] = useState<Column[]>([]);
   const [activeColumn, setActiveColumn] = useState<Column | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
@@ -315,7 +316,7 @@ export default function ProjectBoardPage() {
     >
       <Card
         style={{ 
-          height: 'calc(100vh - 185px)', 
+          minHeight, 
           display: 'flex',
           flexDirection: 'column',
         }}

@@ -3,8 +3,10 @@ import { Tabs, Card } from 'antd';
 import ProfileSettings from './ProfileSettings';
 import ChangePasswordSettings from './ChangePasswordSettings';
 import SercuritySettings from './SercuritySettings';
+import { usePageContentHeight } from '@/hooks/usePageContentHeight';
 
 export default function SettingsPage() {
+  const { minHeight } = usePageContentHeight(); 
   const items = [
     {
       key: 'profile',
@@ -25,7 +27,7 @@ export default function SettingsPage() {
 
   return (
     <PageContainer title="Cài đặt tài khoản">
-      <Card style={{ minHeight: '82vh' }}>
+      <Card style={{ minHeight}}>
         <Tabs defaultActiveKey="profile" items={items} tabPosition="left" />
       </Card>
     </PageContainer>

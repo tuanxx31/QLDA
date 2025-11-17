@@ -6,6 +6,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import ProjectFormModal from './components/ProjectFormModal';
 import ProjectTable from './components/ProjectTable';
+import { usePageContentHeight } from '@/hooks/usePageContentHeight';
 
 const ProjectPage = () => {
   const { data, isLoading } = useQuery({
@@ -14,7 +15,7 @@ const ProjectPage = () => {
   });
 
   const [openModal, setOpenModal] = useState(false);
-
+  const { minHeight } = usePageContentHeight();
   return (
     <PageContainer
       title="Dự án của tôi"
@@ -29,7 +30,7 @@ const ProjectPage = () => {
         </Button>,
       ]}
     >
-      <Card style={{ minHeight: '82vh' }}>
+      <Card style={{ minHeight }}>
         <ProjectTable data={data} loading={isLoading} />
         <ProjectFormModal open={openModal} onClose={() => setOpenModal(false)} />
       </Card>

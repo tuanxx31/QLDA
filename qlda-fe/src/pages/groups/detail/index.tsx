@@ -12,6 +12,7 @@ import { GroupSettings } from '@/pages/groups/components/GroupSettings';
 import { AddMemberModal } from '@/pages/groups/components/AddMemberModal';
 import GroupProjectTable from './components/GroupProjectTable';
 import { GroupEditModal } from './components/GroupEditModal';
+import { usePageContentHeight } from '@/hooks/usePageContentHeight';
 
 const GroupDetailPage = () => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ const GroupDetailPage = () => {
   const queryClient = useQueryClient();
   const [openEditGroup, setOpenEditGroup] = useState(false);
   const [openAddMember, setOpenAddMember] = useState(false);
-
+  const { minHeight } = usePageContentHeight();
   const { data: group, isLoading, isError } = useQuery({
     queryKey: ['groupDetail', groupId],
     queryFn: () => groupService.getDetail(groupId!),
@@ -103,7 +104,7 @@ const GroupDetailPage = () => {
         ),
       ]}
     >
-      <Card style={{ minHeight: '82vh' }}>
+      <Card style={{ minHeight }}>
         <GroupInfoCard group={group} />
 
         <Tabs

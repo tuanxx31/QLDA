@@ -88,6 +88,9 @@ export default function MemberAddTaskModal({
         onSuccess: () => {
             message.success("Đã thêm thành viên vào công việc");
             queryClient.invalidateQueries({ queryKey: ["columns"] });
+            queryClient.invalidateQueries({ queryKey: ["taskAssignees", taskId] });
+            queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+            queryClient.invalidateQueries({ queryKey: ["tasks"] });
             if (projectId) {
                 invalidateProgressQueries(queryClient, projectId);
             }
