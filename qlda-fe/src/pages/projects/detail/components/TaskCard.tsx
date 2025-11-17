@@ -44,7 +44,7 @@ export default function TaskCard({ task }: Props) {
     updateStatusMutation.mutate(newStatus);
   };
 
-  // Tính toán thông tin due date
+  
   const dueDateInfo = useMemo(() => {
     if (!task.dueDate) return null;
     const dueDate = dayjs(task.dueDate);
@@ -71,7 +71,7 @@ export default function TaskCard({ task }: Props) {
     };
   }, [task.dueDate, task.status]);
 
-  // Tính toán tiến độ subtasks
+  
   const subtasksProgress = useMemo(() => {
     if (!task.subtasks || task.subtasks.length === 0) return null;
     const completed = task.subtasks.filter((st) => st.completed).length;
@@ -79,7 +79,7 @@ export default function TaskCard({ task }: Props) {
     return { completed, total, percentage: Math.round((completed / total) * 100) };
   }, [task.subtasks]);
 
-  // Truncate description
+  
   const descriptionPreview = task.description
     ? task.description.length > 80
       ? task.description.substring(0, 80) + "..."
@@ -99,7 +99,7 @@ export default function TaskCard({ task }: Props) {
       hoverable
       bodyStyle={{ padding: 10 }}
     >
-      {/* Labels - Hiển thị ở trên cùng */}
+      {}
       {task.labels && task.labels.length > 0 && (
         <div
           style={{
@@ -127,7 +127,7 @@ export default function TaskCard({ task }: Props) {
         </div>
       )}
 
-      {/* Title với checkbox */}
+      {}
       <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
         <CheckCircleFilled
           onClick={handleCheckboxChange}
@@ -150,7 +150,7 @@ export default function TaskCard({ task }: Props) {
             fontWeight: 500,
             lineHeight: "20px",
             color: task.status === "done" ? token.colorTextTertiary : token.colorText,
-            // textDecoration: task.status === "done" ? "line-through" : "none",
+            
             wordBreak: "break-word",
           }}
         >
@@ -158,7 +158,7 @@ export default function TaskCard({ task }: Props) {
         </div>
       </div>
 
-      {/* Description preview */}
+      {}
       {descriptionPreview && (
         <div
           style={{
@@ -173,7 +173,7 @@ export default function TaskCard({ task }: Props) {
         </div>
       )}
 
-      {/* Footer với metadata */}
+      {}
       {(dueDateInfo || subtasksProgress || (task.assignees && task.assignees.length > 0)) && (
         <div
           style={{
@@ -184,7 +184,7 @@ export default function TaskCard({ task }: Props) {
             flexWrap: "wrap",
           }}
         >
-          {/* Due date - Deadline */}
+          {}
           {dueDateInfo && (
             <Tooltip title={`Hạn chót: ${dueDateInfo.fullDate}${dueDateInfo.isOverdue ? " (Quá hạn)" : ""}`}>
               <div
@@ -217,7 +217,7 @@ export default function TaskCard({ task }: Props) {
             </Tooltip>
           )}
 
-          {/* Subtasks progress */}
+          {}
           {subtasksProgress && (
             <Tooltip
               title={`${subtasksProgress.completed}/${subtasksProgress.total} hoàn thành`}
@@ -239,10 +239,10 @@ export default function TaskCard({ task }: Props) {
             </Tooltip>
           )}
 
-          {/* Spacer */}
+          {}
           <div style={{ flex: 1 }} />
 
-          {/* Assignees - Người được giao task */}
+          {}
           {task.assignees && task.assignees.length > 0 && (
             <div
               style={{

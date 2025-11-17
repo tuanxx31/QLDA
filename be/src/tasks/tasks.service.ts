@@ -73,7 +73,7 @@ export class TaskService {
 
     const saved = await this.taskRepo.save(task);
     
-    // Reload với relations để trả về đầy đủ
+    
     return this.taskRepo.findOne({
       where: { id: saved.id },
       relations: ['assignees', 'labels', 'subtasks'],
@@ -90,7 +90,7 @@ export class TaskService {
     Object.assign(task, dto);
     const saved = await this.taskRepo.save(task);
     
-    // Reload với relations để trả về đầy đủ
+    
     return this.taskRepo.findOne({
       where: { id: saved.id },
       relations: ['assignees', 'labels', 'subtasks'],
@@ -125,7 +125,7 @@ export class TaskService {
     task.assignees = merged;
     await this.taskRepo.save(task);
     
-    // Reload với relations để trả về đầy đủ
+    
     return this.taskRepo.findOne({
       where: { id: taskId },
       relations: ['assignees', 'labels', 'subtasks'],
@@ -216,7 +216,7 @@ export class TaskService {
     sub.task.progress = total ? (done / total) * 100 : 0;
     await this.taskRepo.save(sub.task);
     
-    // Reload với relations để trả về đầy đủ
+    
     return this.taskRepo.findOne({
       where: { id: sub.task.id },
       relations: ['assignees', 'labels', 'subtasks'],
@@ -234,7 +234,7 @@ export class TaskService {
     task.completedAt = status === 'done' ? new Date() : undefined as unknown as Date;
     await this.taskRepo.save(task);
     
-    // Reload với relations để trả về đầy đủ
+    
     const updated = await this.taskRepo.findOne({
       where: { id },
       relations: ['assignees', 'labels', 'subtasks'],
@@ -264,7 +264,7 @@ export class TaskService {
     task.labels = merged;
     await this.taskRepo.save(task);
     
-    // Reload với relations để trả về đầy đủ
+    
     return this.taskRepo.findOne({
       where: { id: taskId },
       relations: ['assignees', 'labels', 'subtasks'],
@@ -284,7 +284,7 @@ export class TaskService {
 
     await this.taskRepo.save(task);
     
-    // Reload với relations để trả về đầy đủ
+    
     return this.taskRepo.findOne({
       where: { id: taskId },
       relations: ['assignees', 'labels', 'subtasks'],
