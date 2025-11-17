@@ -49,24 +49,17 @@ export default function TaskCard({ task }: Props) {
     if (!task.dueDate) return null;
     const dueDate = dayjs(task.dueDate);
     const now = dayjs();
-    const isOverdue = dueDate.isBefore(now, "day") && task.status !== "done";
-    const isToday = dueDate.isSame(now, "day");
-    const isTomorrow = dueDate.isSame(now.add(1, "day"), "day");
-
-    let displayText = "";
-    if (isToday) {
-      displayText = "Hôm nay";
-    } else if (isTomorrow) {
-      displayText = "Ngày mai";
-    } else {
-      displayText = dueDate.format("DD/MM");
-    }
+    const isOverdue = dueDate.isBefore(now);
+    const isCompletedLate = task.status === "done" && isOverdue;
+    const isOverdueNotDone = isOverdue && task.status !== "done";
+    const isCompleted = task.status === "done" && !isOverdue;
 
     return {
-      displayText,
+      displayText: dueDate.format("DD/MM/YYYY HH:mm"),
       isOverdue,
-      isToday,
-      isTomorrow,
+      isCompletedLate,
+      isOverdueNotDone,
+      isCompleted,
       fullDate: dueDate.format("DD/MM/YYYY HH:mm"),
     };
   }, [task.dueDate, task.status]);
@@ -186,7 +179,17 @@ export default function TaskCard({ task }: Props) {
         >
           {}
           {dueDateInfo && (
-            <Tooltip title={`Hạn chót: ${dueDateInfo.fullDate}${dueDateInfo.isOverdue ? " (Quá hạn)" : ""}`}>
+            <Tooltip
+              title={`Hạn chót: ${dueDateInfo.fullDate}${
+                dueDateInfo.isCompletedLate
+                  ? " (Hoàn thành trễ)"
+                  : dueDateInfo.isCompleted
+                  ? " (Hoàn thành)"
+                  : dueDateInfo.isOverdueNotDone
+                  ? " (Quá hạn)"
+                  : ""
+              }`}
+            >
               <div
                 style={{
                   display: "flex",
@@ -194,23 +197,42 @@ export default function TaskCard({ task }: Props) {
                   gap: 4,
                   padding: "2px 6px",
                   borderRadius: 4,
-                  backgroundColor: dueDateInfo.isOverdue
-                    ? "#fff1f0"
-                    : dueDateInfo.isToday
+                  backgroundColor: dueDateInfo.isCompletedLate
                     ? "#fff7e6"
+                    : dueDateInfo.isCompleted
+                    ? "#f6ffed"
+                    : dueDateInfo.isOverdueNotDone
+                    ? "#fff1f0"
                     : "transparent",
                   fontSize: 12,
-                  fontWeight: dueDateInfo.isOverdue ? 500 : 400,
-                  color: dueDateInfo.isOverdue
+                  fontWeight:
+                    dueDateInfo.isCompletedLate ||
+                    dueDateInfo.isCompleted ||
+                    dueDateInfo.isOverdueNotDone
+                      ? 500
+                      : 400,
+                  color: dueDateInfo.isCompletedLate
+                    ? "#fa8c16"
+                    : dueDateInfo.isCompleted
+                    ? "#52c41a"
+                    : dueDateInfo.isOverdueNotDone
                     ? "#ff4d4f"
-                    : dueDateInfo.isToday
-                    ? "#faad14"
                     : token.colorTextTertiary,
                 }}
               >
                 <ClockCircleOutlined style={{ fontSize: 12 }} />
                 <span>{dueDateInfo.displayText}</span>
-                {dueDateInfo.isOverdue && (
+                {dueDateInfo.isCompletedLate && (
+                  <span style={{ marginLeft: 4, fontSize: 11 }}>
+                    (Hoàn thành trễ)
+                  </span>
+                )}
+                {dueDateInfo.isCompleted && (
+                  <span style={{ marginLeft: 4, fontSize: 11 }}>
+                    (Hoàn thành)
+                  </span>
+                )}
+                {dueDateInfo.isOverdueNotDone && (
                   <span style={{ marginLeft: 4, fontSize: 11 }}>(Quá hạn)</span>
                 )}
               </div>

@@ -441,7 +441,11 @@ export default function TaskDetailModal({
                   <ClockCircleOutlined style={{ color: "#999" }} />
                   <span style={{ fontSize: 13 }}>{taskData.startDate ? dayjs(taskData.startDate).format("DD/MM" )+ " - " : "" } {dueInfo?.formatted}</span>
 
-                  {taskData.status === "done" ? (
+                  {taskData.status === "done" && dueInfo?.isOverdue ? (
+                    <Tag color="orange" style={{ borderRadius: 4, margin: 0 }}>
+                      Hoàn thành trễ
+                    </Tag>
+                  ) : taskData.status === "done" ? (
                     <Tag color="green" style={{ borderRadius: 4, margin: 0 }}>
                       Hoàn thành
                     </Tag>
