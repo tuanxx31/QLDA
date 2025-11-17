@@ -33,6 +33,7 @@ import AddColumnCard from './components/AddColumnCard';
 import SortableColumn from './components/SortableColumn';
 import { debounce } from 'lodash';
 import SortableTask from './components/SortableTask';
+import { invalidateProgressQueries } from '@/utils/invalidateProgress';
 
 const { Title } = Typography;
 
@@ -245,6 +246,11 @@ export default function ProjectBoardPage() {
           nextTask?.id,
           isSameColumn ? undefined : finalCol.id,
         )
+        .then(() => {
+          if (projectId) {
+            invalidateProgressQueries(queryClient, projectId);
+          }
+        })
         .catch(() => {
           message.error('Không thể lưu vị trí nhiệm vụ');
           queryClient.invalidateQueries({ queryKey: ['columns', projectId] });

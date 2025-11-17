@@ -1,9 +1,7 @@
 import { viVNIntl } from '@ant-design/pro-components';
 import dayjs from 'dayjs';
 
-/**
- * Cấu hình quốc tế hóa và định dạng ngày mặc định cho ProComponents
- */
+
 export const proConfig = {
   intl: viVNIntl,
   valueTypeMap: {

@@ -4,6 +4,10 @@ import type {
   Project,
   ProjectMember,
   CreateProjectMemberDto,
+  ProjectProgress,
+  ColumnProgress,
+  UserProgress,
+  DeadlineSummary,
 } from '@/types/project.type';
 import { api } from './api';
 
@@ -40,6 +44,32 @@ export const projectService = {
 
   async getByGroupId(groupId: string) {
     const res = await api.get<Project[]>(`/projects/group/${groupId}`);
+    return res.data;
+  },
+
+  async getProgress(projectId: string) {
+    const res = await api.get<ProjectProgress>(`/projects/${projectId}/progress`);
+    return res.data;
+  },
+
+  async getColumnProgress(projectId: string) {
+    const res = await api.get<ColumnProgress[]>(
+      `/projects/${projectId}/progress/columns`,
+    );
+    return res.data;
+  },
+
+  async getUserProgress(projectId: string) {
+    const res = await api.get<UserProgress[]>(
+      `/projects/${projectId}/progress/users`,
+    );
+    return res.data;
+  },
+
+  async getDeadlineSummary(projectId: string) {
+    const res = await api.get<DeadlineSummary>(
+      `/projects/${projectId}/progress/deadline-summary`,
+    );
     return res.data;
   },
 };

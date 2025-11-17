@@ -23,8 +23,8 @@ export class CreateTaskDto {
 
   @ApiProperty({ example: 'todo' })
   @IsOptional()
-  @IsEnum(['todo', 'doing', 'done'])
-  status?: 'todo' | 'doing' | 'done';
+  @IsEnum(['todo', 'done'])
+  status?: 'todo' | 'done';
 
   @ApiProperty({ example: 'low' })
   @IsOptional()

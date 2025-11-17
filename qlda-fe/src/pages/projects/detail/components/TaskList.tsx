@@ -9,7 +9,7 @@ import TaskDetailModal from './TaskDetailModal';
 export default function TaskList({ column }: { column: Column }) {
   const [openTask, setOpenTask] = useState<Task | null>(null);
 
-  // tasks luôn lấy từ props column để Sync DnD
+  
   const tasks = column.tasks || [];
   const taskIds = tasks.map(t => t.id);
 

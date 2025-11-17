@@ -28,6 +28,8 @@ import { taskService } from "@/services/task.services";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import LabelPicker from "./LabelPicker";
 import DueDateModal from "./DateComponet";
+import { useParams } from "react-router-dom";
+import { invalidateProgressQueries } from "@/utils/invalidateProgress";
 
 const { Title, Text } = Typography;
 
@@ -47,6 +49,7 @@ export default function TaskDetailModal({
   onDelete,
 }: Props) {
   const queryClient = useQueryClient();
+  const { projectId } = useParams<{ projectId: string }>();
   const [taskData, setTaskData] = useState<Task | null>(task);
   const [description, setDescription] = useState("");
   const [editingTitle, setEditingTitle] = useState(false);
@@ -56,7 +59,7 @@ export default function TaskDetailModal({
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
 
-  /** Khi mở modal → load lại */
+  
   useEffect(() => {
     if (task) {
       setTaskData(task);
@@ -110,7 +113,7 @@ export default function TaskDetailModal({
     };
   }, [taskData]);
 
-  /** Mutation update */
+  
   const updateTaskMutation = useMutation({
     mutationFn: (payload: Partial<Task> & { id: string }) =>
       taskService.update(payload.id, payload),
@@ -126,6 +129,9 @@ export default function TaskDetailModal({
       queryClient.invalidateQueries({
         queryKey: ["taskAssignees", updated.id],
       });
+      if (projectId) {
+        invalidateProgressQueries(queryClient, projectId);
+      }
 
       message.success("Đã cập nhật");
     },
@@ -135,19 +141,23 @@ export default function TaskDetailModal({
 
   /** Mutation update status */
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: 'todo' | 'done' }) =>
+    mutationFn: ({ id, status }: { id: string; status: "todo" | "done" }) =>
       taskService.updateStatus(id, status),
 
     onSuccess: (response, variables) => {
-      // Cập nhật taskData với status mới
-      if (taskData) {
-        const updated = {
-          ...taskData,
+      let updatedTask: Task | null = null;
+      setTaskData((prev) => {
+        if (!prev) return prev;
+        updatedTask = {
+          ...prev,
           status: response.status,
           completedAt: response.completedAt,
         };
-        setTaskData(updated);
-        onEdit?.(updated as Task);
+        return updatedTask;
+      });
+
+      if (updatedTask) {
+        onEdit?.(updatedTask);
       }
 
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
@@ -155,6 +165,9 @@ export default function TaskDetailModal({
       queryClient.invalidateQueries({
         queryKey: ["taskAssignees", variables.id],
       });
+      if (projectId) {
+        invalidateProgressQueries(queryClient, projectId);
+      }
 
       message.success("Đã cập nhật trạng thái");
     },
@@ -168,7 +181,7 @@ export default function TaskDetailModal({
     await updateTaskMutation.mutateAsync({ id: taskData.id, description });
   };
 
-  /** Lưu title */
+  
   const handleSaveTitle = async () => {
     if (!taskData?.id) return;
     const newTitle = tempTitle.trim();
@@ -180,12 +193,15 @@ export default function TaskDetailModal({
     setEditingTitle(false);
   };
 
-  /** Xóa */
+  
   const deleteTaskMutation = useMutation({
     mutationFn: () => taskService.delete(taskData!.id),
     onSuccess: () => {
       message.success("Đã xóa thẻ");
       queryClient.invalidateQueries({ queryKey: ["columns"] });
+      if (projectId) {
+        invalidateProgressQueries(queryClient, projectId);
+      }
       onDelete?.(taskData!);
       onClose();
     },
@@ -197,11 +213,10 @@ export default function TaskDetailModal({
 
   if (!taskData) return null;
 
-  // Màu status indicator
+  
   const getStatusColor = () => {
     if (taskData.status === "done") return "#52c41a";
-    if (taskData.status === "doing") return "fff";
-   
+    return "#faad14";
   };
 
   return (
@@ -219,7 +234,7 @@ export default function TaskDetailModal({
         }}
         title={
           <div style={{ position: "relative", paddingBottom: 16, paddingRight: 40 }}>
-            {/* STATUS INDICATOR BAR - giống TaskCard */}
+            {}
             {taskData.status !== "done" && (
               <div
                 style={{
@@ -242,15 +257,16 @@ export default function TaskDetailModal({
                 
               }}
             >
-              {/* CHECK STATUS ICON */}
+              {}
               <CheckCircleFilled
                 onClick={(e) => {
                   e.stopPropagation();
                   if (!taskData?.id) return;
                   
                   const currentStatus = taskData.status;
-                  const newStatus: 'todo' | 'done' = currentStatus === "done" ? "todo" : "done";
-                  
+                  const newStatus: "todo" | "done" =
+                    currentStatus === "done" ? "todo" : "done";
+
                   updateStatusMutation.mutate({
                     id: taskData.id,
                     status: newStatus,
@@ -270,7 +286,7 @@ export default function TaskDetailModal({
                 }}
               />
 
-              {/* TITLE */}
+              {}
               <div style={{ flex: 1, minWidth: 0 }}>
                 {editingTitle ? (
                   <Input
@@ -346,9 +362,9 @@ export default function TaskDetailModal({
             minHeight: 400,
           }}
         >
-          {/* LEFT */}
+          {}
           <div style={{ flex: 2, overflowY: "auto", paddingRight: 8 }}>
-            {/* Buttons */}
+            {}
             <div
               style={{
                 display: "flex",
@@ -381,7 +397,7 @@ export default function TaskDetailModal({
               />
             </div>
 
-            {/* DUE DATE */}
+            {}
             {taskData.dueDate && (
               <div style={{ marginBottom: 16 }}>
                 <Text strong style={{ fontSize: 13, color: "#666" }}>
@@ -414,7 +430,7 @@ export default function TaskDetailModal({
               </div>
             )}
 
-            {/* LABELS */}
+            {}
             {taskData.labels?.length ? (
               <div style={{ marginBottom: 16 , display: "flex", alignItems: "center", gap: 8}}>
                 <Text strong style={{ fontSize: 13, color: "#666" }}>
@@ -438,7 +454,7 @@ export default function TaskDetailModal({
               </div>
             ) : null}
 
-            {/* MEMBERS */}
+            {}
             <div style={{ marginBottom: 16 }}>
               <Text strong style={{ fontSize: 13, color: "#666" }}>
                 Thành viên:
@@ -489,7 +505,7 @@ export default function TaskDetailModal({
 
             <Divider style={{ margin: "16px 0" }} />
 
-            {/* DESCRIPTION */}
+            {}
             <div>
               <Text strong style={{ fontSize: 13, color: "#666" }}>
                 Mô tả:
@@ -526,7 +542,7 @@ export default function TaskDetailModal({
             </div>
           </div>
 
-          {/* RIGHT */}
+          {}
           <div
             style={{
               flex: 1,
@@ -556,7 +572,7 @@ export default function TaskDetailModal({
         </div>
       </Modal>
 
-      {/* LABEL PICKER */}
+      {}
       <LabelPicker
         open={labelOpen}
         onClose={() => setLabelOpen(false)}
@@ -569,7 +585,7 @@ export default function TaskDetailModal({
         }}
       />
 
-      {/* MEMBER PICKER */}
+      {}
       <MemberAddTaskModal
         open={memberModalOpen}
         onClose={() => setMemberModalOpen(false)}

@@ -38,10 +38,10 @@ export class Task {
 
   @ColumnField({
     type: 'enum',
-    enum: ['todo', 'doing', 'done'],
+    enum: ['todo', 'done'],
     default: 'todo',
   })
-  status: 'todo' | 'doing' | 'done';
+  status: 'todo'  | 'done';
 
   @ColumnField({
     type: 'enum',

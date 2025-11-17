@@ -4,6 +4,8 @@ import type { Task } from "@/types/task.type";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { taskService } from "@/services/task.services";
 import { message } from "antd";
+import { useParams } from "react-router-dom";
+import { invalidateProgressQueries } from "@/utils/invalidateProgress";
 
 interface Props {
   task: Task;
@@ -13,15 +15,17 @@ interface Props {
 
 export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
   const queryClient = useQueryClient();
+  const { projectId } = useParams<{ projectId: string }>();
 
-  // Mutation để update status
   const updateStatusMutation = useMutation({
-    mutationFn: (newStatus: 'todo' | 'done') =>
+    mutationFn: (newStatus: "todo" | "done") =>
       taskService.updateStatus(task.id, newStatus),
-    onSuccess: (response) => {
-      console.log(response);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       queryClient.invalidateQueries({ queryKey: ["columns"] });
+      if (projectId) {
+        invalidateProgressQueries(queryClient, projectId);
+      }
     },
     onError: () => {
       message.error("Không thể cập nhật trạng thái");
@@ -30,16 +34,16 @@ export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
 
   const handleCheckboxChange = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Toggle: nếu đang "done" thì về "todo", ngược lại thì thành "done"
+    
     const newStatus = task.status === "done" ? "todo" : "done";
     updateStatusMutation.mutate(newStatus);
   };
 
   return (
-    <Card style={{ marginTop: task.status ? 12 : 8,justifyContent: "center" }}
+    <Card
+      style={{ marginTop: task.status ? 12 : 8 }}
       size="small"
       hoverable
-     
       bodyStyle={{ padding: 10 }}
       onDoubleClick={() => onDoubleClick?.(task)}
       onClick={() => onClick?.(task)}
@@ -58,8 +62,8 @@ export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
         />
       )}
 
-      <div style={{marginTop:5, marginBottom:3}}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
+      <div style={{ marginTop: task.status ? 12 : 8 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
           <CheckCircleFilled
             onClick={handleCheckboxChange}
             style={{
@@ -96,13 +100,7 @@ export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
         >
           
 
-          {/* <Tooltip title="Xem chi tiết">
-            <EyeOutlined style={{ color: "#999" }} />
-          </Tooltip>
-
-          <Tooltip title="Danh sách con">
-            <UnorderedListOutlined style={{ color: "#999" }} />
-          </Tooltip> */}
+          {}
 
           <div style={{ flex: 1 }} />
 

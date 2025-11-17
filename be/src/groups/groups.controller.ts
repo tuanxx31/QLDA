@@ -135,7 +135,7 @@ export class GroupsController {
     return await this.groupsService.joinByCode(req.user.sub as string, dto);
   }
 
-  // 🟢 Mời thành viên vào nhóm
+  
   @Post('invite')
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')

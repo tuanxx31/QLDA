@@ -45,7 +45,7 @@ export default function AppLayout() {
     <div
       style={{
         height: '100vh',
-        overflow: 'hidden',
+        overflow: 'auto',
       }}
     >
       <ProLayout

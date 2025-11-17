@@ -57,15 +57,17 @@ export class TaskService {
 
     const nextPosition = ((parseFloat(maxPosition?.max) || 0) + 1).toFixed(3);
 
+    const { assigneeIds, labelIds, ...taskData } = dto;
+
     const task = this.taskRepo.create({
-      ...dto,
+      ...taskData,
       position: nextPosition,
       createdBy: creatorId,
-      assignees: dto.assigneeIds
-        ? await this.userRepo.find({ where: { id: In(dto.assigneeIds) } })
+      assignees: assigneeIds
+        ? await this.userRepo.find({ where: { id: In(assigneeIds) } })
         : [],
-      labels: dto.labelIds
-        ? await this.labelRepo.find({ where: { id: In(dto.labelIds) } })
+      labels: labelIds
+        ? await this.labelRepo.find({ where: { id: In(labelIds) } })
         : [],
     });
 
@@ -137,25 +139,25 @@ export class TaskService {
     const prevPos = prev ? parseFloat(prev.position) : null;
     const nextPos = next ? parseFloat(next.position) : null;
   
-    // CASE 1: giữa 2 task
+    
     if (prevPos !== null && nextPos !== null) {
       newPosition = (prevPos + nextPos) / 2;
     }
   
-    // CASE 2: cuối list
+    
     else if (prevPos !== null && nextPos === null) {
       newPosition = prevPos + 1;
     }
   
-    // CASE 3: đầu list
+    
     else if (prevPos === null && nextPos !== null) {
       newPosition = nextPos - 1;
       if (newPosition < 1) newPosition = nextPos / 2;
     }
   
-    // CASE 4: column rỗng
+    
     else {
-      // đặt task đầu tiên = 1
+      
       newPosition = 1;
     }
   

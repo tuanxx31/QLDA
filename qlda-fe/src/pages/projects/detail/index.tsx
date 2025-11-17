@@ -9,7 +9,9 @@ import ProjectInfoCard from './components/ProjectInfoCard';
 import ProjectMembers from './components/ProjectMembers';
 import MemberAddModal from './components/MemberAddModal';
 import MemberAddFromGroupModal from './components/MemberAddFromGroupModal';
+import ProgressDashboard from './components/ProgressDashboard';
 import useAuth from '@/hooks/useAuth';
+import { usePageContentHeight } from '@/hooks/usePageContentHeight';
 
 const { Title } = Typography;
 
@@ -18,6 +20,7 @@ const ProjectDetailPage = () => {
   const navigate = useNavigate();
   const auth = useAuth();
   const qc = useQueryClient();
+  const { minHeight } = usePageContentHeight();
   const [openAddMember, setOpenAddMember] = useState(false);
   const [openAddFromGroup, setOpenAddFromGroup] = useState(false);
 
@@ -88,12 +91,13 @@ const ProjectDetailPage = () => {
         </Button>,
       ].filter(Boolean)}
     >
-      <Card style={{ minHeight: '82vh' }}>
+      <Card style={{ minHeight }}>
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
           <ProjectInfoCard
             project={project}
             onUpdate={() => qc.invalidateQueries({ queryKey: ['project', projectId] })}
           />
+          <ProgressDashboard projectId={projectId!} />
           <ProjectMembers projectId={projectId!} />
         </Space>
       </Card>

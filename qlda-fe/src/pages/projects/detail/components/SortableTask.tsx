@@ -1,4 +1,4 @@
-// src/pages/ProjectBoard/components/SortableTask.tsx
+
 import React from 'react';
 import { Card, theme } from 'antd';
 import { useSortable } from '@dnd-kit/sortable';
@@ -50,12 +50,12 @@ const SortableTask: React.FC<SortableTaskProps> = ({ task, onClick }) => {
         onClick={() => onClick?.(task)}
       >
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-          {/* Nội dung task */}
+          {}
           <div style={{ flex: 1 }}>
             <TaskCard task={task} onDoubleClick={onClick} />
           </div>
 
-          {/* Drag handle riêng */}
+          {}
           <div
             {...attributes}
             {...listeners}

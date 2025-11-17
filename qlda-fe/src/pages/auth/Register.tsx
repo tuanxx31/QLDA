@@ -50,10 +50,10 @@ export default function Register() {
             type: 'email',
             message: 'Email không hợp lệ!',
           },
-          // {
-          //   pattern: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
-          //   message: 'Địa chỉ email không đúng định dạng!',
-          // },
+          
+          
+          
+          
         ]}
       />
 
@@ -64,10 +64,10 @@ export default function Register() {
         rules={[
           { required: true, message: 'Vui lòng nhập mật khẩu!' },
           { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' },
-          // {
-          //   pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/,
-          //   message: 'Mật khẩu cần có ít nhất 1 chữ và 1 số!',
-          // },
+          
+          
+          
+          
         ]}
       />
 

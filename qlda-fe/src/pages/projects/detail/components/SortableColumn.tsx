@@ -20,6 +20,7 @@ import { useParams } from 'react-router-dom';
 import { columnService } from '@/services/column.services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import AddTaskCard from './AddTaskCard';
+import { invalidateProgressQueries } from '@/utils/invalidateProgress';
 import { taskService } from '@/services/task.services';
 
 const { Text } = Typography;
@@ -77,6 +78,9 @@ export default function SortableColumn({
       setIsAdding(false);
       setNewTitle('');
       await qc.invalidateQueries({ queryKey: ['columns', projectId] });
+      if (projectId) {
+        invalidateProgressQueries(qc, projectId);
+      }
     },
     onError: () => message.error('Không thể thêm thẻ'),
   });

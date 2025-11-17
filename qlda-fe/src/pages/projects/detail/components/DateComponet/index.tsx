@@ -36,7 +36,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
     remind: (task as any).remind ?? "none",
   });
 
-  // Đồng bộ state khi modal mở lại
+  
   useEffect(() => {
     if (open) {
       setForm({
@@ -63,7 +63,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
   });
 
   const handleSave = () => {
-    // Gộp ngày bắt đầu + giờ
+    
     let finalStart = null;
     if (form.startDate && form.startTime) {
       finalStart = dayjs(form.startDate)
@@ -73,7 +73,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
         .toISOString();
     }
 
-    // Gộp ngày hết hạn + giờ
+    
     const finalDue = dayjs(form.dueDate)
       .hour(form.dueTime.hour())
       .minute(form.dueTime.minute())
@@ -94,7 +94,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
     <Modal title="Ngày" open={open} onCancel={onClose} footer={null} width={370} centered>
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         
-        {/* Ngày bắt đầu */}
+        {}
         <div>
           <Text strong>Ngày bắt đầu</Text>
 
@@ -117,7 +117,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
           )}
         </div>
 
-        {/* Ngày hết hạn */}
+        {}
         <div>
           <Text strong>Ngày hết hạn</Text>
           <Space style={{ marginTop: 8 }}>
@@ -133,7 +133,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
           </Space>
         </div>
 
-        {/* Định kỳ */}
+        {}
         <div>
           <Text strong>Định kỳ</Text>
           <Select
@@ -149,7 +149,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
           />
         </div>
 
-        {/* Nhắc nhở */}
+        {}
         <div>
           <Text strong>Nhắc nhở</Text>
           <Select
@@ -166,7 +166,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
           />
         </div>
 
-        {/* Footer */}
+        {}
         <Space style={{ width: "100%", marginTop: 10, justifyContent: "flex-end" }}>
           <Button
             type="primary"

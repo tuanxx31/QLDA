@@ -6,7 +6,7 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Cấu hình Swagger
+  
   const config = new DocumentBuilder()
     .setTitle('Cats example')
     .setDescription('The cats API description')
@@ -19,7 +19,7 @@ async function bootstrap() {
         bearerFormat: 'JWT',
         description: 'Enter your JWT token here to authorize requests.',
       },
-      'jwt', // Tên scheme
+      'jwt', 
     )
     .build();
 
