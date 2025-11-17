@@ -1,20 +1,18 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, theme } from 'antd';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { HolderOutlined } from '@ant-design/icons';
 import TaskCard from './TaskCard';
 import type { Task } from '@/types/task.type';
-import TaskDetailModal from './TaskDetailModal';
 
 interface SortableTaskProps {
   task: Task;
-  onClick?: (task: Task) => void;
+  onClick?: (taskId: string) => void;
 }
 
 const SortableTask: React.FC<SortableTaskProps> = ({ task, onClick }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const { token } = theme.useToken();
 
   const {
@@ -45,59 +43,51 @@ const SortableTask: React.FC<SortableTaskProps> = ({ task, onClick }) => {
 
   const handleDragHandleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
   };
 
-  const handleCardClick = () => {
-    setIsModalOpen(true);
-    onClick?.(task);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const currentTaskId = task.id;
+    console.log('task.id in SortableTask', currentTaskId);
+    onClick?.(currentTaskId);
   };
 
   return (
-    <>
-      <div ref={setNodeRef} style={style}>
-        <Card
-          size="small"
-          bordered={false}
-          bodyStyle={{ padding: 8 }}
-          onClick={handleCardClick}
-        >
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-            <div style={{ flex: 1 }}>
-              <TaskCard task={task} />
-            </div>
-
-            <div
-              {...attributes}
-              {...listeners}
-              onClick={handleDragHandleClick}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 4,
-                cursor: 'grab',
-                borderRadius: 4,
-                color: token.colorTextTertiary,
-                flexShrink: 0,
-              }}
-            >
-              <HolderOutlined />
-            </div>
+    <div ref={setNodeRef} style={style}>
+      <Card
+        size="small"
+        bordered={false}
+        bodyStyle={{ padding: 8 }}
+        onClick={handleCardClick}
+      >
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+          <div style={{ flex: 1 }}>
+            <TaskCard task={task} />
           </div>
-        </Card>
-      </div>
 
-      <TaskDetailModal
-        open={isModalOpen}
-        task={task}
-        onClose={handleCloseModal}
-      />
-    </>
+          <div
+            {...attributes}
+            {...listeners}
+            onClick={handleDragHandleClick}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 4,
+              cursor: 'grab',
+              borderRadius: 4,
+              color: token.colorTextTertiary,
+              flexShrink: 0,
+            }}
+          >
+            <HolderOutlined />
+          </div>
+        </div>
+      </Card>
+    </div>
   );
 };
 
-export default React.memo(SortableTask);
+export default SortableTask;

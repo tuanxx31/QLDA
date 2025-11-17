@@ -46,8 +46,6 @@ export default function MemberAddTaskModal({
     const [search, setSearch] = useState("");
     const [pageSize, setPageSize] = useState(8);
 
-    console.log({ projectId });
-
     const { data: projectMembers = [], isLoading } = useQuery({
         queryKey: ["projectMembers", projectId,taskId],
         queryFn: () => projectMemberService.getProjectMebers(projectId as string,taskId),

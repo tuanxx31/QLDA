@@ -89,21 +89,12 @@ export default function TaskDetailModal({
   };
 
   
-  useEffect(() => {
-    if (task) {
-      setTaskData(task);
-      setDescription(task.description ?? "");
-      setTempTitle(task.title ?? "");
-    }
-  }, [task]);
-
-  
   const {
     data: fetchedTask,
   } = useQuery({
-    queryKey: ["task", taskData?.id],
-    queryFn: () => taskService.getById(taskData!.id),
-    enabled: !!taskData?.id && open,
+    queryKey: ["task", task?.id],
+    queryFn: () => taskService.getById(task!.id),
+    enabled: !!task?.id && open,
     staleTime: 30000,
   });
 
@@ -113,9 +104,9 @@ export default function TaskDetailModal({
     isLoading: assigneesLoading,
     isError: assigneesError,
   } = useQuery({
-    queryKey: ["taskAssignees", taskData?.id],
-    queryFn: () => taskService.getAssignees(taskData!.id),
-    enabled: !!taskData?.id,
+    queryKey: ["taskAssignees", task?.id],
+    queryFn: () => taskService.getAssignees(task!.id),
+    enabled: !!task?.id && open,
     staleTime: 30000,
   });
 
@@ -129,8 +120,12 @@ export default function TaskDetailModal({
       setTaskData(task);
       setDescription(task.description ?? "");
       setTempTitle(task.title ?? "");
+    } else {
+      setTaskData(null);
+      setDescription("");
+      setTempTitle("");
     }
-  }, [fetchedTask, task]);
+  }, [fetchedTask, task?.id]);
 
   
   const dueInfo = useMemo(() => {
