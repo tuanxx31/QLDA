@@ -23,6 +23,15 @@ import { ApiTags } from '@nestjs/swagger';
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
+  @Get(':id')
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Lấy thông tin task theo ID' })
+  @ApiResponse({ status: 200, description: 'Task đã được lấy thành công' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  findOne(@Param('id') id: string) {
+    return this.taskService.findOne(id);
+  }
+
   @Get(':id/assignees')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Lấy danh sách assignees của task' })
@@ -87,14 +96,23 @@ export class TaskController {
     return this.taskService.assignUsers(id, dto);
   }
 
-  // @Patch(':id/labels')
-  // @ApiBearerAuth('jwt')
-  // @ApiOperation({ summary: 'Gán nhãn task' })
-  // @ApiResponse({ status: 200, description: 'Task đã được gán nhãn thành công' })
-  // @ApiResponse({ status: 401, description: 'Unauthorized' })
-  // assignLabels(@Param('id') id: string, @Body() dto: AssignLabelsDto) {
-  //   return this.taskService.assignLabels(id, dto);
-  // }
+  @Patch(':id/labels')
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Gán nhãn task' })
+  @ApiResponse({ status: 200, description: 'Task đã được gán nhãn thành công' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  assignLabels(@Param('id') id: string, @Body() dto: AssignLabelsDto) {
+    return this.taskService.assignLabels(id, dto);
+  }
+
+  @Delete(':id/labels')
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Bỏ gán nhãn task' })
+  @ApiResponse({ status: 200, description: 'Task đã được bỏ gán nhãn thành công' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  unassignLabels(@Param('id') id: string, @Body() dto: AssignLabelsDto) {
+    return this.taskService.unassignLabels(id, dto);
+  }
 
   @Patch(':id/position')
   @ApiBearerAuth('jwt')

@@ -5,6 +5,10 @@ export const labelService = {
     const response = await api.get(`/labels`);
     return response.data;
   },
+  getLabelsByProject: async (projectId: string) => {
+    const response = await api.get(`/labels/project/${projectId}`);
+    return response.data;
+  },
  createLabel: async (name: string | undefined, color: string, projectId: string) => {
     console.log({name, color, projectId});
     const response = await api.post(`/labels`, { name: name || '', color, projectId });

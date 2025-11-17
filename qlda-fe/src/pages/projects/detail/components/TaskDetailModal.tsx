@@ -65,6 +65,16 @@ export default function TaskDetailModal({
     }
   }, [task]);
 
+  /** Load task data từ API khi mở modal */
+  const {
+    data: fetchedTask,
+  } = useQuery({
+    queryKey: ["task", taskData?.id],
+    queryFn: () => taskService.getById(taskData!.id),
+    enabled: !!taskData?.id && open,
+    staleTime: 30000,
+  });
+
   /** Load assignees */
   const {
     data: assignees = [],
@@ -76,6 +86,19 @@ export default function TaskDetailModal({
     enabled: !!taskData?.id,
     staleTime: 30000,
   });
+
+  // Cập nhật taskData khi fetch được data từ API hoặc khi task prop thay đổi
+  useEffect(() => {
+    if (fetchedTask) {
+      setTaskData(fetchedTask);
+      setDescription(fetchedTask.description ?? "");
+      setTempTitle(fetchedTask.title ?? "");
+    } else if (task) {
+      setTaskData(task);
+      setDescription(task.description ?? "");
+      setTempTitle(task.title ?? "");
+    }
+  }, [fetchedTask, task]);
 
   /** Tính ngày hết hạn + trạng thái */
   const dueInfo = useMemo(() => {
@@ -393,17 +416,25 @@ export default function TaskDetailModal({
 
             {/* LABELS */}
             {taskData.labels?.length ? (
-              <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 16 , display: "flex", alignItems: "center", gap: 8}}>
                 <Text strong style={{ fontSize: 13, color: "#666" }}>
                   Nhãn:
                 </Text>
-                <Space wrap style={{ marginTop: 6 }}>
+                <div style={{ display: "flex" }}>
                   {taskData.labels.map((lb) => (
-                    <Tag key={lb.id} color={lb.color} style={{ borderRadius: 4 }}>
-                      {lb.name}
+                    <Tag 
+                      key={lb.id} 
+                      color={lb.color} 
+                      style={{
+                        minWidth: 56,
+                        height: 24,
+                        textAlign: "center",
+                      }}
+                    >
+                      {lb.name || ""}
                     </Tag>
                   ))}
-                </Space>
+                </div>
               </div>
             ) : null}
 
@@ -529,10 +560,12 @@ export default function TaskDetailModal({
       <LabelPicker
         open={labelOpen}
         onClose={() => setLabelOpen(false)}
-        labels={taskData.labels ?? []}
+        taskId={taskData.id}
         selectedIds={taskData.labels?.map((lb) => lb.id) ?? []}
-        onChange={(ids) => {
-          setTaskData({ ...taskData, labels: ids.map((id) => ({ id, name: id, color: "blue" })) });
+        onTaskUpdate={(updatedTask) => {
+          // Cập nhật taskData với labels mới từ response
+          setTaskData(updatedTask);
+          onEdit?.(updatedTask);
         }}
       />
 

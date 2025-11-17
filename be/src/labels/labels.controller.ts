@@ -17,6 +17,11 @@ export class LabelsController {
     return this.labelsService.findAll();
   }
 
+  @Get('project/:projectId')
+  findByProject(@Param('projectId') projectId: string) {
+    return this.labelsService.findByProject(projectId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.labelsService.findOne(id);

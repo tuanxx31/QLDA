@@ -10,7 +10,7 @@ import { Label } from 'src/labels/entities/label.entity';
 import { User } from 'src/users/entities/user.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { AssignUsersDto } from './dto/assign.dto';
+import { AssignUsersDto, AssignLabelsDto } from './dto/assign.dto';
 import { SubTask } from 'src/sub-tasks/entities/sub-task.entity';
 
 @Injectable()
@@ -21,6 +21,15 @@ export class TaskService {
     @InjectRepository(Label) private labelRepo: Repository<Label>,
     @InjectRepository(User) private userRepo: Repository<User>,
   ) {}
+
+  async findOne(id: string) {
+    const task = await this.taskRepo.findOne({
+      where: { id },
+      relations: ['assignees', 'labels', 'subtasks'],
+    });
+    if (!task) throw new NotFoundException('Task không tồn tại');
+    return task;
+  }
 
   async getAssignees(id: string) {
     const task = await this.taskRepo.findOne({
@@ -198,6 +207,43 @@ export class TaskService {
       status: task.status,
       completedAt: task.completedAt,
     };
+  }
+
+  async assignLabels(taskId: string, dto: AssignLabelsDto) {
+    const task = await this.taskRepo.findOne({
+      where: { id: taskId },
+      relations: ['labels'],
+    });
+    if (!task) throw new NotFoundException('Task không tồn tại');
+
+    const newLabels = await this.labelRepo.find({
+      where: { id: In(dto.labelIds) },
+    });
+
+    const merged = [
+      ...task.labels,
+      ...newLabels.filter(
+        (l) => !task.labels.some((existing) => existing.id === l.id),
+      ),
+    ];
+
+    task.labels = merged;
+
+    return await this.taskRepo.save(task);
+  }
+
+  async unassignLabels(taskId: string, dto: AssignLabelsDto) {
+    const task = await this.taskRepo.findOne({
+      where: { id: taskId },
+      relations: ['labels'],
+    });
+    if (!task) throw new NotFoundException('Task không tồn tại');
+
+    task.labels = task.labels.filter(
+      (l) => !dto.labelIds.includes(l.id),
+    );
+
+    return await this.taskRepo.save(task);
   }
 
 }

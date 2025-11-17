@@ -41,6 +41,13 @@ export class LabelsService {
     return this.labelRepo.find();
   }
 
+  async findByProject(projectId: string) {
+    return this.labelRepo.find({
+      where: { project: { id: projectId } },
+      order: { name: 'ASC' },
+    });
+  }
+
   async findOne(id: string) {
     return this.labelRepo.findOne({ where: { id } });
   }

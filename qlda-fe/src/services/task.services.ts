@@ -2,6 +2,10 @@ import type { AssignUsersDto, UpdateTaskDto } from '@/types/task.type';
 import { api } from './api';
 
 export const taskService = {
+  getById: async (id: string) => {
+    const response = await api.get(`/tasks/${id}`);
+    return response.data;
+  },
   getAssignees: async (id: string) => {
     const response = await api.get(`/tasks/${id}/assignees`);
     return response.data;
@@ -48,8 +52,7 @@ export const taskService = {
     return response.data;
   },
   unassignLabels: async (id: string, labelIds: string[]) => {
-    const response = await api.patch(`/tasks/${id}/labels`, { labelIds });
+    const response = await api.delete(`/tasks/${id}/labels`, { data: { labelIds } });
     return response.data;
   },
- 
 };

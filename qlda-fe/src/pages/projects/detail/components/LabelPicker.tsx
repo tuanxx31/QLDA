@@ -1,7 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
     Modal,
-    Input,
     Checkbox,
     Button,
     Tooltip,
@@ -12,7 +11,8 @@ import {
 import { EditOutlined } from "@ant-design/icons";
 import CreateLabelModal from "./LabelModal";
 import { labelService } from "@/services/label.services";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { taskService } from "@/services/task.services";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 
 interface Label {
@@ -24,53 +24,107 @@ interface Label {
 interface Props {
     open: boolean;
     onClose: () => void;
-    labels: Label[];
+    taskId: string;
     selectedIds: string[];
-    onChange: (ids: string[]) => void;
+    onTaskUpdate?: (task: any) => void;
     onCreateNew?: () => void;
 }
-const COLORS = [
-    "#216e4e", "#7f5f01", "#9e4c00", "#ae2e24", "#803fa5"
-
-];
 export default function LabelPicker({
     open,
     onClose,
-    labels,
+    taskId,
     selectedIds,
-    onChange,
+    onTaskUpdate,
 }: Props) {
-    const [search, setSearch] = useState("");
     const [createOpen, setCreateOpen] = useState(false);
+    const [localSelectedIds, setLocalSelectedIds] = useState<string[]>(selectedIds);
     const queryClient = useQueryClient();
     const { projectId } = useParams<{ projectId: string }>();
 
+    // Sync localSelectedIds với selectedIds từ props
+    useEffect(() => {
+        setLocalSelectedIds(selectedIds);
+    }, [selectedIds]);
 
-    const toggleSelect = (id: string) => {
-        const isSelected = selectedIds.includes(id);
-        if (isSelected) onChange(selectedIds.filter((x) => x !== id));
-        else onChange([...selectedIds, id]);
+    // Load labels từ project
+    const { data: projectLabels = [], isLoading: labelsLoading } = useQuery({
+        queryKey: ["labels", projectId],
+        queryFn: () => labelService.getLabelsByProject(projectId as string),
+        enabled: !!projectId && open,
+    });
+
+    // Mutation gán nhãn
+    const assignLabelsMutation = useMutation({
+        mutationFn: (labelIds: string[]) => taskService.assignLabels(taskId, labelIds),
+        onSuccess: (updatedTask) => {
+            queryClient.invalidateQueries({ queryKey: ["tasks"] });
+            queryClient.invalidateQueries({ queryKey: ["columns"] });
+            // Cập nhật local selectedIds ngay lập tức
+            if (updatedTask?.labels) {
+                const newSelectedIds = updatedTask.labels.map((lb: any) => lb.id);
+                setLocalSelectedIds(newSelectedIds);
+            }
+            // Cập nhật task data trong TaskDetailModal
+            if (updatedTask && onTaskUpdate) {
+                onTaskUpdate(updatedTask);
+            }
+            message.success("Đã gán nhãn");
+        },
+        onError: () => {
+            message.error("Không thể gán nhãn");
+        },
+    });
+
+    // Mutation bỏ gán nhãn
+    const unassignLabelsMutation = useMutation({
+        mutationFn: (labelIds: string[]) => taskService.unassignLabels(taskId, labelIds),
+        onSuccess: (updatedTask) => {
+            queryClient.invalidateQueries({ queryKey: ["tasks"] });
+            queryClient.invalidateQueries({ queryKey: ["columns"] });
+            // Cập nhật local selectedIds ngay lập tức
+            if (updatedTask?.labels) {
+                const newSelectedIds = updatedTask.labels.map((lb: any) => lb.id);
+                setLocalSelectedIds(newSelectedIds);
+            }
+            // Cập nhật task data trong TaskDetailModal
+            if (updatedTask && onTaskUpdate) {
+                onTaskUpdate(updatedTask);
+            }
+            message.success("Đã bỏ gán nhãn");
+        },
+        onError: () => {
+            message.error("Không thể bỏ gán nhãn");
+        },
+    });
+
+    const toggleSelect = async (labelId: string) => {
+        const isSelected = localSelectedIds.includes(labelId);
+        if (isSelected) {
+            // Bỏ gán nhãn
+            await unassignLabelsMutation.mutateAsync([labelId]);
+        } else {
+            // Gán nhãn
+            await assignLabelsMutation.mutateAsync([labelId]);
+        }
     };
 
     const createLabelMutation = useMutation({
         mutationFn: ({ name, color, projectId }: { name?: string, color: string, projectId: string }) => labelService.createLabel(name, color, projectId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["labels"] });
-            message.success("Tạo nhãn thành công 123");
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ["labels", projectId] });
+            // Nếu tạo thành công và có id, tự động gán nhãn cho task
+            if (data?.id) {
+                assignLabelsMutation.mutate([data.id]);
+            } else if (data?.isExist && data?.id) {
+                // Nếu nhãn đã tồn tại, tự động gán nhãn đó cho task
+                assignLabelsMutation.mutate([data.id]);
+            }
+            message.success("Tạo nhãn thành công");
         },
         onError: () => {
             message.error("Không thể tạo nhãn");
         },
     });
-
-    const handleCreateLabel = (color: string) => {
-        console.log({color});
-        createLabelMutation.mutate({
-            name: "",
-            color: color,
-            projectId: projectId as string,
-        });
-    };
     return (
         <Modal
             open={open}
@@ -94,53 +148,61 @@ export default function LabelPicker({
                     marginBottom: 8,
                 }}
             >
-                {COLORS.map((color) => (
-                    <div
-                        key={color}
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            padding: "6px 0",
-                        }}
-                    >
-                        <Space>
-                            <Checkbox
-                                checked={selectedIds.includes(color)}
-                                onChange={() => toggleSelect(color)}
-                                style={{ marginTop: -2 }}
-                                onClick={() => handleCreateLabel(color)}
-                            />
-                            <div
-                                style={{
-                                    backgroundColor: color,
-                                    color: "#fff",
-                                    fontWeight: 500,
-                                    padding: "6px 10px",
-                                    minWidth: 215,
-                                    textAlign: "center",
-                                    borderRadius: 6,
-                                    boxShadow:
-                                        selectedIds.includes(color)
-                                            ? "0 0 4px rgba(255,255,255,0.6)"
-                                            : "none",
-                                    transition: "all 0.2s ease",
-                                    minHeight: 25,
-                                }}
-                            >
-                                {/* {color.slice(1)} */}
-                            </div>
-                        </Space>
-                        <Tooltip title="Chỉnh sửa nhãn">
-                            <EditOutlined
-                                style={{
-                                    cursor: "pointer",
-                                    color: "#aaa",
-                                }}
-                            />
-                        </Tooltip>
+                {labelsLoading ? (
+                    <div style={{ textAlign: "center", padding: 16 }}>Đang tải...</div>
+                ) : projectLabels.length === 0 ? (
+                    <div style={{ textAlign: "center", padding: 16, color: "#999" }}>
+                        Chưa có nhãn nào
                     </div>
-                ))}
+                ) : (
+                    projectLabels.map((label: Label) => (
+                        <div
+                            key={label.id}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                padding: "6px 0",
+                            }}
+                        >
+                            <Space>
+                                <Checkbox
+                                    checked={localSelectedIds.includes(label.id)}
+                                    onChange={() => toggleSelect(label.id)}
+                                    disabled={assignLabelsMutation.isPending || unassignLabelsMutation.isPending}
+                                    style={{ marginTop: -2 }}
+                                />
+                                <div
+                                    style={{
+                                        backgroundColor: label.color,
+                                        color: "#fff",
+                                        fontWeight: 500,
+                                        padding: "6px 10px",
+                                        minWidth: 215,
+                                        textAlign: "center",
+                                        borderRadius: 6,
+                                        boxShadow:
+                                            localSelectedIds.includes(label.id)
+                                                ? "0 0 4px rgba(255,255,255,0.6)"
+                                                : "none",
+                                        transition: "all 0.2s ease",
+                                        minHeight: 25,
+                                    }}
+                                >
+                                    {label.name || ""}
+                                </div>
+                            </Space>
+                            <Tooltip title="Chỉnh sửa nhãn">
+                                <EditOutlined
+                                    style={{
+                                        cursor: "pointer",
+                                        color: "#aaa",
+                                    }}
+                                />
+                            </Tooltip>
+                        </div>
+                    ))
+                )}
             </div>
 
             <Divider style={{ margin: "20px 0", borderColor: "#333" }} />
@@ -173,6 +235,7 @@ export default function LabelPicker({
                             projectId: projectId as string
                         }
                     );
+                    setCreateOpen(false);
                 }}
             />
         </Modal>
