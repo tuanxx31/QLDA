@@ -27,6 +27,8 @@ interface Props {
     taskId: string;
     selectedIds: string[];
     onTaskUpdate?: (task: any) => void;
+    onLabelUpdate?: (label: Label) => void;
+    onLabelDelete?: (labelId: string) => void;
 }
 export default function LabelPicker({
     open,
@@ -34,6 +36,8 @@ export default function LabelPicker({
     taskId,
     selectedIds,
     onTaskUpdate,
+    onLabelUpdate,
+    onLabelDelete,
 }: Props) {
     const [createOpen, setCreateOpen] = useState(false);
     const [localSelectedIds, setLocalSelectedIds] = useState<string[]>(selectedIds);
@@ -127,10 +131,18 @@ export default function LabelPicker({
     const updateLabelMutation = useMutation({
         mutationFn: ({ id, name, color }: { id: string; name: string; color: string }) =>
             labelService.updateLabel(id, name, color),
-        onSuccess: () => {
+        onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["labels", projectId] });
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
             queryClient.invalidateQueries({ queryKey: ["columns"] });
+            queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+            if (variables) {
+                onLabelUpdate?.({
+                    id: variables.id,
+                    name: variables.name,
+                    color: variables.color,
+                });
+            }
             setEditOpen(false);
             setEditingLabel(null);
 
@@ -146,10 +158,14 @@ export default function LabelPicker({
             queryClient.invalidateQueries({ queryKey: ["labels", projectId] });
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
             queryClient.invalidateQueries({ queryKey: ["columns"] });
+            queryClient.invalidateQueries({ queryKey: ["task", taskId] });
             setLocalSelectedIds((prev) => prev.filter((id) => id !== labelId));
             if (editingLabel?.id === labelId) {
                 setEditOpen(false);
                 setEditingLabel(null);
+            }
+            if (labelId) {
+                onLabelDelete?.(labelId);
             }
         },
         onError: () => {

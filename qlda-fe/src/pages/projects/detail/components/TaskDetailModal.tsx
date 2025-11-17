@@ -32,6 +32,7 @@ import { useParams } from "react-router-dom";
 import { invalidateProgressQueries } from "@/utils/invalidateProgress";
 
 const { Title, Text } = Typography;
+type TaskLabel = NonNullable<Task["labels"]>[number];
 
 interface Props {
   open: boolean;
@@ -58,6 +59,34 @@ export default function TaskDetailModal({
   const [labelOpen, setLabelOpen] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
+
+  const handleLabelMetaUpdate = (label: Pick<TaskLabel, "id" | "name" | "color">) => {
+    setTaskData((prev) => {
+      if (!prev || !prev.labels) return prev;
+      return {
+        ...prev,
+        labels: prev.labels.map((lb) =>
+          lb.id === label.id
+            ? {
+                ...lb,
+                name: label.name,
+                color: label.color,
+              }
+            : lb,
+        ),
+      };
+    });
+  };
+
+  const handleLabelDelete = (labelId: string) => {
+    setTaskData((prev) => {
+      if (!prev || !prev.labels) return prev;
+      return {
+        ...prev,
+        labels: prev.labels.filter((lb) => lb.id !== labelId),
+      };
+    });
+  };
 
   
   useEffect(() => {
@@ -583,6 +612,8 @@ export default function TaskDetailModal({
           setTaskData(updatedTask);
           onEdit?.(updatedTask);
         }}
+        onLabelUpdate={handleLabelMetaUpdate}
+        onLabelDelete={handleLabelDelete}
       />
 
       {}
