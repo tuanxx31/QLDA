@@ -65,7 +65,6 @@ export class TaskController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(@Body() dto: CreateTaskDto, @Req() req) {
     const creatorId = req.user?.sub ?? null;
-    console.log('creatorId', creatorId);
     return this.taskService.create(dto, creatorId);
   }
 

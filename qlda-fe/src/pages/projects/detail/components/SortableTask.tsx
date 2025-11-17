@@ -50,7 +50,6 @@ const SortableTask: React.FC<SortableTaskProps> = ({ task, onClick }) => {
     e.stopPropagation();
     e.preventDefault();
     const currentTaskId = task.id;
-    console.log('task.id in SortableTask', currentTaskId);
     onClick?.(currentTaskId);
   };
 

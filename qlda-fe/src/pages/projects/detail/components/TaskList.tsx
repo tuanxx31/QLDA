@@ -12,14 +12,12 @@ export default function TaskList({ column }: { column: Column }) {
   const taskIds = tasks.map(t => t.id);
 
   const handleTaskClick = useCallback((taskId: string) => {
-    console.log('taskId received in TaskList', taskId);
     setOpenTaskId(taskId);
   }, []);
 
   const openTask = useMemo(() => {
     if (!openTaskId) return null;
     const found = tasks.find(t => t.id === openTaskId);
-    console.log('openTask found:', found?.id, 'for openTaskId:', openTaskId);
     return found || null;
   }, [tasks, openTaskId]);
 

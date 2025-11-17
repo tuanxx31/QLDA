@@ -56,7 +56,6 @@ export class ProjectMembersService {
   }
 
   async getMembers(projectId: string, membersIdExcludeTask: string[]) {
-    console.log({membersIdExcludeTask});
     const members = await this.projectMemberRepo.find({
       where: { project: { id: projectId }, user: { id: Not(In(membersIdExcludeTask)) } },
       relations: ['user', 'project'],

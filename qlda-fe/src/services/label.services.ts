@@ -10,9 +10,7 @@ export const labelService = {
     return response.data;
   },
  createLabel: async (name: string | undefined, color: string, projectId: string) => {
-    console.log({name, color, projectId});
     const response = await api.post(`/labels`, { name: name || '', color, projectId });
-    console.log({response});
     return response.data;
   },
   updateLabel: async (id: string, name: string, color: string) => {
