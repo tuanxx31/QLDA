@@ -4,10 +4,8 @@ import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import type { Column } from '@/types/project-board';
 import type { Task } from '@/types/task.type';
 import SortableTask from './SortableTask';
-import TaskDetailModal from './TaskDetailModal';
 
 export default function TaskList({ column }: { column: Column }) {
-  const [openTask, setOpenTask] = useState<Task | null>(null);
 
   
   const tasks = column.tasks || [];
@@ -24,19 +22,14 @@ export default function TaskList({ column }: { column: Column }) {
             {tasks.map(task => (
               <SortableTask
                 key={task.id}
-                task={task}
-                onClick={setOpenTask}
+                task={task} 
               />
             ))}
           </Space>
         </SortableContext>
       </div>
 
-      <TaskDetailModal
-        open={!!openTask}
-        task={openTask}
-        onClose={() => setOpenTask(null)}
-      />
+
     </>
   );
 }

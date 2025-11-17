@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, theme } from 'antd';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { HolderOutlined } from '@ant-design/icons';
 import TaskCard from './TaskCard';
 import type { Task } from '@/types/task.type';
+import TaskDetailModal from './TaskDetailModal';
 
 interface SortableTaskProps {
   task: Task;
@@ -13,6 +14,7 @@ interface SortableTaskProps {
 }
 
 const SortableTask: React.FC<SortableTaskProps> = ({ task, onClick }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { token } = theme.useToken();
 
   const {
@@ -41,39 +43,60 @@ const SortableTask: React.FC<SortableTaskProps> = ({ task, onClick }) => {
     cursor: 'default',
   };
 
-  return (
-    <div ref={setNodeRef} style={style}>
-      <Card
-        size="small"
-        bordered={false}
-        bodyStyle={{ padding: 8 }}
-        onClick={() => onClick?.(task)}
-      >
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-          {}
-          <div style={{ flex: 1 }}>
-            <TaskCard task={task} onDoubleClick={onClick} />
-          </div>
+  const handleDragHandleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
 
-          {}
-          <div
-            {...attributes}
-            {...listeners}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 4,
-              cursor: 'grab',
-              borderRadius: 4,
-              color: token.colorTextTertiary,
-            }}
-          >
-            <HolderOutlined />
+  const handleCardClick = () => {
+    setIsModalOpen(true);
+    onClick?.(task);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  return (
+    <>
+      <div ref={setNodeRef} style={style}>
+        <Card
+          size="small"
+          bordered={false}
+          bodyStyle={{ padding: 8 }}
+          onClick={handleCardClick}
+        >
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <div style={{ flex: 1 }}>
+              <TaskCard task={task} />
+            </div>
+
+            <div
+              {...attributes}
+              {...listeners}
+              onClick={handleDragHandleClick}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 4,
+                cursor: 'grab',
+                borderRadius: 4,
+                color: token.colorTextTertiary,
+                flexShrink: 0,
+              }}
+            >
+              <HolderOutlined />
+            </div>
           </div>
-        </div>
-      </Card>
-    </div>
+        </Card>
+      </div>
+
+      <TaskDetailModal
+        open={isModalOpen}
+        task={task}
+        onClose={handleCloseModal}
+      />
+    </>
   );
 };
 

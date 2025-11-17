@@ -15,11 +15,9 @@ import { useMemo } from "react";
 
 interface Props {
   task: Task;
-  onDoubleClick?: (task: Task) => void;
-  onClick?: (task: Task) => void;
 }
 
-export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
+export default function TaskCard({ task }: Props) {
   const queryClient = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();
   const { token } = theme.useToken();
@@ -100,8 +98,6 @@ export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
       size="small"
       hoverable
       bodyStyle={{ padding: 10 }}
-      onDoubleClick={() => onDoubleClick?.(task)}
-      onClick={() => onClick?.(task)}
     >
       {/* Labels - Hiển thị ở trên cùng */}
       {task.labels && task.labels.length > 0 && (
