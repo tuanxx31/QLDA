@@ -32,6 +32,14 @@ export class TaskController {
     return this.taskService.getAssignees(id);
   }
 
+  @Patch(':id/status')
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Cập nhật trạng thái task' })
+  @ApiResponse({ status: 200, description: 'Trạng thái task đã được cập nhật thành công' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  updateStatus(@Param('id') id: string, @Body() body: { status: 'todo'| 'done' }) {
+    return this.taskService.updateStatus(id, body.status);
+  }
   @Get('column/:columnId')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Lấy danh sách task theo cột' })

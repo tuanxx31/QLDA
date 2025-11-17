@@ -51,7 +51,6 @@ export default function TaskDetailModal({
   const [description, setDescription] = useState("");
   const [editingTitle, setEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState("");
-  const [initialStatus, setInitialStatus] = useState<'todo' | 'doing' | 'done'>('todo');
 
   const [labelOpen, setLabelOpen] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
@@ -63,9 +62,6 @@ export default function TaskDetailModal({
       setTaskData(task);
       setDescription(task.description ?? "");
       setTempTitle(task.title ?? "");
-      // Nếu task đã là "done", mặc định initialStatus là "todo"
-      // Nếu chưa "done", lưu trạng thái hiện tại
-      setInitialStatus(task.status === "done" ? "todo" : task.status);
     }
   }, [task]);
 
@@ -114,6 +110,35 @@ export default function TaskDetailModal({
     onError: () => message.error("Lỗi cập nhật"),
   });
 
+  /** Mutation update status */
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: 'todo' | 'done' }) =>
+      taskService.updateStatus(id, status),
+
+    onSuccess: (response, variables) => {
+      // Cập nhật taskData với status mới
+      if (taskData) {
+        const updated = {
+          ...taskData,
+          status: response.status,
+          completedAt: response.completedAt,
+        };
+        setTaskData(updated);
+        onEdit?.(updated as Task);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["columns"] });
+      queryClient.invalidateQueries({
+        queryKey: ["taskAssignees", variables.id],
+      });
+
+      message.success("Đã cập nhật trạng thái");
+    },
+
+    onError: () => message.error("Lỗi cập nhật trạng thái"),
+  });
+
   /** Lưu mô tả */
   const saveDescription = async () => {
     if (!taskData?.id) return;
@@ -152,8 +177,8 @@ export default function TaskDetailModal({
   // Màu status indicator
   const getStatusColor = () => {
     if (taskData.status === "done") return "#52c41a";
-    if (taskData.status === "doing") return "#1677ff";
-    return "#faad14"; // todo
+    if (taskData.status === "doing") return "fff";
+   
   };
 
   return (
@@ -191,7 +216,7 @@ export default function TaskDetailModal({
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                marginTop: taskData.status !== "done" ? 8 : 0,
+                
               }}
             >
               {/* CHECK STATUS ICON */}
@@ -201,30 +226,22 @@ export default function TaskDetailModal({
                   if (!taskData?.id) return;
                   
                   const currentStatus = taskData.status;
-                  let newStatus: 'todo' | 'doing' | 'done';
+                  const newStatus: 'todo' | 'done' = currentStatus === "done" ? "todo" : "done";
                   
-                  if (currentStatus === "done") {
-                    // Nếu đang "done", quay lại trạng thái trước đó (initialStatus)
-                    newStatus = initialStatus;
-                  } else {
-                    // Nếu chưa "done", chuyển sang "done" và lưu trạng thái hiện tại
-                    newStatus = "done";
-                    setInitialStatus(currentStatus);
-                  }
-                  
-                  updateTaskMutation.mutate({
+                  updateStatusMutation.mutate({
                     id: taskData.id,
                     status: newStatus,
-                    completedAt: newStatus === "done" ? new Date().toISOString() : undefined,
                   });
                 }}
                 style={{
                   fontSize: 22,
                   cursor: "pointer",
+                  border: "1px solid #b2b2b2",
+                  borderRadius: "50%",
                   color:
                     taskData.status === "done"
                       ? "#52c41a"
-                      : "rgba(0,0,0,0.3)",
+                      : "white",
                   transition: "color 0.2s",
                   flexShrink: 0,
                 }}
@@ -512,21 +529,10 @@ export default function TaskDetailModal({
       <LabelPicker
         open={labelOpen}
         onClose={() => setLabelOpen(false)}
-        labels={[
-          { id: "1", name: "Done", color: "green" },
-          { id: "2", name: "In Progress", color: "orange" },
-          { id: "3", name: "Bug", color: "red" },
-          { id: "4", name: "Review", color: "purple" },
-          { id: "5", name: "Idea", color: "blue" },
-        ]}
+        labels={taskData.labels ?? []}
         selectedIds={taskData.labels?.map((lb) => lb.id) ?? []}
         onChange={(ids) => {
-          const labels = ids.map((id) => ({
-            id,
-            name: id,
-            color: "blue",
-          }) as any);
-          setTaskData({ ...taskData, labels });
+          setTaskData({ ...taskData, labels: ids.map((id) => ({ id, name: id, color: "blue" })) });
         }}
       />
 
