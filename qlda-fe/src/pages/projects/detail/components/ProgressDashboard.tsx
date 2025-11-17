@@ -37,7 +37,7 @@ export default function ProgressDashboard({ projectId }: Props) {
 
   const isLoading = loadingProgress || loadingColumns || loadingUsers || loadingDeadline;
 
-  // Pie chart data (Done vs Todo)
+  
   const pieData = projectProgress
     ? [
         { type: 'Hoàn thành', value: projectProgress.doneTasks, color: '#52c41a' },
@@ -45,7 +45,7 @@ export default function ProgressDashboard({ projectId }: Props) {
       ]
     : [];
 
-  // User Progress Table columns
+  
   const userColumns = [
     {
       title: 'Người thực hiện',
@@ -100,7 +100,7 @@ export default function ProgressDashboard({ projectId }: Props) {
 
   return (
     <Space direction="vertical" size="large" style={{ width: '100%' }}>
-      {/* Tổng tiến độ dự án */}
+      {}
       <Card title="Tiến độ tổng dự án">
         <Row gutter={16}>
           <Col span={24}>
@@ -141,7 +141,7 @@ export default function ProgressDashboard({ projectId }: Props) {
         </Row>
       </Card>
 
-      {/* Pie Chart - Task Done vs Todo */}
+      {}
       <Card title="Phân bổ task">
         <Row gutter={16}>
           <Col span={12}>
@@ -169,7 +169,7 @@ export default function ProgressDashboard({ projectId }: Props) {
         </Row>
       </Card>
 
-      {/* Bar Chart - Tiến độ theo column */}
+      {}
       <Card title="Tiến độ theo cột">
         {columnProgress && columnProgress.length > 0 ? (
           <Space direction="vertical" style={{ width: '100%' }} size="middle">
@@ -208,7 +208,7 @@ export default function ProgressDashboard({ projectId }: Props) {
         )}
       </Card>
 
-      {/* Bảng thống kê theo user */}
+      {}
       <Card title="Tiến độ theo người thực hiện">
         {userProgress && userProgress.length > 0 ? (
           <Table
@@ -223,7 +223,7 @@ export default function ProgressDashboard({ projectId }: Props) {
         )}
       </Card>
 
-      {/* Thống kê deadline */}
+      {}
       <Card title="Thống kê deadline">
         <Row gutter={16}>
           <Col span={6}>

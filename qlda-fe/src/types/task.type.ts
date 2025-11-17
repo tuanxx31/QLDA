@@ -4,9 +4,9 @@ export interface SubTask {
   id: string;
   title: string;
   completed: boolean;
-  completedAt?: string; // thời gian hoàn thành (ISO)
-  position?: number; // vị trí trong task
-  taskId?: string; // tham chiếu tới task cha
+  completedAt?: string; 
+  position?: number; 
+  taskId?: string; 
 }
 
 export interface Label {
@@ -23,21 +23,21 @@ export interface Task {
   status: 'todo' | 'done';
   priority: 'low' | 'medium' | 'high';
 
-  startDate?: string; // ISO timestamp
+  startDate?: string; 
   dueDate?: string;
   completedAt?: string;
 
-  progress?: number; // % hoàn thành
-  position?: number; // thứ tự trong cột
-  columnId: string; // cột chứa task
-  createdBy?: string; // người tạo
+  progress?: number; 
+  position?: number; 
+  columnId: string; 
+  createdBy?: string; 
 
-  // Quan hệ
+  
   assignees?: User[];
   labels?: Label[];
   subtasks?: SubTask[];
 
-  // Metadata
+  
   createdAt?: string;
   updatedAt?: string;
 }

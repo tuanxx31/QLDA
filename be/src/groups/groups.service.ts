@@ -27,12 +27,12 @@ export class GroupsService {
     private readonly userRepo: Repository<User>,
   ) {}
 
-  // 🟢 1. Tạo nhóm mới
+  
   async create(createGroupDto: CreateGroupDto, userId: string) {
     const leader = await this.userRepo.findOne({ where: { id: userId } });
     if (!leader) throw new NotFoundException('Không tìm thấy người dùng');
 
-    // 🔁 Sinh mã mời ngẫu nhiên duy nhất
+    
     let inviteCode: string;
     while (true) {
       inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -63,7 +63,7 @@ export class GroupsService {
     const memberships = await this.groupMemberRepo.find({
       where: {
         user: { id: userId },
-        status: 'accepted', // ✅ chỉ lấy nhóm đã tham gia
+        status: 'accepted', 
       },
       relations: ['group', 'group.leader', 'user'],
       order: { joinedAt: 'DESC' },
@@ -140,7 +140,7 @@ export class GroupsService {
       throw new NotFoundException('Không tìm thấy nhóm');
     }
 
-    // ✅ Kiểm tra quyền truy cập
+    
     const isLeader = group.leader.id === userId;
     const isMember = group.members.some(
       (m) => m.user.id === userId && m.status === 'accepted',
@@ -150,7 +150,7 @@ export class GroupsService {
       throw new ForbiddenException('Bạn không có quyền truy cập nhóm này');
     }
 
-    // ✅ Chuẩn hóa danh sách thành viên
+    
     const members = group.members.map((m) => ({
       id: m.user.id,
       name: m.user.name,

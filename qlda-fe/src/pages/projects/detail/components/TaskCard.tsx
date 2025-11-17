@@ -17,7 +17,7 @@ export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
   const queryClient = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();
 
-  // Mutation để update status
+  
   const updateStatusMutation = useMutation({
     mutationFn: (newStatus: 'todo' | 'done') =>
       taskService.update(task.id, {
@@ -38,7 +38,7 @@ export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
 
   const handleCheckboxChange = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Toggle: nếu đang "done" thì về "todo", ngược lại thì thành "done"
+    
     const newStatus = task.status === "done" ? "todo" : "done";
     updateStatusMutation.mutate(newStatus);
   };
@@ -47,15 +47,15 @@ export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
     <Card
       size="small"
       hoverable
-      // style={{
-      //   // marginBottom: 8,
-      //   // borderRadius: 8,
-      //   // background: "#fff",
-      //   // color: "#333",
-      //   position: "relative",
-      //   cursor: "pointer",
-      //   transition: "all 0.2s ease",
-      // }}
+      
+      
+      
+      
+      
+      
+      
+      
+      
       bodyStyle={{ padding: 10 }}
       onDoubleClick={() => onDoubleClick?.(task)}
       onClick={() => onClick?.(task)}
@@ -76,7 +76,7 @@ export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
 
       <div style={{ marginTop: task.status ? 12 : 8 }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-          {/* CHECKBOX */}
+          {}
           <CheckCircleFilled
             onClick={handleCheckboxChange}
             style={{
@@ -111,13 +111,7 @@ export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
         >
           
 
-          {/* <Tooltip title="Xem chi tiết">
-            <EyeOutlined style={{ color: "#999" }} />
-          </Tooltip>
-
-          <Tooltip title="Danh sách con">
-            <UnorderedListOutlined style={{ color: "#999" }} />
-          </Tooltip> */}
+          {}
 
           <div style={{ flex: 1 }} />
 

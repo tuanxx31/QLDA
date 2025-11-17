@@ -68,7 +68,7 @@ export class ProjectsService {
   }
 
   async getProjectProgress(projectId: string) {
-    // Kiểm tra project tồn tại
+    
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
     if (!project) {
       throw new NotFoundException('Không tìm thấy dự án.');
@@ -94,7 +94,7 @@ export class ProjectsService {
   }
 
   async getColumnProgress(projectId: string) {
-    // Kiểm tra project tồn tại
+    
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
     if (!project) {
       throw new NotFoundException('Không tìm thấy dự án.');
@@ -130,13 +130,13 @@ export class ProjectsService {
   }
 
   async getUserProgress(projectId: string) {
-    // Kiểm tra project tồn tại
+    
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
     if (!project) {
       throw new NotFoundException('Không tìm thấy dự án.');
     }
 
-    // Lấy tất cả tasks của project với assignees
+    
     const tasks = await this.taskRepo
       .createQueryBuilder('task')
       .innerJoin('task.column', 'column')
@@ -144,7 +144,7 @@ export class ProjectsService {
       .where('column.project_id = :projectId', { projectId })
       .getMany();
 
-    // Tạo map để thống kê theo user
+    
     const userStatsMap = new Map<
       string,
       {
@@ -157,7 +157,7 @@ export class ProjectsService {
       }
     >();
 
-    // Xử lý từng task
+    
     for (const task of tasks) {
       if (task.assignees && task.assignees.length > 0) {
         for (const assignee of task.assignees) {
@@ -183,7 +183,7 @@ export class ProjectsService {
       }
     }
 
-    // Chuyển map thành array và tính progress
+    
     const result = Array.from(userStatsMap.values()).map((stats) => {
       const progress =
         stats.totalTasks === 0 ? 0 : (stats.doneTasks / stats.totalTasks) * 100;
@@ -193,12 +193,12 @@ export class ProjectsService {
       };
     });
 
-    // Sắp xếp theo totalTasks giảm dần
+    
     return result.sort((a, b) => b.totalTasks - a.totalTasks);
   }
 
   async getDeadlineSummary(projectId: string) {
-    // Kiểm tra project tồn tại
+    
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
     if (!project) {
       throw new NotFoundException('Không tìm thấy dự án.');
@@ -236,7 +236,7 @@ export class ProjectsService {
         dueSoon++;
       }
 
-      // Kiểm tra task đã hoàn thành
+      
       if (task.status === 'done' && task.completedAt) {
         const completedAt = new Date(task.completedAt);
         if (completedAt <= dueDate) {

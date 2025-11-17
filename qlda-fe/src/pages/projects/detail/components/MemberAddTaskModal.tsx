@@ -23,7 +23,7 @@ interface Props {
     onClose: () => void;
     taskId: string;
     onSuccess?: () => void;
-    currentAssignees?: string[]; // danh sách user đã có trong task (nếu có)
+    currentAssignees?: string[]; 
 }
 
 type MemberLike = {
@@ -54,7 +54,7 @@ export default function MemberAddTaskModal({
         enabled: open && !!projectId,
     });
 
-    // Reset khi đóng modal
+    
     useEffect(() => {
         if (!open) {
             setSelectedRowKeys([]);
@@ -195,7 +195,7 @@ export default function MemberAddTaskModal({
                     selectedRowKeys,
                     onChange: setSelectedRowKeys,
                     getCheckboxProps: (record) => ({
-                        disabled: currentAssignees.includes(record.id), // disable nếu đã gán
+                        disabled: currentAssignees.includes(record.id), 
                     }),
                 }}
                 columns={columns}

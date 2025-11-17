@@ -79,14 +79,14 @@ export class TaskController {
     return this.taskService.assignUsers(id, dto);
   }
 
-  // @Patch(':id/labels')
-  // @ApiBearerAuth('jwt')
-  // @ApiOperation({ summary: 'Gán nhãn task' })
-  // @ApiResponse({ status: 200, description: 'Task đã được gán nhãn thành công' })
-  // @ApiResponse({ status: 401, description: 'Unauthorized' })
-  // assignLabels(@Param('id') id: string, @Body() dto: AssignLabelsDto) {
-  //   return this.taskService.assignLabels(id, dto);
-  // }
+  
+  
+  
+  
+  
+  
+  
+  
 
   @Patch(':id/position')
   @ApiBearerAuth('jwt')

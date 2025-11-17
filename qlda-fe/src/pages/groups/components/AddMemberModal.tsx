@@ -27,7 +27,7 @@ export const AddMemberModal = ({
         try {
           await onSubmit(values.email);
           message.success('Đã gửi lời mời thành công');
-          return true; // đóng form
+          return true; 
         } catch {
           message.error('Gửi lời mời thất bại');
           return false;

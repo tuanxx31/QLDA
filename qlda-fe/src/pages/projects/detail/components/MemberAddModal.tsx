@@ -39,16 +39,7 @@ const MemberAddModal = ({ open, onClose, projectId }: Props) => {
         placeholder="Nhập email thành viên cần thêm"
         rules={[{ required: true, message: 'Vui lòng nhập email' }]}
       />
-        {/* <ProFormSelect
-          name="role"
-          label="Vai trò"
-          placeholder="Chọn vai trò"
-          rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
-          options={[
-            { label: 'Viewer', value: 'viewer' },
-            { label: 'Editor', value: 'editor' },
-          ]}
-        /> */}
+        {}
     </ModalForm>
   );
 };

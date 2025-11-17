@@ -60,19 +60,19 @@ export default function TaskDetailModal({
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
 
-  /** Khi mở modal → load lại */
+  
   useEffect(() => {
     if (task) {
       setTaskData(task);
       setDescription(task.description ?? "");
       setTempTitle(task.title ?? "");
-      // Nếu task đã là "done", mặc định initialStatus là "todo"
-      // Nếu chưa "done", lưu trạng thái hiện tại
+      
+      
       setInitialStatus(task.status === "done" ? "todo" : task.status);
     }
   }, [task]);
 
-  /** Load assignees */
+  
   const {
     data: assignees = [],
     isLoading: assigneesLoading,
@@ -84,7 +84,7 @@ export default function TaskDetailModal({
     staleTime: 30000,
   });
 
-  /** Tính ngày hết hạn + trạng thái */
+  
   const dueInfo = useMemo(() => {
     if (!taskData?.dueDate) return null;
     const d = dayjs(taskData.dueDate);
@@ -94,7 +94,7 @@ export default function TaskDetailModal({
     };
   }, [taskData]);
 
-  /** Mutation update */
+  
   const updateTaskMutation = useMutation({
     mutationFn: (payload: Partial<Task> & { id: string }) =>
       taskService.update(payload.id, payload),
@@ -120,13 +120,13 @@ export default function TaskDetailModal({
     onError: () => message.error("Lỗi cập nhật"),
   });
 
-  /** Lưu mô tả */
+  
   const saveDescription = async () => {
     if (!taskData?.id) return;
     await updateTaskMutation.mutateAsync({ id: taskData.id, description });
   };
 
-  /** Lưu title */
+  
   const handleSaveTitle = async () => {
     if (!taskData?.id) return;
     const newTitle = tempTitle.trim();
@@ -138,7 +138,7 @@ export default function TaskDetailModal({
     setEditingTitle(false);
   };
 
-  /** Xóa */
+  
   const deleteTaskMutation = useMutation({
     mutationFn: () => taskService.delete(taskData!.id),
     onSuccess: () => {
@@ -158,10 +158,10 @@ export default function TaskDetailModal({
 
   if (!taskData) return null;
 
-  // Màu status indicator
+  
   const getStatusColor = () => {
     if (taskData.status === "done") return "#52c41a";
-    return "#faad14"; // todo
+    return "#faad14"; 
   };
 
   return (
@@ -179,7 +179,7 @@ export default function TaskDetailModal({
         }}
         title={
           <div style={{ position: "relative", paddingBottom: 16, paddingRight: 40 }}>
-            {/* STATUS INDICATOR BAR - giống TaskCard */}
+            {}
             {taskData.status !== "done" && (
               <div
                 style={{
@@ -202,7 +202,7 @@ export default function TaskDetailModal({
                 marginTop: taskData.status !== "done" ? 8 : 0,
               }}
             >
-              {/* CHECK STATUS ICON */}
+              {}
               <CheckCircleFilled
                 onClick={(e) => {
                   e.stopPropagation();
@@ -212,10 +212,10 @@ export default function TaskDetailModal({
                   let newStatus: 'todo' | 'done';
                   
                   if (currentStatus === "done") {
-                    // Nếu đang "done", quay lại trạng thái trước đó (initialStatus)
+                    
                     newStatus = initialStatus;
                   } else {
-                    // Nếu chưa "done", chuyển sang "done" và lưu trạng thái hiện tại
+                    
                     newStatus = "done";
                     setInitialStatus(currentStatus);
                   }
@@ -238,7 +238,7 @@ export default function TaskDetailModal({
                 }}
               />
 
-              {/* TITLE */}
+              {}
               <div style={{ flex: 1, minWidth: 0 }}>
                 {editingTitle ? (
                   <Input
@@ -314,9 +314,9 @@ export default function TaskDetailModal({
             minHeight: 400,
           }}
         >
-          {/* LEFT */}
+          {}
           <div style={{ flex: 2, overflowY: "auto", paddingRight: 8 }}>
-            {/* Buttons */}
+            {}
             <div
               style={{
                 display: "flex",
@@ -349,7 +349,7 @@ export default function TaskDetailModal({
               />
             </div>
 
-            {/* DUE DATE */}
+            {}
             {taskData.dueDate && (
               <div style={{ marginBottom: 16 }}>
                 <Text strong style={{ fontSize: 13, color: "#666" }}>
@@ -382,7 +382,7 @@ export default function TaskDetailModal({
               </div>
             )}
 
-            {/* LABELS */}
+            {}
             {taskData.labels?.length ? (
               <div style={{ marginBottom: 16 }}>
                 <Text strong style={{ fontSize: 13, color: "#666" }}>
@@ -398,7 +398,7 @@ export default function TaskDetailModal({
               </div>
             ) : null}
 
-            {/* MEMBERS */}
+            {}
             <div style={{ marginBottom: 16 }}>
               <Text strong style={{ fontSize: 13, color: "#666" }}>
                 Thành viên:
@@ -449,7 +449,7 @@ export default function TaskDetailModal({
 
             <Divider style={{ margin: "16px 0" }} />
 
-            {/* DESCRIPTION */}
+            {}
             <div>
               <Text strong style={{ fontSize: 13, color: "#666" }}>
                 Mô tả:
@@ -486,7 +486,7 @@ export default function TaskDetailModal({
             </div>
           </div>
 
-          {/* RIGHT */}
+          {}
           <div
             style={{
               flex: 1,
@@ -516,7 +516,7 @@ export default function TaskDetailModal({
         </div>
       </Modal>
 
-      {/* LABEL PICKER */}
+      {}
       <LabelPicker
         open={labelOpen}
         onClose={() => setLabelOpen(false)}
@@ -538,7 +538,7 @@ export default function TaskDetailModal({
         }}
       />
 
-      {/* MEMBER PICKER */}
+      {}
       <MemberAddTaskModal
         open={memberModalOpen}
         onClose={() => setMemberModalOpen(false)}
