@@ -17,13 +17,9 @@ export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
   const queryClient = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();
 
-  
   const updateStatusMutation = useMutation({
-    mutationFn: (newStatus: 'todo' | 'done') =>
-      taskService.update(task.id, {
-        status: newStatus,
-        completedAt: newStatus === "done" ? new Date().toISOString() : undefined,
-      }),
+    mutationFn: (newStatus: "todo" | "done") =>
+      taskService.updateStatus(task.id, newStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       queryClient.invalidateQueries({ queryKey: ["columns"] });
@@ -45,17 +41,9 @@ export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
 
   return (
     <Card
+      style={{ marginTop: task.status ? 12 : 8 }}
       size="small"
       hoverable
-      
-      
-      
-      
-      
-      
-      
-      
-      
       bodyStyle={{ padding: 10 }}
       onDoubleClick={() => onDoubleClick?.(task)}
       onClick={() => onClick?.(task)}
@@ -76,13 +64,14 @@ export default function TaskCard({ task, onDoubleClick, onClick }: Props) {
 
       <div style={{ marginTop: task.status ? 12 : 8 }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-          {}
           <CheckCircleFilled
             onClick={handleCheckboxChange}
             style={{
               fontSize: 18,
               cursor: "pointer",
-              color: task.status === "done" ? "#52c41a" : "rgba(0,0,0,0.3)",
+              color: task.status === "done" ? "#52c41a" : "white",
+              border: "1px solid #b2b2b2",
+              borderRadius: "50%",
               transition: "color 0.2s",
               marginTop: 2,
               flexShrink: 0,

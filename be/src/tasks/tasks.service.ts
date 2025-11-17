@@ -187,4 +187,19 @@ export class TaskService {
     sub.task.progress = total ? (done / total) * 100 : 0;
     return this.taskRepo.save(sub.task);
   }
+
+
+  async updateStatus(id: string, status: 'todo'| 'done') {
+    const task = await this.taskRepo.findOne({ where: { id } });
+    if (!task) throw new NotFoundException('Task không tồn tại');
+    task.status = status;
+    task.completedAt = status === 'done' ? new Date() : undefined as unknown as Date;
+    await this.taskRepo.save(task);
+    return {
+      message: 'Cập nhật trạng thái thành công',
+      status: task.status,
+      completedAt: task.completedAt,
+    };
+  }
+
 }

@@ -54,7 +54,6 @@ export default function TaskDetailModal({
   const [description, setDescription] = useState("");
   const [editingTitle, setEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState("");
-  const [initialStatus, setInitialStatus] = useState<'todo' | 'done'>('todo');
 
   const [labelOpen, setLabelOpen] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
@@ -66,9 +65,6 @@ export default function TaskDetailModal({
       setTaskData(task);
       setDescription(task.description ?? "");
       setTempTitle(task.title ?? "");
-      
-      
-      setInitialStatus(task.status === "done" ? "todo" : task.status);
     }
   }, [task]);
 
@@ -120,7 +116,43 @@ export default function TaskDetailModal({
     onError: () => message.error("Lỗi cập nhật"),
   });
 
-  
+  /** Mutation update status */
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: "todo" | "done" }) =>
+      taskService.updateStatus(id, status),
+
+    onSuccess: (response, variables) => {
+      let updatedTask: Task | null = null;
+      setTaskData((prev) => {
+        if (!prev) return prev;
+        updatedTask = {
+          ...prev,
+          status: response.status,
+          completedAt: response.completedAt,
+        };
+        return updatedTask;
+      });
+
+      if (updatedTask) {
+        onEdit?.(updatedTask);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["columns"] });
+      queryClient.invalidateQueries({
+        queryKey: ["taskAssignees", variables.id],
+      });
+      if (projectId) {
+        invalidateProgressQueries(queryClient, projectId);
+      }
+
+      message.success("Đã cập nhật trạng thái");
+    },
+
+    onError: () => message.error("Lỗi cập nhật trạng thái"),
+  });
+
+  /** Lưu mô tả */
   const saveDescription = async () => {
     if (!taskData?.id) return;
     await updateTaskMutation.mutateAsync({ id: taskData.id, description });
@@ -161,7 +193,7 @@ export default function TaskDetailModal({
   
   const getStatusColor = () => {
     if (taskData.status === "done") return "#52c41a";
-    return "#faad14"; 
+    return "#faad14";
   };
 
   return (
@@ -199,7 +231,7 @@ export default function TaskDetailModal({
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                marginTop: taskData.status !== "done" ? 8 : 0,
+                
               }}
             >
               {}
@@ -209,30 +241,23 @@ export default function TaskDetailModal({
                   if (!taskData?.id) return;
                   
                   const currentStatus = taskData.status;
-                  let newStatus: 'todo' | 'done';
-                  
-                  if (currentStatus === "done") {
-                    
-                    newStatus = initialStatus;
-                  } else {
-                    
-                    newStatus = "done";
-                    setInitialStatus(currentStatus);
-                  }
-                  
-                  updateTaskMutation.mutate({
+                  const newStatus: "todo" | "done" =
+                    currentStatus === "done" ? "todo" : "done";
+
+                  updateStatusMutation.mutate({
                     id: taskData.id,
                     status: newStatus,
-                    completedAt: newStatus === "done" ? new Date().toISOString() : undefined,
                   });
                 }}
                 style={{
                   fontSize: 22,
                   cursor: "pointer",
+                  border: "1px solid #b2b2b2",
+                  borderRadius: "50%",
                   color:
                     taskData.status === "done"
                       ? "#52c41a"
-                      : "rgba(0,0,0,0.3)",
+                      : "white",
                   transition: "color 0.2s",
                   flexShrink: 0,
                 }}
@@ -520,21 +545,10 @@ export default function TaskDetailModal({
       <LabelPicker
         open={labelOpen}
         onClose={() => setLabelOpen(false)}
-        labels={[
-          { id: "1", name: "Done", color: "green" },
-          { id: "2", name: "In Progress", color: "orange" },
-          { id: "3", name: "Bug", color: "red" },
-          { id: "4", name: "Review", color: "purple" },
-          { id: "5", name: "Idea", color: "blue" },
-        ]}
+        labels={taskData.labels ?? []}
         selectedIds={taskData.labels?.map((lb) => lb.id) ?? []}
         onChange={(ids) => {
-          const labels = ids.map((id) => ({
-            id,
-            name: id,
-            color: "blue",
-          }) as any);
-          setTaskData({ ...taskData, labels });
+          setTaskData({ ...taskData, labels: ids.map((id) => ({ id, name: id, color: "blue" })) });
         }}
       />
 

@@ -7,9 +7,13 @@ import {
     Tooltip,
     Space,
     Divider,
+    message,
 } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import CreateLabelModal from "./LabelModal";
+import { labelService } from "@/services/label.services";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
 
 interface Label {
     id: string;
@@ -25,7 +29,10 @@ interface Props {
     onChange: (ids: string[]) => void;
     onCreateNew?: () => void;
 }
+const COLORS = [
+    "#216e4e", "#7f5f01", "#9e4c00", "#ae2e24", "#803fa5"
 
+];
 export default function LabelPicker({
     open,
     onClose,
@@ -35,12 +42,9 @@ export default function LabelPicker({
 }: Props) {
     const [search, setSearch] = useState("");
     const [createOpen, setCreateOpen] = useState(false);
+    const queryClient = useQueryClient();
+    const { projectId } = useParams<{ projectId: string }>();
 
-    const filtered = useMemo(() => {
-        return labels.filter((l) =>
-            l.name.toLowerCase().includes(search.toLowerCase())
-        );
-    }, [labels, search]);
 
     const toggleSelect = (id: string) => {
         const isSelected = selectedIds.includes(id);
@@ -48,6 +52,25 @@ export default function LabelPicker({
         else onChange([...selectedIds, id]);
     };
 
+    const createLabelMutation = useMutation({
+        mutationFn: ({ name, color, projectId }: { name?: string, color: string, projectId: string }) => labelService.createLabel(name, color, projectId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["labels"] });
+            message.success("Tạo nhãn thành công 123");
+        },
+        onError: () => {
+            message.error("Không thể tạo nhãn");
+        },
+    });
+
+    const handleCreateLabel = (color: string) => {
+        console.log({color});
+        createLabelMutation.mutate({
+            name: "",
+            color: color,
+            projectId: projectId as string,
+        });
+    };
     return (
         <Modal
             open={open}
@@ -62,17 +85,7 @@ export default function LabelPicker({
                 color: "#8c8c8c",
             }}
         >
-            <Input
-                placeholder="Tìm nhãn..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                style={{
-                    marginBottom: 8,
-                    background: "#ffffff",
-                    color: "#8c8c8c",
-                    borderColor: "#999999",
-                }}
-            />
+
 
             <div
                 style={{
@@ -81,9 +94,9 @@ export default function LabelPicker({
                     marginBottom: 8,
                 }}
             >
-                {filtered.map((label) => (
+                {COLORS.map((color) => (
                     <div
-                        key={label.id}
+                        key={color}
                         style={{
                             display: "flex",
                             alignItems: "center",
@@ -93,13 +106,14 @@ export default function LabelPicker({
                     >
                         <Space>
                             <Checkbox
-                                checked={selectedIds.includes(label.id)}
-                                onChange={() => toggleSelect(label.id)}
+                                checked={selectedIds.includes(color)}
+                                onChange={() => toggleSelect(color)}
                                 style={{ marginTop: -2 }}
+                                onClick={() => handleCreateLabel(color)}
                             />
                             <div
                                 style={{
-                                    backgroundColor: label.color,
+                                    backgroundColor: color,
                                     color: "#fff",
                                     fontWeight: 500,
                                     padding: "6px 10px",
@@ -107,13 +121,14 @@ export default function LabelPicker({
                                     textAlign: "center",
                                     borderRadius: 6,
                                     boxShadow:
-                                        selectedIds.includes(label.id)
+                                        selectedIds.includes(color)
                                             ? "0 0 4px rgba(255,255,255,0.6)"
                                             : "none",
                                     transition: "all 0.2s ease",
+                                    minHeight: 25,
                                 }}
                             >
-                                {label.name}
+                                {/* {color.slice(1)} */}
                             </div>
                         </Space>
                         <Tooltip title="Chỉnh sửa nhãn">
@@ -128,7 +143,7 @@ export default function LabelPicker({
                 ))}
             </div>
 
-            <Divider style={{ margin: "8px 0", borderColor: "#333" }} />
+            <Divider style={{ margin: "20px 0", borderColor: "#333" }} />
 
             <Button
                 block
@@ -136,7 +151,7 @@ export default function LabelPicker({
                 style={{
                     background: "#2b6dee",
                     color: "#fff",
-                   
+
                 }}
             >
                 Tạo nhãn mới
@@ -147,12 +162,19 @@ export default function LabelPicker({
                 onClose={() => setCreateOpen(false)}
                 onBack={() => setCreateOpen(false)}
                 onCreate={(newLabel) => {
-                    console.log("Nhãn mới:", newLabel);
-                    setCreateOpen(false);
+                    if (!newLabel.color) {
+                        message.error("Vui lòng chọn màu cho nhãn");
+                        return;
+                    }
+                    createLabelMutation.mutate(
+                        {
+                            name: newLabel.name || undefined,
+                            color: newLabel.color,
+                            projectId: projectId as string
+                        }
+                    );
                 }}
             />
-
-           
         </Modal>
     );
 }

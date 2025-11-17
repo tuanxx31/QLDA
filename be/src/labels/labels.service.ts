@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateLabelDto } from './dto/create-label.dto';
 import { UpdateLabelDto } from './dto/update-label.dto';
 import { Repository } from 'typeorm';
@@ -12,8 +12,28 @@ export class LabelsService {
     private labelRepo: Repository<Label>,
   ) {}
 
-  create(createLabelDto: CreateLabelDto) {
-    const label = this.labelRepo.create(createLabelDto);
+   async create(createLabelDto: CreateLabelDto) {
+    const trimmedName = createLabelDto.name?.trim() || '';
+    
+    // Check if label already exists in the same project
+    const isExist = await this.labelRepo.findOne({
+      where: {
+        name: trimmedName,
+        color: createLabelDto.color,
+        project: { id: createLabelDto.projectId },
+      },
+    });
+
+    if (isExist) {
+      return { message: 'Label already exists in this project' ,id: isExist.id , isExist: true};
+    }
+
+    const label = this.labelRepo.create({
+      name: trimmedName,
+      color: createLabelDto.color,
+      project: { id: createLabelDto.projectId },
+    });
+
     return this.labelRepo.save(label);
   }
 

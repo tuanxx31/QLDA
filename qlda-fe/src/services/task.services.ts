@@ -39,5 +39,17 @@ export const taskService = {
     });
     return res.data;
   },
-  
+  updateStatus: async (id: string, status: 'todo'| 'done') => {
+    const response = await api.patch(`/tasks/${id}/status`, { status });
+    return response.data;
+  },
+  assignLabels: async (id: string, labelIds: string[]) => {
+    const response = await api.patch(`/tasks/${id}/labels`, { labelIds });
+    return response.data;
+  },
+  unassignLabels: async (id: string, labelIds: string[]) => {
+    const response = await api.patch(`/tasks/${id}/labels`, { labelIds });
+    return response.data;
+  },
+ 
 };
