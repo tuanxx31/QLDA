@@ -108,7 +108,7 @@ export default function TaskDetailModal({
     if (!taskData?.dueDate) return null;
     const d = dayjs(taskData.dueDate);
     return {
-      formatted: d.format("H:mm DD [thg] MM"),
+      formatted: d.format("H:mm DD/MM/YYYY"),
       isOverdue: d.isBefore(dayjs()),
     };
   }, [taskData]);
@@ -169,7 +169,7 @@ export default function TaskDetailModal({
         invalidateProgressQueries(queryClient, projectId);
       }
 
-      message.success("Đã cập nhật trạng thái");
+    
     },
 
     onError: () => message.error("Lỗi cập nhật trạng thái"),
@@ -216,7 +216,7 @@ export default function TaskDetailModal({
   
   const getStatusColor = () => {
     if (taskData.status === "done") return "#52c41a";
-    return "#faad14";
+  
   };
 
   return (
@@ -415,11 +415,11 @@ export default function TaskDetailModal({
                   onClick={() => setDueDateOpen(true)}
                 >
                   <ClockCircleOutlined style={{ color: "#999" }} />
-                  <span style={{ fontSize: 13 }}>{dueInfo?.formatted}</span>
+                  <span style={{ fontSize: 13 }}>{taskData.startDate ? dayjs(taskData.startDate).format("DD/MM" )+ " - " : "" } {dueInfo?.formatted}</span>
 
                   {taskData.status === "done" ? (
                     <Tag color="green" style={{ borderRadius: 4, margin: 0 }}>
-                      Hoàn tất
+                      Hoàn thành
                     </Tag>
                   ) : dueInfo?.isOverdue ? (
                     <Tag color="red" style={{ borderRadius: 4, margin: 0 }}>

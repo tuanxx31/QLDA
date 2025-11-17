@@ -23,9 +23,9 @@ export interface Task {
   status: 'todo' | 'done';
   priority: 'low' | 'medium' | 'high';
 
-  startDate?: string; 
-  dueDate?: string;
-  completedAt?: string;
+  startDate?: string | null; 
+  dueDate?: string | null;
+  completedAt?: string | null;
 
   progress?: number; 
   position?: number; 
@@ -47,9 +47,9 @@ export interface CreateTaskDto {
   description?: string;
   status?: 'todo' | 'done';
   priority?: 'low' | 'medium' | 'high';
-  startDate?: string;
-  dueDate?: string;
-  completedAt?: string;
+  startDate?: string | null;
+  dueDate?: string | null;
+  completedAt?: string | null;
   progress?: number;
   position?: number;
   columnId: string;
@@ -57,7 +57,7 @@ export interface CreateTaskDto {
 
 export interface UpdateTaskDto extends Partial<CreateTaskDto> {
     status?: 'todo' | 'done';
-    completedAt?: string;
+    completedAt?: string | null;
 }
 
 export interface AssignUsersDto {
