@@ -7,10 +7,12 @@ import { GroupCard } from '@/pages/groups/components/GroupCard';
 import { GroupPendingList } from '@/pages/groups/components/GroupPendingList';
 import { CreateGroupFormModal } from './components/CreateGroupFormModal';
 import { useState } from 'react';
+import { usePageContentHeight } from '@/hooks/usePageContentHeight';
 
 const GroupsPage = () => {
   const queryClient = useQueryClient();
   const [openModal, setOpenModal] = useState(false);
+  const { minHeight } = usePageContentHeight();
   const { data: groups, isLoading } = useQuery({
     queryKey: ['myGroups'],
     queryFn: groupService.getMyGroups,
@@ -31,7 +33,7 @@ const GroupsPage = () => {
       ]}
       style={{ height: '100%' }}
     >
-      <Card style={{ minHeight: '82vh' }}>
+      <Card style={{ minHeight }}>
         <GroupPendingList
           onUpdate={() => queryClient.invalidateQueries({ queryKey: ['myGroups'] })}
         />
