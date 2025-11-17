@@ -71,15 +71,30 @@ export class TaskService {
         : [],
     });
 
-    return this.taskRepo.save(task);
+    const saved = await this.taskRepo.save(task);
+    
+    // Reload với relations để trả về đầy đủ
+    return this.taskRepo.findOne({
+      where: { id: saved.id },
+      relations: ['assignees', 'labels', 'subtasks'],
+    });
   }
 
   async update(id: string, dto: UpdateTaskDto) {
-    const task = await this.taskRepo.findOne({ where: { id } });
+    const task = await this.taskRepo.findOne({ 
+      where: { id },
+      relations: ['assignees', 'labels', 'subtasks'],
+    });
     if (!task) throw new NotFoundException('Task không tồn tại');
 
     Object.assign(task, dto);
-    return this.taskRepo.save(task);
+    const saved = await this.taskRepo.save(task);
+    
+    // Reload với relations để trả về đầy đủ
+    return this.taskRepo.findOne({
+      where: { id: saved.id },
+      relations: ['assignees', 'labels', 'subtasks'],
+    });
   }
 
   async remove(id: string) {
@@ -92,7 +107,7 @@ export class TaskService {
   async assignUsers(taskId: string, dto: AssignUsersDto) {
     const task = await this.taskRepo.findOne({
       where: { id: taskId },
-      relations: ['assignees'],
+      relations: ['assignees', 'labels', 'subtasks'],
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
 
@@ -108,8 +123,13 @@ export class TaskService {
     ];
 
     task.assignees = merged;
-
-    return await this.taskRepo.save(task);
+    await this.taskRepo.save(task);
+    
+    // Reload với relations để trả về đầy đủ
+    return this.taskRepo.findOne({
+      where: { id: taskId },
+      relations: ['assignees', 'labels', 'subtasks'],
+    });
   }
 
   async updatePosition(taskId, prevTaskId?, nextTaskId?, newColumnId?) {
@@ -184,7 +204,7 @@ export class TaskService {
   async updateSubTask(id: string, update: Partial<SubTask>) {
     const sub = await this.subRepo.findOne({
       where: { id },
-      relations: ['task', 'task.subtasks'],
+      relations: ['task', 'task.subtasks', 'task.assignees', 'task.labels'],
     });
     if (!sub) throw new NotFoundException('SubTask không tồn tại');
 
@@ -194,27 +214,39 @@ export class TaskService {
     const total = sub.task.subtasks.length;
     const done = sub.task.subtasks.filter((s) => s.completed).length;
     sub.task.progress = total ? (done / total) * 100 : 0;
-    return this.taskRepo.save(sub.task);
+    await this.taskRepo.save(sub.task);
+    
+    // Reload với relations để trả về đầy đủ
+    return this.taskRepo.findOne({
+      where: { id: sub.task.id },
+      relations: ['assignees', 'labels', 'subtasks'],
+    });
   }
 
 
   async updateStatus(id: string, status: 'todo'| 'done') {
-    const task = await this.taskRepo.findOne({ where: { id } });
+    const task = await this.taskRepo.findOne({ 
+      where: { id },
+      relations: ['assignees', 'labels', 'subtasks'],
+    });
     if (!task) throw new NotFoundException('Task không tồn tại');
     task.status = status;
     task.completedAt = status === 'done' ? new Date() : undefined as unknown as Date;
     await this.taskRepo.save(task);
-    return {
-      message: 'Cập nhật trạng thái thành công',
-      status: task.status,
-      completedAt: task.completedAt,
-    };
+    
+    // Reload với relations để trả về đầy đủ
+    const updated = await this.taskRepo.findOne({
+      where: { id },
+      relations: ['assignees', 'labels', 'subtasks'],
+    });
+    
+    return updated || task;
   }
 
   async assignLabels(taskId: string, dto: AssignLabelsDto) {
     const task = await this.taskRepo.findOne({
       where: { id: taskId },
-      relations: ['labels'],
+      relations: ['assignees', 'labels', 'subtasks'],
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
 
@@ -230,14 +262,19 @@ export class TaskService {
     ];
 
     task.labels = merged;
-
-    return await this.taskRepo.save(task);
+    await this.taskRepo.save(task);
+    
+    // Reload với relations để trả về đầy đủ
+    return this.taskRepo.findOne({
+      where: { id: taskId },
+      relations: ['assignees', 'labels', 'subtasks'],
+    });
   }
 
   async unassignLabels(taskId: string, dto: AssignLabelsDto) {
     const task = await this.taskRepo.findOne({
       where: { id: taskId },
-      relations: ['labels'],
+      relations: ['assignees', 'labels', 'subtasks'],
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
 
@@ -245,7 +282,13 @@ export class TaskService {
       (l) => !dto.labelIds.includes(l.id),
     );
 
-    return await this.taskRepo.save(task);
+    await this.taskRepo.save(task);
+    
+    // Reload với relations để trả về đầy đủ
+    return this.taskRepo.findOne({
+      where: { id: taskId },
+      relations: ['assignees', 'labels', 'subtasks'],
+    });
   }
 
 }

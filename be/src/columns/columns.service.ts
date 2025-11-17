@@ -49,7 +49,12 @@ export class ColumnsService {
   findAll(projectId: string) {
     return this.columnRepo.find({
       where: { project: { id: projectId } },
-      relations: ['tasks', 'tasks.subtasks'],
+      relations: [
+        'tasks',
+        'tasks.subtasks',
+        'tasks.assignees',
+        'tasks.labels',
+      ],
       order: {
         order: 'ASC',
         tasks: {
