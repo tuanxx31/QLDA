@@ -68,7 +68,7 @@ export default function TaskDetailModal({
     }
   }, [task]);
 
-  /** Load task data từ API khi mở modal */
+  
   const {
     data: fetchedTask,
   } = useQuery({
@@ -78,7 +78,7 @@ export default function TaskDetailModal({
     staleTime: 30000,
   });
 
-  /** Load assignees */
+  
   const {
     data: assignees = [],
     isLoading: assigneesLoading,
@@ -90,7 +90,7 @@ export default function TaskDetailModal({
     staleTime: 30000,
   });
 
-  // Cập nhật taskData khi fetch được data từ API hoặc khi task prop thay đổi
+  
   useEffect(() => {
     if (fetchedTask) {
       setTaskData(fetchedTask);
@@ -103,7 +103,7 @@ export default function TaskDetailModal({
     }
   }, [fetchedTask, task]);
 
-  /** Tính ngày hết hạn + trạng thái */
+  
   const dueInfo = useMemo(() => {
     if (!taskData?.dueDate) return null;
     const d = dayjs(taskData.dueDate);
@@ -139,7 +139,7 @@ export default function TaskDetailModal({
     onError: () => message.error("Lỗi cập nhật"),
   });
 
-  /** Mutation update status */
+  
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: "todo" | "done" }) =>
       taskService.updateStatus(id, status),
@@ -175,7 +175,7 @@ export default function TaskDetailModal({
     onError: () => message.error("Lỗi cập nhật trạng thái"),
   });
 
-  /** Lưu mô tả */
+  
   const saveDescription = async () => {
     if (!taskData?.id) return;
     await updateTaskMutation.mutateAsync({ id: taskData.id, description });
@@ -579,7 +579,7 @@ export default function TaskDetailModal({
         taskId={taskData.id}
         selectedIds={taskData.labels?.map((lb) => lb.id) ?? []}
         onTaskUpdate={(updatedTask) => {
-          // Cập nhật taskData với labels mới từ response
+          
           setTaskData(updatedTask);
           onEdit?.(updatedTask);
         }}

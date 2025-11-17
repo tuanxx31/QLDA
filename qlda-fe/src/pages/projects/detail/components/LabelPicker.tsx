@@ -41,30 +41,30 @@ export default function LabelPicker({
     const queryClient = useQueryClient();
     const { projectId } = useParams<{ projectId: string }>();
 
-    // Sync localSelectedIds với selectedIds từ props
+    
     useEffect(() => {
         setLocalSelectedIds(selectedIds);
     }, [selectedIds]);
 
-    // Load labels từ project
+    
     const { data: projectLabels = [], isLoading: labelsLoading } = useQuery({
         queryKey: ["labels", projectId],
         queryFn: () => labelService.getLabelsByProject(projectId as string),
         enabled: !!projectId && open,
     });
 
-    // Mutation gán nhãn
+    
     const assignLabelsMutation = useMutation({
         mutationFn: (labelIds: string[]) => taskService.assignLabels(taskId, labelIds),
         onSuccess: (updatedTask) => {
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
             queryClient.invalidateQueries({ queryKey: ["columns"] });
-            // Cập nhật local selectedIds ngay lập tức
+            
             if (updatedTask?.labels) {
                 const newSelectedIds = updatedTask.labels.map((lb: any) => lb.id);
                 setLocalSelectedIds(newSelectedIds);
             }
-            // Cập nhật task data trong TaskDetailModal
+            
             if (updatedTask && onTaskUpdate) {
                 onTaskUpdate(updatedTask);
             }
@@ -75,18 +75,18 @@ export default function LabelPicker({
         },
     });
 
-    // Mutation bỏ gán nhãn
+    
     const unassignLabelsMutation = useMutation({
         mutationFn: (labelIds: string[]) => taskService.unassignLabels(taskId, labelIds),
         onSuccess: (updatedTask) => {
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
             queryClient.invalidateQueries({ queryKey: ["columns"] });
-            // Cập nhật local selectedIds ngay lập tức
+            
             if (updatedTask?.labels) {
                 const newSelectedIds = updatedTask.labels.map((lb: any) => lb.id);
                 setLocalSelectedIds(newSelectedIds);
             }
-            // Cập nhật task data trong TaskDetailModal
+            
             if (updatedTask && onTaskUpdate) {
                 onTaskUpdate(updatedTask);
             }
@@ -100,10 +100,10 @@ export default function LabelPicker({
     const toggleSelect = async (labelId: string) => {
         const isSelected = localSelectedIds.includes(labelId);
         if (isSelected) {
-            // Bỏ gán nhãn
+            
             await unassignLabelsMutation.mutateAsync([labelId]);
         } else {
-            // Gán nhãn
+            
             await assignLabelsMutation.mutateAsync([labelId]);
         }
     };
@@ -112,11 +112,11 @@ export default function LabelPicker({
         mutationFn: ({ name, color, projectId }: { name?: string, color: string, projectId: string }) => labelService.createLabel(name, color, projectId),
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["labels", projectId] });
-            // Nếu tạo thành công và có id, tự động gán nhãn cho task
+            
             if (data?.id) {
                 assignLabelsMutation.mutate([data.id]);
             } else if (data?.isExist && data?.id) {
-                // Nếu nhãn đã tồn tại, tự động gán nhãn đó cho task
+                
                 assignLabelsMutation.mutate([data.id]);
             }
             message.success("Tạo nhãn thành công");

@@ -15,7 +15,7 @@ export class LabelsService {
    async create(createLabelDto: CreateLabelDto) {
     const trimmedName = createLabelDto.name?.trim() || '';
     
-    // Check if label already exists in the same project
+    
     const isExist = await this.labelRepo.findOne({
       where: {
         name: trimmedName,
