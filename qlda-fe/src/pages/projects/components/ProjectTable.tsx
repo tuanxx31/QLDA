@@ -13,6 +13,15 @@ interface Props {
   loading: boolean;
 }
 
+const getStatusLabel = (status: string): string => {
+  const statusMap: Record<string, string> = {
+    todo: 'Chưa bắt đầu',
+    doing: 'Đang làm',
+    done: 'Hoàn thành',
+  };
+  return statusMap[status] || status;
+};
+
 const ProjectTable = ({ data = [], loading }: Props) => {
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -63,7 +72,7 @@ const ProjectTable = ({ data = [], loading }: Props) => {
                 record.status === 'done' ? 'green' : record.status === 'doing' ? 'blue' : 'default'
               }
             >
-              {record.status.toUpperCase()}
+              {getStatusLabel(record.status)}
             </Tag>
           ),
         },
