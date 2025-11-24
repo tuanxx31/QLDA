@@ -121,22 +121,54 @@ export default function MentionTextarea({
     
     const ids: string[] = [];
     
-    // Extract from plain @name format by matching with users
-    // Match @name where name can contain spaces and Vietnamese characters
-    // Pattern: @ followed by name (can contain spaces, ends at space, punctuation, or end of string)
-    const plainMentionRegex = /@([^\s@\n]+(?:\s+[^\s@\n]+)*)/g;
-    let plainMatch;
-    while ((plainMatch = plainMentionRegex.exec(value)) !== null) {
-      const mentionName = plainMatch[1].trim();
+    // Sort users by name length (longest first) to match longer names first
+    // This ensures "Nguyên Thị Hăng" matches before "Nguyên" if both exist
+    const sortedUsers = [...users].sort((a, b) => {
+      const nameA = (a.name || a.email || '').length;
+      const nameB = (b.name || b.email || '').length;
+      return nameB - nameA;
+    });
+    
+    // Find all @ symbols in the content
+    let searchIndex = 0;
+    while (searchIndex < value.length) {
+      const atIndex = value.indexOf('@', searchIndex);
+      if (atIndex === -1) break;
       
-      if (!mentionName) continue;
+      // Try to match each user name starting from this @ position
+      let matched = false;
+      for (const user of sortedUsers) {
+        const userName = user.name || user.email;
+        if (!userName) continue;
+        
+        // Check if this user's name appears right after @
+        const nameStart = atIndex + 1;
+        const nameEnd = nameStart + userName.length;
+        
+        if (nameEnd <= value.length) {
+          const potentialMatch = value.substring(nameStart, nameEnd);
+          
+          // Check if it's an exact match (case-insensitive for better matching)
+          if (potentialMatch.toLowerCase() === userName.toLowerCase()) {
+            // Check if followed by space, newline, punctuation, or end of string
+            const nextChar = value[nameEnd];
+            if (!nextChar || /[\s\n\r.,!?;:]/.test(nextChar)) {
+              // Found a valid mention!
+              if (!ids.includes(user.id)) {
+                ids.push(user.id);
+              }
+              matched = true;
+              // Move search index past this mention to avoid overlapping matches
+              searchIndex = nameEnd;
+              break;
+            }
+          }
+        }
+      }
       
-      // Find user by name (exact match)
-      const user = users.find(
-        (u) => (u.name === mentionName || u.email === mentionName) && !ids.includes(u.id)
-      );
-      if (user) {
-        ids.push(user.id);
+      if (!matched) {
+        // No match found, continue searching from next position
+        searchIndex = atIndex + 1;
       }
     }
     
