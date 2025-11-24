@@ -1,17 +1,21 @@
-import { Card, Avatar, Tooltip, theme } from "antd";
+import { Card, Avatar, Tooltip, theme, Badge } from "antd";
 import {
   CheckCircleFilled,
   ClockCircleOutlined,
   CheckSquareOutlined,
+  CommentOutlined,
 } from "@ant-design/icons";
 import type { Task } from "@/types/task.type";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { taskService } from "@/services/task.services";
+import { commentService } from "@/services/comment.services";
 import { message } from "antd";
 import { useParams } from "react-router-dom";
 import { invalidateProgressQueries } from "@/utils/invalidateProgress";
 import dayjs from "dayjs";
 import { useMemo } from "react";
+import { getUnreadCount } from "@/utils/commentBadgeUtils";
+import useAuth from "@/hooks/useAuth";
 
 interface Props {
   task: Task;
@@ -21,6 +25,27 @@ export default function TaskCard({ task }: Props) {
   const queryClient = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();
   const { token } = theme.useToken();
+  const { authUser } = useAuth();
+
+  // Fetch comments to calculate unread count
+  const { data: commentsData } = useQuery({
+    queryKey: ['comments', task.id],
+    queryFn: () => commentService.getComments(task.id, 1, 50),
+    staleTime: 10000, // Reduce stale time to refresh more often
+    refetchOnWindowFocus: true,
+  });
+
+  // Calculate total comments count
+  const totalCommentsCount = useMemo(() => {
+    return commentsData?.data?.length || 0;
+  }, [commentsData?.data]);
+
+  // Calculate unread count - only show badge if there are unread comments
+  const unreadCount = useMemo(() => {
+    if (!authUser?.id || !commentsData?.data || commentsData.data.length === 0) return 0;
+    const count = getUnreadCount(task.id, authUser.id, commentsData.data);
+    return count > 0 ? count : 0;
+  }, [task.id, authUser?.id, commentsData?.data]);
 
   const updateStatusMutation = useMutation({
     mutationFn: (newStatus: "todo" | "done") =>
@@ -87,11 +112,68 @@ export default function TaskCard({ task }: Props) {
         border: `1px solid ${token.colorBorderSecondary}`,
         boxShadow: token.boxShadowTertiary,
         backgroundColor: token.colorBgContainer,
+        position: 'relative',
       }}
       size="small"
       hoverable
       bodyStyle={{ padding: 10 }}
     >
+      {/* Comments count badge - always show total count */}
+      {totalCommentsCount > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 6,
+            right: 6,
+            zIndex: 10,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+          }}
+        >
+          {/* Unread badge (red) - only show if there are unread */}
+          {unreadCount > 0 ? (
+            <Badge
+              count={unreadCount}
+              overflowCount={99}
+              style={{
+                backgroundColor: '#ff4d4f',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              }}
+            >
+              <CommentOutlined
+                style={{
+                  fontSize: 16,
+                  color: token.colorTextSecondary,
+                  backgroundColor: token.colorBgContainer,
+                  padding: 4,
+                  borderRadius: 4,
+                }}
+              />
+            </Badge>
+          ) : (
+            /* Total count badge (gray) - show when no unread */
+            <Tooltip title={`${totalCommentsCount} bình luận`}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '2px 6px',
+                  backgroundColor: token.colorFillTertiary,
+                  borderRadius: 4,
+                  fontSize: 12,
+                  color: token.colorTextSecondary,
+                }}
+              >
+                <CommentOutlined style={{ fontSize: 14 }} />
+                <span>{totalCommentsCount}</span>
+              </div>
+            </Tooltip>
+          )}
+        </div>
+      )}
+
       {}
       {task.labels && task.labels.length > 0 && (
         <div

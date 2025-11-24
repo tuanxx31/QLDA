@@ -236,7 +236,7 @@ export default function CommentList({ taskId, comments, onEdit, projectOwnerId }
                 ) : (
                   <>
                     <div style={{ fontSize: 13, color: '#555', marginBottom: 8 }}>
-                      {parseMentions(comment.content)}
+                      {parseMentions(comment.content, { mentions: comment.mentions })}
                     </div>
 
                     {comment.fileUrl && (

@@ -23,6 +23,7 @@ import {
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import type { Task } from "@/types/task.type";
+import type { User } from "@/types/user.type";
 import MemberAddTaskModal from "./MemberAddTaskModal";
 import { taskService } from "@/services/task.services";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -34,6 +35,8 @@ import CommentList from "./CommentList";
 import CommentInput from "./CommentInput";
 import { commentService } from "@/services/comment.services";
 import { projectService } from "@/services/project.services";
+import { markTaskAsRead } from "@/utils/commentBadgeUtils";
+import useAuth from "@/hooks/useAuth";
 
 const { Title, Text } = Typography;
 type TaskLabel = NonNullable<Task["labels"]>[number];
@@ -55,6 +58,7 @@ export default function TaskDetailModal({
 }: Props) {
   const queryClient = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();
+  const { authUser } = useAuth();
   const [taskData, setTaskData] = useState<Task | null>(task);
   
   const { data: project } = useQuery({
@@ -70,7 +74,7 @@ export default function TaskDetailModal({
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
 
-  const [editingComment, setEditingComment] = useState<{ id: string; content: string; fileUrl?: string } | null>(null);
+  const [editingComment, setEditingComment] = useState<{ id: string; content: string; fileUrl?: string; mentions?: User[] } | null>(null);
 
   const handleLabelMetaUpdate = (label: Pick<TaskLabel, "id" | "name" | "color">) => {
     setTaskData((prev) => {
@@ -147,6 +151,18 @@ export default function TaskDetailModal({
       setTempTitle("");
     }
   }, [fetchedTask, task?.id]);
+
+  // Mark task as read when modal opens
+  useEffect(() => {
+    if (open && taskData?.id && authUser?.id) {
+      markTaskAsRead(taskData.id, authUser.id);
+      // Invalidate comments query to refresh badge on TaskCard
+      queryClient.invalidateQueries({ queryKey: ['comments', taskData.id] });
+      // Also invalidate all task queries to refresh TaskCard badges
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['columns'] });
+    }
+  }, [open, taskData?.id, authUser?.id, queryClient]);
 
   
   const dueInfo = useMemo(() => {
@@ -616,6 +632,7 @@ export default function TaskDetailModal({
                     id: comment.id,
                     content: comment.content,
                     fileUrl: comment.fileUrl,
+                    mentions: comment.mentions,
                   });
                 }}
               />
@@ -623,6 +640,7 @@ export default function TaskDetailModal({
 
             <CommentInput
               taskId={taskData.id}
+              projectId={projectId!}
               editingComment={editingComment}
               onCancelEdit={() => setEditingComment(null)}
             />
