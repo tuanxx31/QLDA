@@ -40,7 +40,7 @@ export class ProjectMembersService {
     if (!actor || (actor.role !== 'leader' && actor.role !== 'editor'))
       throw new ForbiddenException('Không có quyền thêm thành viên.');
 
-    const user = await this.userRepo.findOne({ where: { id: dto.userId } });
+    const user = await this.userRepo.findOne({ where: { email: dto.email } });
     if (!user) throw new NotFoundException('Không tìm thấy người dùng.');
 
     const already = project.members.find((m) => m.user.id === user.id);

@@ -9,7 +9,10 @@ import viVN from 'antd/locale/vi_VN';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
+
+dayjs.extend(relativeTime);
 dayjs.locale('vi');
 
 const queryClient = new QueryClient();

@@ -15,6 +15,7 @@ import { ColumnEntity } from 'src/columns/entities/column.entity';
 import { User } from 'src/users/entities/user.entity';
 import { SubTask } from 'src/sub-tasks/entities/sub-task.entity';
 import { Label } from 'src/labels/entities/label.entity';
+import { Comment } from 'src/comments/entities/comment.entity';
 
 @Entity('tasks')
 @Index(['columnId', 'position'])
@@ -91,6 +92,9 @@ export class Task {
 
   @OneToMany(() => SubTask, (subtask) => subtask.task, { cascade: true })
   subtasks: SubTask[];
+
+  @OneToMany(() => Comment, (comment) => comment.task, { cascade: true })
+  comments: Comment[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;

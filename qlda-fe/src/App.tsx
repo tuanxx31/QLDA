@@ -14,6 +14,12 @@ import ProjectDetailPage from '@/pages/projects/detail';
 import ProjectBoardPage from '@/pages/projects/detail/ProjectBoardPage';
 import '@ant-design/v5-patch-for-react-19';
 import './styles/app.css';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/vi';
+
+dayjs.extend(relativeTime);
+dayjs.locale('vi');
 
 export default function App() {
   return (

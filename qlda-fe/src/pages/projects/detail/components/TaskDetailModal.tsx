@@ -30,6 +30,10 @@ import LabelPicker from "./LabelPicker";
 import DueDateModal from "./DateComponet";
 import { useParams } from "react-router-dom";
 import { invalidateProgressQueries } from "@/utils/invalidateProgress";
+import CommentList from "./CommentList";
+import CommentInput from "./CommentInput";
+import { commentService } from "@/services/comment.services";
+import { projectService } from "@/services/project.services";
 
 const { Title, Text } = Typography;
 type TaskLabel = NonNullable<Task["labels"]>[number];
@@ -52,6 +56,12 @@ export default function TaskDetailModal({
   const queryClient = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();
   const [taskData, setTaskData] = useState<Task | null>(task);
+  
+  const { data: project } = useQuery({
+    queryKey: ["project", projectId],
+    queryFn: () => projectService.getById(projectId!),
+    enabled: !!projectId,
+  });
   const [description, setDescription] = useState("");
   const [editingTitle, setEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState("");
@@ -59,6 +69,8 @@ export default function TaskDetailModal({
   const [labelOpen, setLabelOpen] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
+
+  const [editingComment, setEditingComment] = useState<{ id: string; content: string; fileUrl?: string } | null>(null);
 
   const handleLabelMetaUpdate = (label: Pick<TaskLabel, "id" | "name" | "color">) => {
     setTaskData((prev) => {
@@ -108,6 +120,15 @@ export default function TaskDetailModal({
     queryFn: () => taskService.getAssignees(task!.id),
     enabled: !!task?.id && open,
     staleTime: 30000,
+  });
+
+  const {
+    data: commentsData,
+  } = useQuery({
+    queryKey: ["comments", taskData?.id],
+    queryFn: () => commentService.getComments(taskData!.id, 1, 50),
+    enabled: !!taskData?.id && open,
+    refetchInterval: 5000,
   });
 
   
@@ -249,7 +270,7 @@ export default function TaskDetailModal({
         open={open}
         onCancel={onClose}
         footer={null}
-        width={850}
+        width={"70vw"}
         styles={{
           body: {
             padding: 0,
@@ -576,26 +597,35 @@ export default function TaskDetailModal({
               flex: 1,
               paddingLeft: 16,
               borderLeft: "1px solid #eee",
+              display: "flex",
+              flexDirection: "column",
+              maxHeight: "600px",
             }}
           >
             <Title level={5} style={{ fontSize: 14, marginBottom: 12 }}>
-              Nhận xét & hoạt động
+              Bình luận
             </Title>
 
-            <Input
-              placeholder="Viết bình luận..."
-              style={{ marginBottom: 12, borderRadius: 6 }}
-            />
-
-            <div style={{ fontSize: 13, color: "#555" }}>
-              <p style={{ marginBottom: 4 }}>
-                <b>Tuấn Đình</b> đã cập nhật thẻ này
-              </p>
-              <p style={{ fontSize: 12, color: "#888", margin: 0 }}>
-                Cập nhật lúc:{" "}
-                {dayjs(taskData.updatedAt).format("DD/MM/YYYY HH:mm")}
-              </p>
+            <div style={{ flex: 1, overflowY: "auto", marginBottom: 12 }}>
+              <CommentList
+                taskId={taskData.id}
+                comments={commentsData?.data || []}
+                projectOwnerId={project?.owner?.id}
+                onEdit={(comment) => {
+                  setEditingComment({
+                    id: comment.id,
+                    content: comment.content,
+                    fileUrl: comment.fileUrl,
+                  });
+                }}
+              />
             </div>
+
+            <CommentInput
+              taskId={taskData.id}
+              editingComment={editingComment}
+              onCancelEdit={() => setEditingComment(null)}
+            />
           </div>
         </div>
       </Modal>
