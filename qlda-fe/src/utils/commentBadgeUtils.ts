@@ -2,12 +2,28 @@ import type { Task } from '@/types/task.type';
 import type { Comment } from '@/types/comment.type';
 
 const STORAGE_KEY_PREFIX = 'task_last_read';
+export const STORAGE_CHANGE_EVENT = 'task_read_status_changed';
 
 /**
  * Generate localStorage key for a specific task and user
  */
 function getStorageKey(taskId: string, userId: string): string {
   return `${STORAGE_KEY_PREFIX}_${userId}_${taskId}`;
+}
+
+/**
+ * Dispatch custom event when task read status changes
+ */
+function dispatchReadStatusChange(taskId: string, userId: string): void {
+  try {
+    window.dispatchEvent(
+      new CustomEvent(STORAGE_CHANGE_EVENT, {
+        detail: { taskId, userId },
+      })
+    );
+  } catch (error) {
+    console.error('Failed to dispatch read status change event:', error);
+  }
 }
 
 /**
@@ -18,6 +34,8 @@ export function markTaskAsRead(taskId: string, userId: string): void {
   const timestamp = new Date().toISOString();
   try {
     localStorage.setItem(key, timestamp);
+    // Dispatch event to notify components about the change
+    dispatchReadStatusChange(taskId, userId);
   } catch (error) {
     console.error('Failed to mark task as read:', error);
   }
@@ -96,6 +114,8 @@ export function clearReadStatus(taskId: string, userId: string): void {
   const key = getStorageKey(taskId, userId);
   try {
     localStorage.removeItem(key);
+    // Dispatch event to notify components about the change
+    dispatchReadStatusChange(taskId, userId);
   } catch (error) {
     console.error('Failed to clear read status:', error);
   }

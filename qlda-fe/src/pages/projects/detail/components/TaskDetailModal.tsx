@@ -157,8 +157,11 @@ export default function TaskDetailModal({
   useEffect(() => {
     if (open && taskData?.id && authUser?.id) {
       markTaskAsRead(taskData.id, authUser.id);
-      // Invalidate comments query to refresh badge on TaskCard
-      queryClient.invalidateQueries({ queryKey: ['comments', taskData.id] });
+      // Invalidate and refetch comments query to refresh badge on TaskCard
+      queryClient.invalidateQueries({ 
+        queryKey: ['comments', taskData.id],
+        refetchType: 'active', // Refetch active queries immediately
+      });
       // Also invalidate all task queries to refresh TaskCard badges
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['columns'] });

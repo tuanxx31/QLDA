@@ -174,7 +174,7 @@ export class CommentsService {
     return matches.map((match) => match.substring(1));
   }
 
-  async sendMentionNotification(mentionedUserIds: string[], comment: Comment) {
+  sendMentionNotification(mentionedUserIds: string[], comment: Comment) {
     console.log(
       `[Notification] Users ${mentionedUserIds.join(', ')} được mention trong comment ${comment.id}`,
     );

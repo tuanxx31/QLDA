@@ -17,6 +17,7 @@ import { useMemo } from 'react';
 import { getUnreadCount } from '@/utils/commentBadgeUtils';
 import useAuth from '@/hooks/useAuth';
 import { getAvatarUrl } from '@/utils/avatarUtils';
+import { useTaskReadStatus } from '@/hooks/useTaskReadStatus';
 
 interface Props {
   task: Task;
@@ -28,12 +29,16 @@ export default function TaskCard({ task }: Props) {
   const { token } = theme.useToken();
   const { authUser } = useAuth();
 
+  // Track task read status changes to force re-render when localStorage changes
+  const { updateKey } = useTaskReadStatus(task.id, authUser?.id);
+
   // Fetch comments to calculate unread count
   const { data: commentsData } = useQuery({
     queryKey: ['comments', task.id],
     queryFn: () => commentService.getComments(task.id, 1, 50),
-    staleTime: 10000, // Reduce stale time to refresh more often
+    staleTime: 0, // Always refetch when invalidated
     refetchOnWindowFocus: true,
+    refetchOnMount: true, // Refetch when component mounts to get latest data
   });
 
   // Calculate total comments count
@@ -42,11 +47,12 @@ export default function TaskCard({ task }: Props) {
   }, [commentsData?.data]);
 
   // Calculate unread count - only show badge if there are unread comments
+  // updateKey is included to force re-computation when localStorage changes
   const unreadCount = useMemo(() => {
     if (!authUser?.id || !commentsData?.data || commentsData.data.length === 0) return 0;
     const count = getUnreadCount(task.id, authUser.id, commentsData.data);
     return count > 0 ? count : 0;
-  }, [task.id, authUser?.id, commentsData?.data]);
+  }, [task.id, authUser?.id, commentsData?.data, updateKey]);
 
   const updateStatusMutation = useMutation({
     mutationFn: (newStatus: 'todo' | 'done') => taskService.updateStatus(task.id, newStatus),
