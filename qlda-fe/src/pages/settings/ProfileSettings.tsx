@@ -12,10 +12,11 @@ import {
 import { getUserProfile, updateUserProfile, uploadAvatar } from '@/services/user.services';
 import type { UpdateUserDto } from '@/types/user.type';
 import { getAvatarUrl } from '@/utils/avatarUtils';
+import useAuth from '@/hooks/useAuth';
 
 const ProfileSettings = () => {
   const { message } = App.useApp();
-
+  const { updateAuthUser } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: user, isLoading } = useQuery({
@@ -25,18 +26,24 @@ const ProfileSettings = () => {
 
   const { mutateAsync: updateProfile, isPending } = useMutation({
     mutationFn: updateUserProfile,
-    onSuccess: () => {
+    onSuccess: async () => {
       message.success('Cập nhật thông tin thành công!');
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      // Fetch updated user and update auth state
+      const updatedUser = await getUserProfile();
+      updateAuthUser(updatedUser);
     },
     onError: () => message.error('Cập nhật thất bại, vui lòng thử lại.'),
   });
 
   const { mutateAsync: uploadAvatarFile, isPending: isUploadingAvatar } = useMutation({
     mutationFn: uploadAvatar,
-    onSuccess: () => {
+    onSuccess: async () => {
       message.success('Cập nhật avatar thành công!');
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      // Fetch updated user and update auth state
+      const updatedUser = await getUserProfile();
+      updateAuthUser(updatedUser);
     },
     onError: () => message.error('Cập nhật avatar thất bại, vui lòng thử lại.'),
   });

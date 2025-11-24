@@ -16,15 +16,30 @@ interface Props {
   onCancelEdit?: () => void;
 }
 
-// Parse formatted mentions @[name](id) to display format @name for editing
-function parseContentForDisplay(content: string): string {
+// Parse formatted mentions @[userId] to display format @name for editing
+function parseContentForDisplay(content: string, mentions?: User[]): string {
   if (!content) return content;
   
-  // Replace @[name](id) with @name for better UX in textarea
-  return content.replace(/@\[([^\]]+)\]\(([^)]+)\)/g, '@$1');
+  // Create map from mentions: userId -> User
+  const mentionsMap = new Map<string, User>();
+  if (mentions && mentions.length > 0) {
+    mentions.forEach((user) => {
+      mentionsMap.set(user.id, user);
+    });
+  }
+  
+  // Replace @[userId] with @name for better UX in textarea
+  return content.replace(/@\[([a-f0-9-]{36})\]/gi, (match, userId) => {
+    const user = mentionsMap.get(userId);
+    if (user) {
+      return `@${user.name || user.email}`;
+    }
+    // If user not found, keep the userId format
+    return match;
+  });
 }
 
-// Format content with mentions: replace plain @name with @[name](id) for backend
+// Format content with mentions: replace plain @name with @[userId] for backend
 function formatContentForSubmit(content: string, mentionIds: string[], mentions?: User[]): string {
   if (!content || mentionIds.length === 0) {
     return content;
@@ -40,33 +55,35 @@ function formatContentForSubmit(content: string, mentionIds: string[], mentions?
     });
   }
 
-  // First, ensure all formatted mentions @[name](id) have correct IDs from mentionIds
-  // Replace any @[name](id) that doesn't match mentionIds
-  formattedContent = formattedContent.replace(/@\[([^\]]+)\]\(([^)]+)\)/g, (match, name, id) => {
-    // If this ID is in mentionIds, keep it
+  // First, replace any existing @[userId] or @[name](userId) format with @[userId]
+  formattedContent = formattedContent.replace(/@\[([^\]]+)\]\(([^)]+)\)/g, (_match, name, id) => {
+    // If this ID is in mentionIds, convert to @[userId] format
     if (mentionIds.includes(id)) {
-      return match;
+      return `@[${id}]`;
     }
-    // Otherwise, find the user by name and replace with correct ID
-    const user = Array.from(userMap.values()).find((u) => (u.name || u.email) === name);
-    if (user && mentionIds.includes(user.id)) {
-      return `@[${name}](${user.id})`;
-    }
-    // If not found in mentionIds, remove the mention format (keep as plain text)
+    // Otherwise, remove the mention format (keep as plain text)
     return `@${name}`;
   });
 
-  // Then, replace plain @name patterns with @[name](id) based on mentionIds
+  // Also replace @[userId] format (if already in correct format, keep it)
+  formattedContent = formattedContent.replace(/@\[([a-f0-9-]{36})\]/gi, (match, userId) => {
+    if (mentionIds.includes(userId)) {
+      return `@[${userId}]`;
+    }
+    // If userId not in mentionIds, try to find user by name and convert
+    return match;
+  });
+
+  // Then, replace plain @name patterns with @[userId] based on mentionIds
   mentionIds.forEach((userId) => {
     const user = userMap.get(userId);
     if (!user) return;
     
     const userName = user.name || user.email;
     // Match @username (not already formatted, followed by space, punctuation, or end)
-    // Use word boundary or end of string to avoid partial matches
     const escapedName = userName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`@${escapedName}(?!\\[)(?=\\s|$|[.,!?;:])`, 'g');
-    formattedContent = formattedContent.replace(regex, `@[${userName}](${userId})`);
+    formattedContent = formattedContent.replace(regex, `@[${userId}]`);
   });
 
   return formattedContent;
@@ -125,8 +142,8 @@ export default function CommentInput({ taskId, projectId, editingComment, onCanc
   // Reset when editing comment changes
   useEffect(() => {
     if (editingComment) {
-      // Parse formatted content to display format (@[name](id) -> @name) for better UX
-      const displayContent = parseContentForDisplay(editingComment.content || '');
+      // Parse formatted content to display format (@[userId] -> @name) for better UX
+      const displayContent = parseContentForDisplay(editingComment.content || '', editingComment.mentions);
       setContent(displayContent);
       setFileUrl(editingComment.fileUrl);
       
@@ -134,10 +151,10 @@ export default function CommentInput({ taskId, projectId, editingComment, onCanc
       if (editingComment.mentions && editingComment.mentions.length > 0) {
         setMentionIds(editingComment.mentions.map((u) => u.id));
       } else {
-        // Try to extract from formatted content if available
-        const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
+        // Try to extract from formatted content if available (@[userId] format)
+        const mentionRegex = /@\[([a-f0-9-]{36})\]/gi;
         const matches = [...(editingComment.content || '').matchAll(mentionRegex)];
-        const ids = matches.map((match) => match[2]);
+        const ids = matches.map((match) => match[1]);
         setMentionIds(ids);
       }
     } else {

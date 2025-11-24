@@ -14,52 +14,93 @@ export function parseMentions(content: string, options?: ParseMentionsOptions): 
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   
-  // If we have mentions list, use them to match exact names
+  // Create map from mentions array: userId -> User
+  const mentionsMap = new Map<string, User>();
   if (options?.mentions && options.mentions.length > 0) {
-    // Sort mentions by name length (longest first) to match longer names first
-    const sortedMentions = [...options.mentions].sort((a, b) => {
-      const nameA = a.name || a.email || '';
-      const nameB = b.name || b.email || '';
-      return nameB.length - nameA.length;
+    options.mentions.forEach((user) => {
+      mentionsMap.set(user.id, user);
     });
+  }
+  
+  // Find all @ symbols
+  let searchIndex = 0;
+  while (searchIndex < content.length) {
+    const atIndex = content.indexOf('@', searchIndex);
+    if (atIndex === -1) break;
     
-    // Find all @ symbols
-    let searchIndex = 0;
-    while (searchIndex < content.length) {
-      const atIndex = content.indexOf('@', searchIndex);
-      if (atIndex === -1) break;
+    // Add text before @
+    if (atIndex > lastIndex) {
+      parts.push(content.substring(lastIndex, atIndex));
+    }
+    
+    // First check for new format @[userId] (only userId, no name)
+    const userIdMatch = content.substring(atIndex).match(/^@\[([a-f0-9-]{36})\]/i);
+    if (userIdMatch) {
+      const userId = userIdMatch[1];
+      const user = mentionsMap.get(userId);
+      const displayName = user ? (user.name || user.email) : userId;
       
-      // Add text before @
-      if (atIndex > lastIndex) {
-        parts.push(content.substring(lastIndex, atIndex));
-      }
+      parts.push(
+        <Text 
+          key={atIndex} 
+          strong 
+          style={{ 
+            color: '#1677ff',
+            backgroundColor: '#e6f4ff',
+            padding: '2px 6px',
+            borderRadius: 4,
+            cursor: 'pointer',
+            display: 'inline-block',
+          }}
+          title={user?.email || userId}
+        >
+          @{displayName}
+        </Text>,
+      );
+      lastIndex = atIndex + userIdMatch[0].length;
+      searchIndex = lastIndex;
+      continue;
+    }
+    
+    // Fallback: check for old format @[name](userId) for backward compatibility
+    const bracketMatch = content.substring(atIndex).match(/^@\[([^\]]+)\]\(([^)]+)\)/);
+    if (bracketMatch) {
+      const displayName = bracketMatch[1];
+      const userId = bracketMatch[2];
+      // Use name from mentions map if available, otherwise use displayName from content
+      const user = mentionsMap.get(userId);
+      const finalDisplayName = user ? (user.name || user.email) : displayName;
       
-      // First check for format @[name](id)
-      const bracketMatch = content.substring(atIndex).match(/^@\[([^\]]+)\]\(([^)]+)\)/);
-      if (bracketMatch) {
-        const displayName = bracketMatch[1];
-        const userId = bracketMatch[2];
-        parts.push(
-          <Text 
-            key={atIndex} 
-            strong 
-            style={{ 
-              color: '#1677ff',
-              backgroundColor: '#e6f4ff',
-              padding: '2px 6px',
-              borderRadius: 4,
-              cursor: 'pointer',
-              display: 'inline-block',
-            }}
-            title={userId}
-          >
-            @{displayName}
-          </Text>,
-        );
-        lastIndex = atIndex + bracketMatch[0].length;
-        searchIndex = lastIndex;
-        continue;
-      }
+      parts.push(
+        <Text 
+          key={atIndex} 
+          strong 
+          style={{ 
+            color: '#1677ff',
+            backgroundColor: '#e6f4ff',
+            padding: '2px 6px',
+            borderRadius: 4,
+            cursor: 'pointer',
+            display: 'inline-block',
+          }}
+          title={user?.email || userId}
+        >
+          @{finalDisplayName}
+        </Text>,
+      );
+      lastIndex = atIndex + bracketMatch[0].length;
+      searchIndex = lastIndex;
+      continue;
+    }
+    
+    // If we have mentions list, try to match plain @name format
+    if (mentionsMap.size > 0) {
+      // Sort mentions by name length (longest first) to match longer names first
+      const sortedMentions = Array.from(mentionsMap.values()).sort((a, b) => {
+        const nameA = a.name || a.email || '';
+        const nameB = b.name || b.email || '';
+        return nameB.length - nameA.length;
+      });
       
       // Try to match each mention name
       let matched = false;
@@ -112,45 +153,11 @@ export function parseMentions(content: string, options?: ParseMentionsOptions): 
         lastIndex = atIndex + 1;
         searchIndex = lastIndex;
       }
-    }
-  } else {
-    // Fallback: use regex to match mentions
-    // Match both new format @[username](userId) and old format @username
-    const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)|@([^\s\n@]+)/g;
-    let match;
-
-    while ((match = mentionRegex.exec(content)) !== null) {
-      // Add text before mention
-      if (match.index > lastIndex) {
-        parts.push(content.substring(lastIndex, match.index));
-      }
-      
-      // Extract display name (either from new or old format)
-      const displayName = match[1] || match[3];
-      const userId = match[2];
-      
-      if (displayName) {
-        parts.push(
-          <Text 
-            key={match.index} 
-            strong 
-            style={{ 
-              color: '#1677ff',
-              backgroundColor: '#e6f4ff',
-              padding: '2px 6px',
-              borderRadius: 4,
-              cursor: 'pointer',
-              display: 'inline-block',
-            }}
-            title={userId ? `User ID: ${userId}` : undefined}
-          >
-            @{displayName}
-          </Text>,
-        );
-      } else {
-        parts.push('@');
-      }
-      lastIndex = match.index + match[0].length;
+    } else {
+      // No mentions map, just add @ and continue
+      parts.push('@');
+      lastIndex = atIndex + 1;
+      searchIndex = lastIndex;
     }
   }
 
