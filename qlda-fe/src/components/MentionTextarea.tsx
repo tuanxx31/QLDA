@@ -1,5 +1,6 @@
 import { Input, Spin } from 'antd';
-import { useState, useRef, useEffect, useMemo, KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import type { KeyboardEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { projectMemberService } from '@/services/project.services';
 import type { ProjectMember } from '@/types/project.type';
@@ -42,6 +43,7 @@ export default function MentionTextarea({
   const [cursorPosition, setCursorPosition] = useState({ top: 0, left: 0 });
   const textareaRef = useRef<any>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+  const prevMentionIdsRef = useRef<string[]>([]);
 
   // Fetch project members
   const { data: projectMembers = [], isLoading } = useQuery({
@@ -115,6 +117,8 @@ export default function MentionTextarea({
   // Extract mention IDs from current value
   // Only supports @name format (formatted @[name](id) will be converted to @name when editing)
   useEffect(() => {
+    if (!onMentionsChange) return;
+    
     const ids: string[] = [];
     
     // Extract from plain @name format by matching with users
@@ -136,7 +140,16 @@ export default function MentionTextarea({
       }
     }
     
-    onMentionsChange?.(ids);
+    // Sort ids for comparison
+    const sortedIds = [...ids].sort();
+    const prevSortedIds = [...prevMentionIdsRef.current].sort();
+    
+    // Only call onMentionsChange if ids actually changed
+    if (sortedIds.length !== prevSortedIds.length || 
+        sortedIds.some((id, index) => id !== prevSortedIds[index])) {
+      prevMentionIdsRef.current = ids;
+      onMentionsChange(ids);
+    }
   }, [value, users, onMentionsChange]);
 
   // Handle input change
@@ -188,9 +201,6 @@ export default function MentionTextarea({
   // Calculate dropdown position
   const calculateDropdownPosition = (textarea: HTMLTextAreaElement, position: number) => {
     try {
-      // Get textarea position
-      const textareaRect = textarea.getBoundingClientRect();
-      
       // Create a temporary element to measure text position
       const measureDiv = document.createElement('div');
       const computedStyle = window.getComputedStyle(textarea);

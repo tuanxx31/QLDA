@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { App, Spin } from 'antd';
+import { App, Spin, Avatar, Upload, Space } from 'antd';
+import { UserOutlined, LoadingOutlined, CameraOutlined } from '@ant-design/icons';
+import type { UploadProps } from 'antd';
 import {
   ProForm,
   ProFormText,
@@ -7,8 +9,9 @@ import {
   ProFormDatePicker,
   ProFormSelect,
 } from '@ant-design/pro-components';
-import { getUserProfile, updateUserProfile } from '@/services/user.services';
+import { getUserProfile, updateUserProfile, uploadAvatar } from '@/services/user.services';
 import type { UpdateUserDto } from '@/types/user.type';
+import { getAvatarUrl } from '@/utils/avatarUtils';
 
 const ProfileSettings = () => {
   const { message } = App.useApp();
@@ -29,12 +32,71 @@ const ProfileSettings = () => {
     onError: () => message.error('Cập nhật thất bại, vui lòng thử lại.'),
   });
 
+  const { mutateAsync: uploadAvatarFile, isPending: isUploadingAvatar } = useMutation({
+    mutationFn: uploadAvatar,
+    onSuccess: () => {
+      message.success('Cập nhật avatar thành công!');
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+    },
+    onError: () => message.error('Cập nhật avatar thất bại, vui lòng thử lại.'),
+  });
+
+  const handleAvatarUpload: UploadProps['customRequest'] = async ({ file, onSuccess, onError }) => {
+    try {
+      const fileObj = file as File;
+      const isValidType = /\.(jpg|jpeg|png|webp)$/i.test(fileObj.name);
+      const isValidSize = fileObj.size <= 5 * 1024 * 1024;
+
+      if (!isValidType) {
+        message.error('Chỉ chấp nhận file ảnh: jpg, png, webp');
+        onError?.(new Error('Invalid file type'));
+        return;
+      }
+
+      if (!isValidSize) {
+        message.error('File không được vượt quá 5MB');
+        onError?.(new Error('File too large'));
+        return;
+      }
+
+      await uploadAvatarFile(fileObj);
+      onSuccess?.(null);
+    } catch (error) {
+      onError?.(error as Error);
+    }
+  };
+
   if (isLoading) return <Spin />;
 
   if (!user) return <div>Không tìm thấy thông tin cá nhân</div>;
 
   return (
     <ProCard title="Cập nhật thông tin cá nhân" bordered>
+      <Space direction="vertical" size="large" style={{ width: '100%', marginBottom: 24 }}>
+        <Space direction="vertical" align="center" style={{ width: '100%' }}>
+          <Avatar
+            size={120}
+            src={getAvatarUrl(user.avatar)}
+            icon={<UserOutlined />}
+            style={{ marginBottom: 8 }}
+          />
+          <Upload
+            customRequest={handleAvatarUpload}
+            showUploadList={false}
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            disabled={isUploadingAvatar}
+          >
+            <Space>
+              {isUploadingAvatar ? (
+                <LoadingOutlined />
+              ) : (
+                <CameraOutlined />
+              )}
+              <span>{isUploadingAvatar ? 'Đang tải lên...' : 'Thay đổi avatar'}</span>
+            </Space>
+          </Upload>
+        </Space>
+      </Space>
       <ProForm<UpdateUserDto>
         initialValues={user}
         onFinish={async values => {

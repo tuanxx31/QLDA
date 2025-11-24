@@ -3,6 +3,7 @@ import { Space, Avatar, Tag, Popconfirm, Button, Typography, message } from 'ant
 import { DeleteOutlined, CrownOutlined } from '@ant-design/icons';
 import { groupService } from '@/services/group.services';
 import { useMutation } from '@tanstack/react-query';
+import { getAvatarUrl } from '@/utils/avatarUtils';
 
 const { Text } = Typography;
 
@@ -36,7 +37,7 @@ export const GroupMembersTable = ({ group, isLeader, onUpdate }: any) => {
             title: 'Thành viên',
             render: (_: any, member: any) => (
               <Space>
-                <Avatar src={member.avatar} />
+                <Avatar src={getAvatarUrl(member.avatar)} />
                 <div>
                   <Text strong>{member.name}</Text>
                   <br />

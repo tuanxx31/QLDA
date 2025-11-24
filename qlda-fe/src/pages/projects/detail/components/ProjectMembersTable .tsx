@@ -4,6 +4,7 @@ import { DeleteOutlined, CrownOutlined } from '@ant-design/icons';
 import { projectMemberService } from '@/services/project.services';
 import { useMutation } from '@tanstack/react-query';
 import type { ProjectMember } from '@/types/project.type';
+import { getAvatarUrl } from '@/utils/avatarUtils';
 
 const { Text } = Typography;
 
@@ -47,7 +48,7 @@ export const ProjectMembersTable = ({
             title: 'Thành viên',
             render: (_: any, member: any) => (
               <Space>
-                <Avatar src={member.user.avatar} />
+                <Avatar src={getAvatarUrl(member.user.avatar)} />
                 <div>
                   <Text strong>{member.user.name}</Text>
                   <br />

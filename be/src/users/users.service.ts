@@ -86,4 +86,12 @@ export class UsersService {
     }
     return { message: `User ${id} not found` };
   }
+
+  async updateAvatar(id: string, avatarUrl: string): Promise<{ message: string; avatar: string }> {
+    const updatedUser = await this.userRepository.update(id, { avatar: avatarUrl });
+    if (updatedUser.affected === 0) {
+      throw new BadRequestException('Cập nhật avatar thất bại');
+    }
+    return { message: 'Avatar đã được cập nhật thành công', avatar: avatarUrl };
+  }
 }

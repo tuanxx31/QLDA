@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { projectService } from '@/services/project.services';
 import type { ProjectProgress, ColumnProgress, UserProgress, DeadlineSummary } from '@/types/project.type';
 import { CheckCircleOutlined, ClockCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { getAvatarUrl } from '@/utils/avatarUtils';
 
 const { Title } = Typography;
 
@@ -53,7 +54,7 @@ export default function ProgressDashboard({ projectId }: Props) {
       render: (_: unknown, record: UserProgress) => (
         <Space>
           <img
-            src={record.avatar}
+            src={getAvatarUrl(record.avatar) || undefined}
             alt={record.name}
             style={{ width: 32, height: 32, borderRadius: '50%' }}
           />

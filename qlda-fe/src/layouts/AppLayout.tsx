@@ -9,6 +9,7 @@ import { ProLayout } from '@ant-design/pro-components';
 import { Avatar, Dropdown, Space, theme, type MenuProps } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
+import { getAvatarUrl } from '@/utils/avatarUtils';
 
 export default function AppLayout() {
   const navigate = useNavigate();
@@ -74,14 +75,14 @@ export default function AppLayout() {
           },
         }}
         avatarProps={{
-          src: user?.avatar,
+          src: getAvatarUrl(user?.avatar),
           size: 'small',
           title: user?.name,
           render: (props, dom) => (
             <Dropdown menu={{ items: menuItems }} placement="bottomRight">
               <div style={{ cursor: 'pointer' }}>
                 <Space>
-                  <Avatar src={user?.avatar} size="small" />
+                  <Avatar src={getAvatarUrl(user?.avatar)} size="small" />
                   <span
                     style={{
                       color: token.colorText,

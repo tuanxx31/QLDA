@@ -5,6 +5,7 @@ import { groupMemberService } from '@/services/group.services';
 import { projectMemberService } from '@/services/project.services';
 import type { ColumnsType } from 'antd/es/table';
 import { CheckOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons';
+import { getAvatarUrl } from '@/utils/avatarUtils';
 
 interface Props {
   open: boolean;
@@ -115,7 +116,7 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
       key: 'name',
       render: (_: any, record: any) => (
         <Space>
-          <Avatar src={record.avatar} icon={!record.avatar && <UserOutlined />} />
+          <Avatar src={getAvatarUrl(record.avatar)} icon={!record.avatar && <UserOutlined />} />
           <Space direction="vertical" size={0}>
             <Typography.Text strong>{record.name || record.email}</Typography.Text>
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>

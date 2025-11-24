@@ -19,3 +19,14 @@ export const deleteUser = async (): Promise<{ message: string }> => {
   const response = await api.delete('/users/delete');
   return response.data;
 };
+
+export const uploadAvatar = async (file: File): Promise<{ message: string; avatar: string }> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await api.post('/users/avatar', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};

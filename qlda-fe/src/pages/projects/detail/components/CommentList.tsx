@@ -9,26 +9,73 @@ import { parseMentions } from '@/utils/mentionParser';
 import { commentService } from '@/services/comment.services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import useAuth from '@/hooks/useAuth';
+import MentionTextarea from '@/components/MentionTextarea';
+import type { CreateCommentDto } from '@/types/comment.type';
+import { getAvatarUrl } from '@/utils/avatarUtils';
 
 dayjs.extend(relativeTime);
 dayjs.locale('vi');
 
 const { Text } = Typography;
-const { TextArea } = Input;
 
 interface Props {
   taskId: string;
   comments: Comment[];
   onEdit?: (comment: Comment) => void;
   projectOwnerId?: string;
+  projectId: string;
 }
 
-export default function CommentList({ taskId, comments, onEdit, projectOwnerId }: Props) {
+// Parse formatted mentions @[name](id) to display format @name for editing
+function parseContentForDisplay(content: string): string {
+  if (!content) return content;
+  return content.replace(/@\[([^\]]+)\]\(([^)]+)\)/g, '@$1');
+}
+
+// Format content with mentions: replace plain @name with @[name](id) for backend
+function formatContentForSubmit(content: string, mentionIds: string[], mentions?: Comment['mentions']): string {
+  if (!content || mentionIds.length === 0) {
+    return content;
+  }
+
+  let formattedContent = content;
+
+  // Check if content already has formatted mentions
+  const hasFormattedMentions = /@\[([^\]]+)\]\(([^)]+)\)/.test(content);
+  if (hasFormattedMentions) {
+    return formattedContent;
+  }
+
+  // Create a map of userId to user for quick lookup
+  const userMap = new Map<string, Comment['mentions'][0]>();
+  if (mentions) {
+    mentions.forEach((user) => {
+      userMap.set(user.id, user);
+    });
+  }
+
+  // Replace plain @name patterns with @[name](id)
+  mentionIds.forEach((userId) => {
+    const user = userMap.get(userId);
+    if (!user) return;
+    
+    const userName = user.name || user.email;
+    const escapedName = userName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`@${escapedName}(?!\\[)(?=\\s|$|[.,!?;:])`, 'g');
+    formattedContent = formattedContent.replace(regex, `@[${userName}](${userId})`);
+  });
+
+  return formattedContent;
+}
+
+export default function CommentList({ taskId, comments, onEdit, projectOwnerId, projectId }: Props) {
   const queryClient = useQueryClient();
   const { authUser } = useAuth();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState<string>('');
   const [editingFileUrl, setEditingFileUrl] = useState<string | undefined>();
+  const [editingMentionIds, setEditingMentionIds] = useState<string[]>([]);
+  const [editingComment, setEditingComment] = useState<Comment | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
 
   const deleteMutation = useMutation({
@@ -43,7 +90,7 @@ export default function CommentList({ taskId, comments, onEdit, projectOwnerId }
   });
 
   const updateMutation = useMutation({
-    mutationFn: (dto: { content: string; fileUrl?: string }) =>
+    mutationFn: (dto: CreateCommentDto) =>
       commentService.updateComment(taskId, editingId!, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', taskId] });
@@ -51,6 +98,8 @@ export default function CommentList({ taskId, comments, onEdit, projectOwnerId }
       setEditingId(null);
       setEditingContent('');
       setEditingFileUrl(undefined);
+      setEditingMentionIds([]);
+      setEditingComment(null);
     },
     onError: () => {
       message.error('Lỗi khi cập nhật bình luận');
@@ -59,14 +108,30 @@ export default function CommentList({ taskId, comments, onEdit, projectOwnerId }
 
   const handleStartEdit = (comment: Comment) => {
     setEditingId(comment.id);
-    setEditingContent(comment.content);
+    // Parse formatted content to display format (@[name](id) -> @name)
+    const displayContent = parseContentForDisplay(comment.content || '');
+    setEditingContent(displayContent);
     setEditingFileUrl(comment.fileUrl);
+    setEditingComment(comment);
+    
+    // Extract mention IDs from mentions array or formatted content
+    if (comment.mentions && comment.mentions.length > 0) {
+      setEditingMentionIds(comment.mentions.map((u) => u.id));
+    } else {
+      // Try to extract from formatted content if available
+      const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
+      const matches = [...(comment.content || '').matchAll(mentionRegex)];
+      const ids = matches.map((match) => match[2]);
+      setEditingMentionIds(ids);
+    }
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditingContent('');
     setEditingFileUrl(undefined);
+    setEditingMentionIds([]);
+    setEditingComment(null);
   };
 
   const handleSaveEdit = () => {
@@ -74,9 +139,18 @@ export default function CommentList({ taskId, comments, onEdit, projectOwnerId }
       message.warning('Vui lòng nhập nội dung hoặc đính kèm file');
       return;
     }
+    
+    // Format content with mentions before submitting
+    const formattedContent = formatContentForSubmit(
+      editingContent.trim(),
+      editingMentionIds,
+      editingComment?.mentions
+    );
+    
     updateMutation.mutate({
-      content: editingContent.trim(),
+      content: formattedContent,
       fileUrl: editingFileUrl,
+      mentionIds: editingMentionIds.length > 0 ? editingMentionIds : undefined,
     });
   };
 
@@ -151,7 +225,7 @@ export default function CommentList({ taskId, comments, onEdit, projectOwnerId }
               }}
             >
               <Avatar
-                src={comment.user?.avatar}
+                src={getAvatarUrl(comment.user?.avatar)}
                 size={32}
                 style={{ flexShrink: 0 }}
               >
@@ -171,11 +245,15 @@ export default function CommentList({ taskId, comments, onEdit, projectOwnerId }
 
                 {isEditing ? (
                   <div style={{ marginBottom: 8 }}>
-                    <TextArea
+                    <MentionTextarea
                       value={editingContent}
-                      onChange={(e) => setEditingContent(e.target.value)}
+                      onChange={setEditingContent}
+                      projectId={projectId}
+                      placeholder="Viết bình luận... (Gõ @ để mention thành viên)"
                       autoSize={{ minRows: 2, maxRows: 6 }}
                       style={{ marginBottom: 8, borderRadius: 6 }}
+                      onMentionsChange={setEditingMentionIds}
+                      currentUserId={authUser?.id}
                     />
                     {editingFileUrl && (
                       <div

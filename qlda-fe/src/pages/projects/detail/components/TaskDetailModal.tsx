@@ -34,6 +34,7 @@ import { invalidateProgressQueries } from "@/utils/invalidateProgress";
 import CommentList from "./CommentList";
 import CommentInput from "./CommentInput";
 import { commentService } from "@/services/comment.services";
+import { getAvatarUrl } from "@/utils/avatarUtils";
 import { projectService } from "@/services/project.services";
 import { markTaskAsRead } from "@/utils/commentBadgeUtils";
 import useAuth from "@/hooks/useAuth";
@@ -532,6 +533,7 @@ export default function TaskDetailModal({
                     <Tooltip key={u.id} title={u.name || u.email}>
                       <Avatar
                         size={24}
+                        src={getAvatarUrl(u?.avatar)}
                         style={{
                           border: "1px solid #eee",
                           backgroundColor: "#1677ff",
@@ -627,6 +629,7 @@ export default function TaskDetailModal({
                 taskId={taskData.id}
                 comments={commentsData?.data || []}
                 projectOwnerId={project?.owner?.id}
+                projectId={projectId!}
                 onEdit={(comment) => {
                   setEditingComment({
                     id: comment.id,

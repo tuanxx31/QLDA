@@ -1,21 +1,22 @@
-import { Card, Avatar, Tooltip, theme, Badge } from "antd";
+import { Card, Avatar, Tooltip, theme, Badge } from 'antd';
 import {
   CheckCircleFilled,
   ClockCircleOutlined,
   CheckSquareOutlined,
   CommentOutlined,
-} from "@ant-design/icons";
-import type { Task } from "@/types/task.type";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { taskService } from "@/services/task.services";
-import { commentService } from "@/services/comment.services";
-import { message } from "antd";
-import { useParams } from "react-router-dom";
-import { invalidateProgressQueries } from "@/utils/invalidateProgress";
-import dayjs from "dayjs";
-import { useMemo } from "react";
-import { getUnreadCount } from "@/utils/commentBadgeUtils";
-import useAuth from "@/hooks/useAuth";
+} from '@ant-design/icons';
+import type { Task } from '@/types/task.type';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { taskService } from '@/services/task.services';
+import { commentService } from '@/services/comment.services';
+import { message } from 'antd';
+import { useParams } from 'react-router-dom';
+import { invalidateProgressQueries } from '@/utils/invalidateProgress';
+import dayjs from 'dayjs';
+import { useMemo } from 'react';
+import { getUnreadCount } from '@/utils/commentBadgeUtils';
+import useAuth from '@/hooks/useAuth';
+import { getAvatarUrl } from '@/utils/avatarUtils';
 
 interface Props {
   task: Task;
@@ -48,59 +49,55 @@ export default function TaskCard({ task }: Props) {
   }, [task.id, authUser?.id, commentsData?.data]);
 
   const updateStatusMutation = useMutation({
-    mutationFn: (newStatus: "todo" | "done") =>
-      taskService.updateStatus(task.id, newStatus),
+    mutationFn: (newStatus: 'todo' | 'done') => taskService.updateStatus(task.id, newStatus),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["columns"] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['columns'] });
       if (projectId) {
         invalidateProgressQueries(queryClient, projectId);
       }
     },
     onError: () => {
-      message.error("Không thể cập nhật trạng thái");
+      message.error('Không thể cập nhật trạng thái');
     },
   });
 
   const handleCheckboxChange = (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    const newStatus = task.status === "done" ? "todo" : "done";
+    const newStatus = task.status === 'done' ? 'todo' : 'done';
     updateStatusMutation.mutate(newStatus);
   };
 
-  
   const dueDateInfo = useMemo(() => {
     if (!task.dueDate) return null;
     const dueDate = dayjs(task.dueDate);
     const now = dayjs();
     const isOverdue = dueDate.isBefore(now);
-    const isCompletedLate = task.status === "done" && isOverdue;
-    const isOverdueNotDone = isOverdue && task.status !== "done";
-    const isCompleted = task.status === "done" && !isOverdue;
+    const isCompletedLate = task.status === 'done' && isOverdue;
+    const isOverdueNotDone = isOverdue && task.status !== 'done';
+    const isCompleted = task.status === 'done' && !isOverdue;
 
     return {
-      displayText: dueDate.format("DD/MM/YYYY HH:mm"),
+      displayText: dueDate.format('DD/MM/YYYY HH:mm'),
       isOverdue,
       isCompletedLate,
       isOverdueNotDone,
       isCompleted,
-      fullDate: dueDate.format("DD/MM/YYYY HH:mm"),
+      fullDate: dueDate.format('DD/MM/YYYY HH:mm'),
     };
   }, [task.dueDate, task.status]);
 
-  
   const subtasksProgress = useMemo(() => {
     if (!task.subtasks || task.subtasks.length === 0) return null;
-    const completed = task.subtasks.filter((st) => st.completed).length;
+    const completed = task.subtasks.filter(st => st.completed).length;
     const total = task.subtasks.length;
     return { completed, total, percentage: Math.round((completed / total) * 100) };
   }, [task.subtasks]);
 
-  
   const descriptionPreview = task.description
     ? task.description.length > 80
-      ? task.description.substring(0, 80) + "..."
+      ? task.description.substring(0, 80) + '...'
       : task.description
     : null;
 
@@ -178,14 +175,14 @@ export default function TaskCard({ task }: Props) {
       {task.labels && task.labels.length > 0 && (
         <div
           style={{
-            display: "flex",
-            flexWrap: "wrap",
+            display: 'flex',
+            flexWrap: 'wrap',
             gap: 4,
             marginBottom: 8,
             minHeight: 8,
           }}
         >
-          {task.labels.map((label) => (
+          {task.labels.map(label => (
             <Tooltip key={label.id} title={label.name}>
               <div
                 style={{
@@ -193,8 +190,8 @@ export default function TaskCard({ task }: Props) {
                   height: 8,
                   borderRadius: 4,
                   minWidth: 40,
-                  flex: "0 0 auto",
-                  cursor: "pointer",
+                  flex: '0 0 auto',
+                  cursor: 'pointer',
                 }}
               />
             </Tooltip>
@@ -203,16 +200,16 @@ export default function TaskCard({ task }: Props) {
       )}
 
       {}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
         <CheckCircleFilled
           onClick={handleCheckboxChange}
           style={{
             fontSize: 18,
-            cursor: "pointer",
-            color: task.status === "done" ? "#52c41a" : "white",
+            cursor: 'pointer',
+            color: task.status === 'done' ? '#52c41a' : 'white',
             border: `1px solid ${token.colorBorder}`,
-            borderRadius: "50%",
-            transition: "color 0.2s",
+            borderRadius: '50%',
+            transition: 'color 0.2s',
             marginTop: 2,
             flexShrink: 0,
           }}
@@ -223,10 +220,10 @@ export default function TaskCard({ task }: Props) {
             flex: 1,
             fontSize: 14,
             fontWeight: 500,
-            lineHeight: "20px",
-            color: task.status === "done" ? token.colorTextTertiary : token.colorText,
-            
-            wordBreak: "break-word",
+            lineHeight: '20px',
+            color: task.status === 'done' ? token.colorTextTertiary : token.colorText,
+
+            wordBreak: 'break-word',
           }}
         >
           {task.title}
@@ -240,8 +237,8 @@ export default function TaskCard({ task }: Props) {
             marginTop: 6,
             fontSize: 12,
             color: token.colorTextTertiary,
-            lineHeight: "16px",
-            wordBreak: "break-word",
+            lineHeight: '16px',
+            wordBreak: 'break-word',
           }}
         >
           {descriptionPreview}
@@ -252,11 +249,11 @@ export default function TaskCard({ task }: Props) {
       {(dueDateInfo || subtasksProgress || (task.assignees && task.assignees.length > 0)) && (
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
+            display: 'flex',
+            alignItems: 'center',
             marginTop: 8,
             gap: 6,
-            flexWrap: "wrap",
+            flexWrap: 'wrap',
           }}
         >
           {}
@@ -264,28 +261,28 @@ export default function TaskCard({ task }: Props) {
             <Tooltip
               title={`Hạn chót: ${dueDateInfo.fullDate}${
                 dueDateInfo.isCompletedLate
-                  ? " (Hoàn thành trễ)"
+                  ? ' (Hoàn thành trễ)'
                   : dueDateInfo.isCompleted
-                  ? " (Hoàn thành)"
-                  : dueDateInfo.isOverdueNotDone
-                  ? " (Quá hạn)"
-                  : ""
+                    ? ' (Hoàn thành)'
+                    : dueDateInfo.isOverdueNotDone
+                      ? ' (Quá hạn)'
+                      : ''
               }`}
             >
               <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
+                  display: 'flex',
+                  alignItems: 'center',
                   gap: 4,
-                  padding: "2px 6px",
+                  padding: '2px 6px',
                   borderRadius: 4,
                   backgroundColor: dueDateInfo.isCompletedLate
-                    ? "#fff7e6"
+                    ? '#fff7e6'
                     : dueDateInfo.isCompleted
-                    ? "#f6ffed"
-                    : dueDateInfo.isOverdueNotDone
-                    ? "#fff1f0"
-                    : "transparent",
+                      ? '#f6ffed'
+                      : dueDateInfo.isOverdueNotDone
+                        ? '#fff1f0'
+                        : 'transparent',
                   fontSize: 12,
                   fontWeight:
                     dueDateInfo.isCompletedLate ||
@@ -294,25 +291,21 @@ export default function TaskCard({ task }: Props) {
                       ? 500
                       : 400,
                   color: dueDateInfo.isCompletedLate
-                    ? "#fa8c16"
+                    ? '#fa8c16'
                     : dueDateInfo.isCompleted
-                    ? "#52c41a"
-                    : dueDateInfo.isOverdueNotDone
-                    ? "#ff4d4f"
-                    : token.colorTextTertiary,
+                      ? '#52c41a'
+                      : dueDateInfo.isOverdueNotDone
+                        ? '#ff4d4f'
+                        : token.colorTextTertiary,
                 }}
               >
                 <ClockCircleOutlined style={{ fontSize: 12 }} />
                 <span>{dueDateInfo.displayText}</span>
                 {dueDateInfo.isCompletedLate && (
-                  <span style={{ marginLeft: 4, fontSize: 11 }}>
-                    (Hoàn thành trễ)
-                  </span>
+                  <span style={{ marginLeft: 4, fontSize: 11 }}>(Hoàn thành trễ)</span>
                 )}
                 {dueDateInfo.isCompleted && (
-                  <span style={{ marginLeft: 4, fontSize: 11 }}>
-                    (Hoàn thành)
-                  </span>
+                  <span style={{ marginLeft: 4, fontSize: 11 }}>(Hoàn thành)</span>
                 )}
                 {dueDateInfo.isOverdueNotDone && (
                   <span style={{ marginLeft: 4, fontSize: 11 }}>(Quá hạn)</span>
@@ -323,13 +316,11 @@ export default function TaskCard({ task }: Props) {
 
           {}
           {subtasksProgress && (
-            <Tooltip
-              title={`${subtasksProgress.completed}/${subtasksProgress.total} hoàn thành`}
-            >
+            <Tooltip title={`${subtasksProgress.completed}/${subtasksProgress.total} hoàn thành`}>
               <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
+                  display: 'flex',
+                  alignItems: 'center',
                   gap: 4,
                   fontSize: 12,
                   color: token.colorTextTertiary,
@@ -350,24 +341,14 @@ export default function TaskCard({ task }: Props) {
           {task.assignees && task.assignees.length > 0 && (
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
+                display: 'flex',
+                alignItems: 'center',
                 gap: 4,
               }}
             >
-              {task.assignees.slice(0, 3).map((u) => (
+              {task.assignees.slice(0, 3).map(u => (
                 <Tooltip key={u.id} title={u.name || u.email}>
-                  <Avatar
-                    size={24}
-                    style={{
-                      border: `1px solid ${token.colorBorder}`,
-                      backgroundColor: token.colorPrimary,
-                      color: "#fff",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {(u.name || u.email)?.[0]?.toUpperCase()}
-                  </Avatar>
+                  <Avatar src={getAvatarUrl(u?.avatar)} size="small" />
                 </Tooltip>
               ))}
               {task.assignees.length > 3 && (
@@ -379,7 +360,7 @@ export default function TaskCard({ task }: Props) {
                       backgroundColor: token.colorFillTertiary,
                       color: token.colorTextTertiary,
                       fontSize: 11,
-                      cursor: "pointer",
+                      cursor: 'pointer',
                     }}
                   >
                     +{task.assignees.length - 3}
@@ -393,4 +374,3 @@ export default function TaskCard({ task }: Props) {
     </Card>
   );
 }
-

@@ -17,6 +17,7 @@ import { taskService } from "@/services/task.services";
 import { useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateProgressQueries } from "@/utils/invalidateProgress";
+import { getAvatarUrl } from "@/utils/avatarUtils";
 
 interface Props {
     open: boolean;
@@ -124,7 +125,7 @@ export default function MemberAddTaskModal({
             render: (_: string, record: MemberLike) => (
                 <Space>
                     <Avatar
-                        src={record.avatar}
+                        src={getAvatarUrl(record.avatar)}
                         icon={!record.avatar && <UserOutlined />}
                     />
                     <Space direction="vertical" size={0}>
