@@ -50,7 +50,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
   const updateMutation = useMutation({
     mutationFn: (payload: Partial<Task>) => taskService.update(task.id, payload),
     onSuccess: (updated: Task) => {
-      // message.success("Đã cập nhật thành công");
+      
       onSave(updated);
       qc.invalidateQueries({ queryKey: ["columns"] });
     },

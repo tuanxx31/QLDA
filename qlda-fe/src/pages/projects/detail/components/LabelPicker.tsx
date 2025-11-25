@@ -193,7 +193,6 @@ export default function LabelPicker({
             }}
         >
 
-
             <div
                 style={{
                     maxHeight: 220,

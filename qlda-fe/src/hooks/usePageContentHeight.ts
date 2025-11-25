@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-
 export function usePageContentHeight() {
   const [minHeight, setMinHeight] = useState<string>('calc(100vh - 220px)');
 

@@ -45,31 +45,31 @@ export default function MentionTextarea({
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const prevMentionIdsRef = useRef<string[]>([]);
 
-  // Fetch project members
+  
   const { data: projectMembers = [], isLoading } = useQuery({
     queryKey: ['projectMembers', projectId],
     queryFn: () => projectMemberService.getProjectMebers(projectId),
     enabled: !!projectId,
   });
 
-  // Convert to MentionUser format and filter out current user
+  
   const users: MentionUser[] = projectMembers
     .map((pm: ProjectMember) => ({
       id: pm.user.id,
       name: pm.user.name || pm.user.email,
       email: pm.user.email,
     }))
-    .filter((user) => user.id !== currentUserId); // Filter out current user
+    .filter((user) => user.id !== currentUserId); 
 
-  // Normalize Vietnamese text for better matching
+  
   const normalizeText = (text: string): string => {
     return text
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, ''); // Remove diacritics
+      .replace(/[\u0300-\u036f]/g, ''); 
   };
 
-  // Filter suggestions with better matching (startsWith > includes)
+  
   const filteredUsers = useMemo(() => {
     if (!mentionQuery.trim()) {
       return users;
@@ -78,7 +78,7 @@ export default function MentionTextarea({
     const normalizedQuery = normalizeText(mentionQuery);
     const queryLower = mentionQuery.toLowerCase();
 
-    // Score users based on match quality
+    
     const scoredUsers = users
       .map((user) => {
         const nameLower = user.name.toLowerCase();
@@ -88,19 +88,19 @@ export default function MentionTextarea({
 
         let score = 0;
 
-        // Highest priority: name starts with query
+        
         if (nameLower.startsWith(queryLower) || nameNormalized.startsWith(normalizedQuery)) {
           score = 100;
         }
-        // High priority: email starts with query
+        
         else if (emailLower.startsWith(queryLower) || emailNormalized.startsWith(normalizedQuery)) {
           score = 80;
         }
-        // Medium priority: name includes query
+        
         else if (nameLower.includes(queryLower) || nameNormalized.includes(normalizedQuery)) {
           score = 50;
         }
-        // Low priority: email includes query
+        
         else if (emailLower.includes(queryLower) || emailNormalized.includes(normalizedQuery)) {
           score = 30;
         }
@@ -114,51 +114,51 @@ export default function MentionTextarea({
     return scoredUsers;
   }, [users, mentionQuery]);
 
-  // Extract mention IDs from current value
-  // Only supports @name format (formatted @[name](id) will be converted to @name when editing)
+  
+  
   useEffect(() => {
     if (!onMentionsChange) return;
     
     const ids: string[] = [];
     
-    // Sort users by name length (longest first) to match longer names first
-    // This ensures "Nguyên Thị Hăng" matches before "Nguyên" if both exist
+    
+    
     const sortedUsers = [...users].sort((a, b) => {
       const nameA = (a.name || a.email || '').length;
       const nameB = (b.name || b.email || '').length;
       return nameB - nameA;
     });
     
-    // Find all @ symbols in the content
+    
     let searchIndex = 0;
     while (searchIndex < value.length) {
       const atIndex = value.indexOf('@', searchIndex);
       if (atIndex === -1) break;
       
-      // Try to match each user name starting from this @ position
+      
       let matched = false;
       for (const user of sortedUsers) {
         const userName = user.name || user.email;
         if (!userName) continue;
         
-        // Check if this user's name appears right after @
+        
         const nameStart = atIndex + 1;
         const nameEnd = nameStart + userName.length;
         
         if (nameEnd <= value.length) {
           const potentialMatch = value.substring(nameStart, nameEnd);
           
-          // Check if it's an exact match (case-insensitive for better matching)
+          
           if (potentialMatch.toLowerCase() === userName.toLowerCase()) {
-            // Check if followed by space, newline, punctuation, or end of string
+            
             const nextChar = value[nameEnd];
             if (!nextChar || /[\s\n\r.,!?;:]/.test(nextChar)) {
-              // Found a valid mention!
+              
               if (!ids.includes(user.id)) {
                 ids.push(user.id);
               }
               matched = true;
-              // Move search index past this mention to avoid overlapping matches
+              
               searchIndex = nameEnd;
               break;
             }
@@ -167,16 +167,16 @@ export default function MentionTextarea({
       }
       
       if (!matched) {
-        // No match found, continue searching from next position
+        
         searchIndex = atIndex + 1;
       }
     }
     
-    // Sort ids for comparison
+    
     const sortedIds = [...ids].sort();
     const prevSortedIds = [...prevMentionIdsRef.current].sort();
     
-    // Only call onMentionsChange if ids actually changed
+    
     if (sortedIds.length !== prevSortedIds.length || 
         sortedIds.some((id, index) => id !== prevSortedIds[index])) {
       prevMentionIdsRef.current = ids;
@@ -184,60 +184,60 @@ export default function MentionTextarea({
     }
   }, [value, users, onMentionsChange]);
 
-  // Handle input change
+  
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     const cursorPos = e.target.selectionStart;
     
     onChange(newValue);
 
-    // Get text before cursor
+    
     const textBeforeCursor = newValue.substring(0, cursorPos);
     
-    // Find the last '@' before cursor
+    
     const lastAtIndex = textBeforeCursor.lastIndexOf('@');
     
     if (lastAtIndex === -1) {
-      // No '@' found, hide suggestions
+      
       setShowSuggestions(false);
       setMentionQuery('');
       setMentionStartPos(null);
       return;
     }
 
-    // Get text after '@'
+    
     const queryText = textBeforeCursor.substring(lastAtIndex + 1);
     
-    // Check if there's a space, newline, or special character after '@' (which would end the mention)
-    // Also check if the mention is too long
+    
+    
     const hasEndingChar = /[\s\n@]/.test(queryText);
     const isTooLong = queryText.length > 50;
     
     if (!hasEndingChar && !isTooLong) {
-      // Active mention detected
+      
       setMentionQuery(queryText);
       setMentionStartPos(lastAtIndex);
       setShowSuggestions(true);
       setSelectedIndex(0);
       
-      // Calculate cursor position for dropdown
+      
       calculateDropdownPosition(e.target, cursorPos);
     } else {
-      // Mention ended or invalid
+      
       setShowSuggestions(false);
       setMentionQuery('');
       setMentionStartPos(null);
     }
   };
 
-  // Calculate dropdown position
+  
   const calculateDropdownPosition = (textarea: HTMLTextAreaElement, position: number) => {
     try {
-      // Create a temporary element to measure text position
+      
       const measureDiv = document.createElement('div');
       const computedStyle = window.getComputedStyle(textarea);
       
-      // Copy relevant styles
+      
       measureDiv.style.position = 'absolute';
       measureDiv.style.visibility = 'hidden';
       measureDiv.style.whiteSpace = 'pre-wrap';
@@ -249,22 +249,22 @@ export default function MentionTextarea({
       measureDiv.style.border = computedStyle.border;
       measureDiv.style.boxSizing = computedStyle.boxSizing;
       
-      // Set text content up to cursor
+      
       const textBeforeCursor = textarea.value.substring(0, position);
       measureDiv.textContent = textBeforeCursor;
       
       document.body.appendChild(measureDiv);
       
-      // Create a span to mark cursor position
+      
       const cursorSpan = document.createElement('span');
       cursorSpan.textContent = '|';
       measureDiv.appendChild(cursorSpan);
       
-      // Get position
+      
       const measureRect = measureDiv.getBoundingClientRect();
       const cursorSpanRect = cursorSpan.getBoundingClientRect();
       
-      // Calculate relative position
+      
       const relativeTop = cursorSpanRect.top - measureRect.top + textarea.scrollTop;
       const relativeLeft = cursorSpanRect.left - measureRect.left;
       
@@ -275,7 +275,7 @@ export default function MentionTextarea({
       
       document.body.removeChild(measureDiv);
     } catch (error) {
-      // Fallback: position dropdown at top-left of textarea
+      
       setCursorPosition({
         top: 24,
         left: 0,
@@ -283,7 +283,7 @@ export default function MentionTextarea({
     }
   };
 
-  // Handle user selection
+  
   const selectUser = (user: MentionUser) => {
     if (mentionStartPos === null) return;
 
@@ -293,11 +293,11 @@ export default function MentionTextarea({
     const currentValue = value;
     const cursorPos = textarea.selectionStart || currentValue.length;
     
-    // Get text before '@' and after cursor
+    
     const before = currentValue.substring(0, mentionStartPos);
     const after = currentValue.substring(cursorPos);
     
-    // Format: @name (simple format for display, will be formatted to @[name](id) when submit)
+    
     const mention = `@${user.name}`;
     const newValue = before + mention + ' ' + after;
     
@@ -306,7 +306,7 @@ export default function MentionTextarea({
     setMentionQuery('');
     setMentionStartPos(null);
     
-    // Set cursor position after mention and space
+    
     setTimeout(() => {
       const newPos = before.length + mention.length + 1;
       textarea.setSelectionRange(newPos, newPos);
@@ -314,7 +314,7 @@ export default function MentionTextarea({
     }, 0);
   };
 
-  // Handle keyboard navigation
+  
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (showSuggestions && filteredUsers.length > 0) {
       if (e.key === 'ArrowDown') {
@@ -335,7 +335,7 @@ export default function MentionTextarea({
     }
   };
 
-  // Scroll selected item into view
+  
   useEffect(() => {
     if (showSuggestions && suggestionsRef.current) {
       const selectedElement = suggestionsRef.current.children[selectedIndex] as HTMLElement;
@@ -345,7 +345,7 @@ export default function MentionTextarea({
     }
   }, [selectedIndex, showSuggestions]);
 
-  // Close dropdown when clicking outside
+  
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (

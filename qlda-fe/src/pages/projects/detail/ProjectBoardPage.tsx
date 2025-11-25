@@ -376,8 +376,6 @@ export default function ProjectBoardPage() {
   );
 }
 
-
-
 export const horizontalColumnCollision: CollisionDetection = (args) => {
   const pointer = pointerWithin(args);
   if (pointer.length > 0) return pointer;

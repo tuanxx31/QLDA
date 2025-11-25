@@ -29,7 +29,7 @@ const ProfileSettings = () => {
     onSuccess: async () => {
       message.success('Cập nhật thông tin thành công!');
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
-      // Fetch updated user and update auth state
+      
       const updatedUser = await getUserProfile();
       updateAuthUser(updatedUser);
     },
@@ -41,7 +41,7 @@ const ProfileSettings = () => {
     onSuccess: async () => {
       message.success('Cập nhật avatar thành công!');
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
-      // Fetch updated user and update auth state
+      
       const updatedUser = await getUserProfile();
       updateAuthUser(updatedUser);
     },

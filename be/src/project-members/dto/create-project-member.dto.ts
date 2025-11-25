@@ -3,7 +3,7 @@ import { IsEmail, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateProjectMemberDto {
   @ApiProperty({ example: 'example@example.com' })
-  // @IsEmail()
+  
   @IsNotEmpty()
   email: string;
 

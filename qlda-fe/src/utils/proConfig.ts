@@ -1,7 +1,6 @@
 import { viVNIntl } from '@ant-design/pro-components';
 import dayjs from 'dayjs';
 
-
 export const proConfig = {
   intl: viVNIntl,
   valueTypeMap: {

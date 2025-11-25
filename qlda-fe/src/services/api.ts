@@ -7,8 +7,6 @@ export const api = axios.create({
   timeout: 10000,
 });
 
-
-
 api.interceptors.request.use(config => {
   const inputToken = localStorage.getItem('token_auth') || '';
   const regex = /(ey[A-Za-z0-9._-]+)/;

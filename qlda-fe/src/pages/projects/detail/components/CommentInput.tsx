@@ -16,11 +16,10 @@ interface Props {
   onCancelEdit?: () => void;
 }
 
-// Parse formatted mentions @[userId] to display format @name for editing
 function parseContentForDisplay(content: string, mentions?: User[]): string {
   if (!content) return content;
   
-  // Create map from mentions: userId -> User
+  
   const mentionsMap = new Map<string, User>();
   if (mentions && mentions.length > 0) {
     mentions.forEach((user) => {
@@ -28,18 +27,17 @@ function parseContentForDisplay(content: string, mentions?: User[]): string {
     });
   }
   
-  // Replace @[userId] with @name for better UX in textarea
+  
   return content.replace(/@\[([a-f0-9-]{36})\]/gi, (match, userId) => {
     const user = mentionsMap.get(userId);
     if (user) {
       return `@${user.name || user.email}`;
     }
-    // If user not found, keep the userId format
+    
     return match;
   });
 }
 
-// Format content with mentions: replace plain @name with @[userId] for backend
 function formatContentForSubmit(content: string, mentionIds: string[], mentions?: User[]): string {
   if (!content || mentionIds.length === 0) {
     return content;
@@ -47,7 +45,7 @@ function formatContentForSubmit(content: string, mentionIds: string[], mentions?
 
   let formattedContent = content;
 
-  // Create a map of userId to user for quick lookup
+  
   const userMap = new Map<string, User>();
   if (mentions) {
     mentions.forEach((user) => {
@@ -55,32 +53,32 @@ function formatContentForSubmit(content: string, mentionIds: string[], mentions?
     });
   }
 
-  // First, replace any existing @[userId] or @[name](userId) format with @[userId]
+  
   formattedContent = formattedContent.replace(/@\[([^\]]+)\]\(([^)]+)\)/g, (_match, name, id) => {
-    // If this ID is in mentionIds, convert to @[userId] format
+    
     if (mentionIds.includes(id)) {
       return `@[${id}]`;
     }
-    // Otherwise, remove the mention format (keep as plain text)
+    
     return `@${name}`;
   });
 
-  // Also replace @[userId] format (if already in correct format, keep it)
+  
   formattedContent = formattedContent.replace(/@\[([a-f0-9-]{36})\]/gi, (match, userId) => {
     if (mentionIds.includes(userId)) {
       return `@[${userId}]`;
     }
-    // If userId not in mentionIds, try to find user by name and convert
+    
     return match;
   });
 
-  // Then, replace plain @name patterns with @[userId] based on mentionIds
+  
   mentionIds.forEach((userId) => {
     const user = userMap.get(userId);
     if (!user) return;
     
     const userName = user.name || user.email;
-    // Match @username (not already formatted, followed by space, punctuation, or end)
+    
     const escapedName = userName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`@${escapedName}(?!\\[)(?=\\s|$|[.,!?;:])`, 'g');
     formattedContent = formattedContent.replace(regex, `@[${userId}]`);
@@ -99,7 +97,7 @@ export default function CommentInput({ taskId, projectId, editingComment, onCanc
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch project members for formatting mentions
+  
   const { data: projectMembers = [] } = useQuery({
     queryKey: ['projectMembers', projectId],
     queryFn: () => projectMemberService.getProjectMebers(projectId),
@@ -114,7 +112,7 @@ export default function CommentInput({ taskId, projectId, editingComment, onCanc
       setFileUrl(undefined);
       setMentionIds([]);
       queryClient.invalidateQueries({ queryKey: ['comments', taskId] });
-      message.success('Đã thêm bình luận');
+      
       if (onCancelEdit) onCancelEdit();
     },
     onError: () => {
@@ -131,7 +129,7 @@ export default function CommentInput({ taskId, projectId, editingComment, onCanc
       setFileUrl(undefined);
       setMentionIds([]);
       queryClient.invalidateQueries({ queryKey: ['comments', taskId] });
-      message.success('Đã cập nhật bình luận');
+      
       if (onCancelEdit) onCancelEdit();
     },
     onError: () => {
@@ -139,19 +137,19 @@ export default function CommentInput({ taskId, projectId, editingComment, onCanc
     },
   });
 
-  // Reset when editing comment changes
+  
   useEffect(() => {
     if (editingComment) {
-      // Parse formatted content to display format (@[userId] -> @name) for better UX
+      
       const displayContent = parseContentForDisplay(editingComment.content || '', editingComment.mentions);
       setContent(displayContent);
       setFileUrl(editingComment.fileUrl);
       
-      // Extract mention IDs from mentions array or formatted content
+      
       if (editingComment.mentions && editingComment.mentions.length > 0) {
         setMentionIds(editingComment.mentions.map((u) => u.id));
       } else {
-        // Try to extract from formatted content if available (@[userId] format)
+        
         const mentionRegex = /@\[([a-f0-9-]{36})\]/gi;
         const matches = [...(editingComment.content || '').matchAll(mentionRegex)];
         const ids = matches.map((match) => match[1]);
@@ -183,7 +181,7 @@ export default function CommentInput({ taskId, projectId, editingComment, onCanc
       const result = await commentService.uploadFile(taskId, file);
       setFileUrl(result.fileUrl);
       setFile(file);
-      message.success('Đã tải file lên');
+      
     } catch (error) {
       message.error('Lỗi khi tải file');
     } finally {
@@ -199,17 +197,17 @@ export default function CommentInput({ taskId, projectId, editingComment, onCanc
       return;
     }
 
-    // Get mentions from editingComment or projectMembers
+    
     let mentions = editingComment?.mentions;
     if (!mentions && projectMembers.length > 0) {
-      // Extract users from projectMembers based on mentionIds
+      
       mentions = projectMembers
         .filter((pm) => mentionIds.includes(pm.user.id))
         .map((pm) => pm.user);
     }
 
-    // Format content with mentions before submitting
-    // If content has @[name](id) format, keep it; otherwise format from mentionIds
+    
+    
     const formattedContent = formatContentForSubmit(
       content.trim(),
       mentionIds,

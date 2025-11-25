@@ -29,25 +29,25 @@ export default function TaskCard({ task }: Props) {
   const { token } = theme.useToken();
   const { authUser } = useAuth();
 
-  // Track task read status changes to force re-render when localStorage changes
+  
   const { updateKey } = useTaskReadStatus(task.id, authUser?.id);
 
-  // Fetch comments to calculate unread count
+  
   const { data: commentsData } = useQuery({
     queryKey: ['comments', task.id],
     queryFn: () => commentService.getComments(task.id, 1, 50),
-    staleTime: 0, // Always refetch when invalidated
+    staleTime: 0, 
     refetchOnWindowFocus: true,
-    refetchOnMount: true, // Refetch when component mounts to get latest data
+    refetchOnMount: true, 
   });
 
-  // Calculate total comments count
+  
   const totalCommentsCount = useMemo(() => {
     return commentsData?.data?.length || 0;
   }, [commentsData?.data]);
 
-  // Calculate unread count - only show badge if there are unread comments
-  // updateKey is included to force re-computation when localStorage changes
+  
+  
   const unreadCount = useMemo(() => {
     if (!authUser?.id || !commentsData?.data || commentsData.data.length === 0) return 0;
     const count = getUnreadCount(task.id, authUser.id, commentsData.data);
@@ -121,7 +121,7 @@ export default function TaskCard({ task }: Props) {
       hoverable
       bodyStyle={{ padding: 10 }}
     >
-      {/* Comments count badge - always show total count */}
+      {}
       {totalCommentsCount > 0 && (
         <div
           style={{
@@ -134,7 +134,7 @@ export default function TaskCard({ task }: Props) {
             gap: 4,
           }}
         >
-          {/* Unread badge (red) - only show if there are unread */}
+          {}
           {unreadCount > 0 ? (
             <Badge
               count={unreadCount}
@@ -155,7 +155,7 @@ export default function TaskCard({ task }: Props) {
               />
             </Badge>
           ) : (
-            /* Total count badge (gray) - show when no unread */
+            
             <Tooltip title={`${totalCommentsCount} bình luận`}>
               <div
                 style={{

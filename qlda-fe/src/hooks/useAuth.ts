@@ -23,14 +23,14 @@ const useAuth = () => {
   };
 
   const updateAuthUser = (user: User) => {
-    // Get current token from localStorage
+    
     const inputToken = localStorage.getItem('token_auth') || '';
     const regex = /(ey[A-Za-z0-9._-]+)/;
     const match = inputToken.match(regex);
     const token = match?.[1];
     
     if (token) {
-      // Sign in again with updated user data but same token
+      
       return signIn({
         auth: {
           token,
