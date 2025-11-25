@@ -133,7 +133,7 @@ export default function TaskDetailModal({
     queryKey: ["comments", taskData?.id],
     queryFn: () => commentService.getComments(taskData!.id, 1, 50),
     enabled: !!taskData?.id && open,
-    refetchInterval: 5000,
+    refetchInterval: 2500,
   });
 
   
