@@ -12,6 +12,7 @@ import useAuth from '@/hooks/useAuth';
 import MentionTextarea from '@/components/MentionTextarea';
 import type { CreateCommentDto } from '@/types/comment.type';
 import { getAvatarUrl } from '@/utils/avatarUtils';
+import type { User } from '@/types/user.type';
 
 dayjs.extend(relativeTime);
 dayjs.locale('vi');
@@ -25,65 +26,52 @@ interface Props {
   projectOwnerId?: string;
   projectId: string;
 }
-
-// Parse formatted mentions @[userId] to display format @name for editing
-function parseContentForDisplay(content: string, mentions?: Comment['mentions']): string {
+  
+function parseContentForDisplay(content: string, mentions?: User[]): string {
   if (!content) return content;
   
-  // Create map from mentions: userId -> User
-  const mentionsMap = new Map<string, Comment['mentions'][0]>();
+  const mentionsMap = new Map<string, User>();
   if (mentions && mentions.length > 0) {
-    mentions.forEach((user) => {
-      mentionsMap.set(user.id, user);
-    });
+      mentions.forEach((user) => mentionsMap.set(user.id, user));
   }
   
-  // Replace @[userId] with @name for better UX in textarea
-  return content.replace(/@\[([a-f0-9-]{36})\]/gi, (match, userId) => {
+  return content.replace(/@\[([a-f0-9-]{36})\]/gi, (_match, userId) => {
     const user = mentionsMap.get(userId);
     if (user) {
       return `@${user.name || user.email}`;
     }
-    // If user not found, keep the userId format
-    return match;
+    return _match;
   });
 }
 
-// Format content with mentions: replace plain @name with @[userId] for backend
-function formatContentForSubmit(content: string, mentionIds: string[], mentions?: Comment['mentions']): string {
+function formatContentForSubmit(content: string, mentionIds: string[], mentions?: User[]): string {
   if (!content || mentionIds.length === 0) {
     return content;
   }
 
   let formattedContent = content;
 
-  // Create a map of userId to user for quick lookup
-  const userMap = new Map<string, Comment['mentions'][0]>();
+  const userMap = new Map<string, User>();
   if (mentions) {
     mentions.forEach((user) => {
       userMap.set(user.id, user);
     });
   }
 
-  // First, replace any existing @[userId] or @[name](userId) format with @[userId]
-  formattedContent = formattedContent.replace(/@\[([^\]]+)\]\(([^)]+)\)/g, (match, name, id) => {
-    // If this ID is in mentionIds, convert to @[userId] format
+  formattedContent = formattedContent.replace(/@\[([^\]]+)\]\(([^)]+)\)/g, (_match, name, id) => {
     if (mentionIds.includes(id)) {
       return `@[${id}]`;
     }
-    // Otherwise, remove the mention format (keep as plain text)
     return `@${name}`;
   });
 
-  // Also replace @[userId] format (if already in correct format, keep it)
-  formattedContent = formattedContent.replace(/@\[([a-f0-9-]{36})\]/gi, (match, userId) => {
+  formattedContent = formattedContent.replace(/@\[([a-f0-9-]{36})\]/gi, (_match, userId) => {
     if (mentionIds.includes(userId)) {
       return `@[${userId}]`;
     }
-    return match;
+    return _match;
   });
 
-  // Then, replace plain @name patterns with @[userId] based on mentionIds
   mentionIds.forEach((userId) => {
     const user = userMap.get(userId);
     if (!user) return;
