@@ -31,6 +31,7 @@ import LabelPicker from "./LabelPicker";
 import DueDateModal from "./DateComponet";
 import { useParams } from "react-router-dom";
 import { invalidateProgressQueries } from "@/utils/invalidateProgress";
+import { invalidateStatisticsQueries } from "@/utils/invalidateStatistics";
 import CommentList from "./CommentList";
 import CommentInput from "./CommentInput";
 import { commentService } from "@/services/comment.services";
@@ -196,6 +197,7 @@ export default function TaskDetailModal({
       });
       if (projectId) {
         invalidateProgressQueries(queryClient, projectId);
+        invalidateStatisticsQueries(queryClient, projectId);
       }
 
       message.success("Đã cập nhật");
@@ -232,6 +234,7 @@ export default function TaskDetailModal({
       });
       if (projectId) {
         invalidateProgressQueries(queryClient, projectId);
+        invalidateStatisticsQueries(queryClient, projectId);
       }
 
     
@@ -266,6 +269,7 @@ export default function TaskDetailModal({
       queryClient.invalidateQueries({ queryKey: ["columns"] });
       if (projectId) {
         invalidateProgressQueries(queryClient, projectId);
+        invalidateStatisticsQueries(queryClient, projectId);
       }
       onDelete?.(taskData!);
       onClose();

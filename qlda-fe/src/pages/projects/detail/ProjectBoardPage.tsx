@@ -34,6 +34,7 @@ import SortableColumn from './components/SortableColumn';
 import { debounce } from 'lodash';
 import SortableTask from './components/SortableTask';
 import { invalidateProgressQueries } from '@/utils/invalidateProgress';
+import { invalidateStatisticsQueries } from '@/utils/invalidateStatistics';
 import { usePageContentHeight } from '@/hooks/usePageContentHeight';
 
 const { Title } = Typography;
@@ -250,6 +251,7 @@ export default function ProjectBoardPage() {
         .then(() => {
           if (projectId) {
             invalidateProgressQueries(queryClient, projectId);
+            invalidateStatisticsQueries(queryClient, projectId);
           }
         })
         .catch(() => {

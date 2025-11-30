@@ -32,7 +32,8 @@
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.65.0",
     "react-router-dom": "^7.9.4",
-    "typeorm": "^0.3.27"
+    "typeorm": "^0.3.27",
+    "@ant-design/charts": "^2.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

@@ -3,6 +3,9 @@ import { Modal, DatePicker, TimePicker, Button, Space, Typography, message } fro
 import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
+import { invalidateStatisticsQueries } from "@/utils/invalidateStatistics";
+import { invalidateProgressQueries } from "@/utils/invalidateProgress";
 import type { Task } from "@/types/task.type";
 import { taskService } from "@/services/task.services";
 
@@ -18,6 +21,7 @@ const getZeroTime = () => dayjs("00:00", "HH:mm");
 
 export default function DueDateModal({ task, open, onClose, onSave }: Props) {
   const qc = useQueryClient();
+  const { projectId } = useParams<{ projectId: string }>();
   const [form, setForm] = useState({
     startDate: task.startDate ? dayjs(task.startDate) : null,
     startTime: task.startDate ? dayjs(task.startDate) : getZeroTime(),
@@ -53,6 +57,10 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
       
       onSave(updated);
       qc.invalidateQueries({ queryKey: ["columns"] });
+      if (projectId) {
+        invalidateProgressQueries(qc, projectId);
+        invalidateStatisticsQueries(qc, projectId);
+      }
     },
     onError: () => message.error("Lỗi khi cập nhật"),
   });

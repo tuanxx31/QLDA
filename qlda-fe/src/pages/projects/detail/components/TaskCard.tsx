@@ -12,6 +12,7 @@ import { commentService } from '@/services/comment.services';
 import { message } from 'antd';
 import { useParams } from 'react-router-dom';
 import { invalidateProgressQueries } from '@/utils/invalidateProgress';
+import { invalidateStatisticsQueries } from '@/utils/invalidateStatistics';
 import dayjs from 'dayjs';
 import { useMemo } from 'react';
 import { getUnreadCount } from '@/utils/commentBadgeUtils';
@@ -61,6 +62,7 @@ export default function TaskCard({ task }: Props) {
       queryClient.invalidateQueries({ queryKey: ['columns'] });
       if (projectId) {
         invalidateProgressQueries(queryClient, projectId);
+        invalidateStatisticsQueries(queryClient, projectId);
       }
     },
     onError: () => {

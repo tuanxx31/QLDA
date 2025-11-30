@@ -17,6 +17,7 @@ import { taskService } from "@/services/task.services";
 import { useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateProgressQueries } from "@/utils/invalidateProgress";
+import { invalidateStatisticsQueries } from "@/utils/invalidateStatistics";
 import { getAvatarUrl } from "@/utils/avatarUtils";
 
 interface Props {
@@ -92,6 +93,7 @@ export default function MemberAddTaskModal({
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
             if (projectId) {
                 invalidateProgressQueries(queryClient, projectId);
+                invalidateStatisticsQueries(queryClient, projectId);
             }
             onSuccess?.();
             onClose();

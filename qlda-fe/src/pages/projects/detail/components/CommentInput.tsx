@@ -3,6 +3,8 @@ import { PaperClipOutlined, SendOutlined } from '@ant-design/icons';
 import { useState, useRef, useEffect } from 'react';
 import { commentService } from '@/services/comment.services';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { useParams } from 'react-router-dom';
+import { invalidateStatisticsQueries } from '@/utils/invalidateStatistics';
 import type { CreateCommentDto } from '@/types/comment.type';
 import type { User } from '@/types/user.type';
 import MentionTextarea from '@/components/MentionTextarea';
@@ -87,7 +89,9 @@ function formatContentForSubmit(content: string, mentionIds: string[], mentions?
   return formattedContent;
 }
 
-export default function CommentInput({ taskId, projectId, editingComment, onCancelEdit }: Props) {
+export default function CommentInput({ taskId, projectId: propProjectId, editingComment, onCancelEdit }: Props) {
+  const { projectId: paramProjectId } = useParams<{ projectId: string }>();
+  const projectId = propProjectId || paramProjectId;
   const { authUser } = useAuth();
   const [content, setContent] = useState(editingComment?.content || '');
   const [file, setFile] = useState<File | null>(null);
@@ -112,6 +116,9 @@ export default function CommentInput({ taskId, projectId, editingComment, onCanc
       setFileUrl(undefined);
       setMentionIds([]);
       queryClient.invalidateQueries({ queryKey: ['comments', taskId] });
+      if (projectId) {
+        invalidateStatisticsQueries(queryClient, projectId);
+      }
       
       if (onCancelEdit) onCancelEdit();
     },
@@ -129,6 +136,9 @@ export default function CommentInput({ taskId, projectId, editingComment, onCanc
       setFileUrl(undefined);
       setMentionIds([]);
       queryClient.invalidateQueries({ queryKey: ['comments', taskId] });
+      if (projectId) {
+        invalidateStatisticsQueries(queryClient, projectId);
+      }
       
       if (onCancelEdit) onCancelEdit();
     },

@@ -16,6 +16,7 @@ import { SubTasksModule } from './sub-tasks/sub-tasks.module';
 import { LabelsModule } from './labels/labels.module';
 import { TaskModule } from './tasks/tasks.module';
 import { CommentsModule } from './comments/comments.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { CommentsModule } from './comments/comments.module';
     SubTasksModule,
     LabelsModule,
     CommentsModule,
+    StatisticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

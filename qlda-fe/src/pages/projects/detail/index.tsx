@@ -9,7 +9,6 @@ import ProjectInfoCard from './components/ProjectInfoCard';
 import ProjectMembers from './components/ProjectMembers';
 import MemberAddModal from './components/MemberAddModal';
 import MemberAddFromGroupModal from './components/MemberAddFromGroupModal';
-import ProgressDashboard from './components/ProgressDashboard';
 import useAuth from '@/hooks/useAuth';
 import { usePageContentHeight } from '@/hooks/usePageContentHeight';
 
@@ -89,6 +88,9 @@ const ProjectDetailPage = () => {
         <Button key="viewBoard" onClick={() => navigate(`/projects/${projectId}/board`)}>
           Xem bảng công việc
         </Button>,
+        <Button key="viewStatistics" onClick={() => navigate(`/projects/${projectId}/statistics`)}>
+          Thống kê
+        </Button>,
       ].filter(Boolean)}
     >
       <Card style={{ minHeight }}>
@@ -97,7 +99,6 @@ const ProjectDetailPage = () => {
             project={project}
             onUpdate={() => qc.invalidateQueries({ queryKey: ['project', projectId] })}
           />
-          <ProgressDashboard projectId={projectId!} />
           <ProjectMembers projectId={projectId!} />
         </Space>
       </Card>
