@@ -323,7 +323,7 @@ export default function TaskCard({ task }: Props) {
           )}
 
           {}
-          {subtasksProgress && (
+          {/* {subtasksProgress && (
             <Tooltip title={`${subtasksProgress.completed}/${subtasksProgress.total} hoàn thành`}>
               <div
                 style={{
@@ -340,7 +340,7 @@ export default function TaskCard({ task }: Props) {
                 </span>
               </div>
             </Tooltip>
-          )}
+          )} */}
 
           {}
           <div style={{ flex: 1 }} />
