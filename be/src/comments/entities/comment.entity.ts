@@ -21,7 +21,7 @@ export class Comment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', name: 'content' })
   content?: string | null;
 
   @Column({ name: 'user_id', type: 'uuid' })

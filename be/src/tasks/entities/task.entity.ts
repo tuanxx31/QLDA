@@ -25,22 +25,23 @@ export class Task {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ColumnField()
+  @ColumnField({ name: 'title' })
   title: string;
 
-  @ColumnField({ type: 'text', nullable: true })
+  @ColumnField({ type: 'text', nullable: true, name: 'description' })
   description?: string;
 
-  @ColumnField({ type: 'timestamp', nullable: true })
+  @ColumnField({ type: 'timestamp', nullable: true, name: 'start_date' })
   startDate?: Date;
 
-  @ColumnField({ type: 'timestamp', nullable: true })
+  @ColumnField({ type: 'timestamp', nullable: true, name: 'due_date' })
   dueDate?: Date;
 
   @ColumnField({
     type: 'enum',
     enum: ['todo', 'done'],
     default: 'todo',
+    name: 'status',
   })
   status: 'todo'  | 'done';
 
@@ -48,16 +49,17 @@ export class Task {
     type: 'enum',
     enum: ['low', 'medium', 'high'],
     default: 'medium',
+    name: 'priority',
   })
   priority: 'low' | 'medium' | 'high';
 
-  @ColumnField({ type: 'decimal', precision: 10, scale: 3, default: 0 })
+  @ColumnField({ type: 'decimal', precision: 10, scale: 3, default: 0, name: 'position' })
   position: string;
 
-  @ColumnField({ type: 'float', default: 0 })
+  @ColumnField({ type: 'float', default: 0, name: 'progress' })
   progress: number;
 
-  @ColumnField({ type: 'timestamp', nullable: true })
+  @ColumnField({ type: 'timestamp', nullable: true, name: 'completed_at' })
   completedAt?: Date;
 
   @ColumnField({ name: 'created_by', type: 'uuid', nullable: true })

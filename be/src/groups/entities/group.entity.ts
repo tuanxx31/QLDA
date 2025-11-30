@@ -17,13 +17,13 @@ export class Group {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ length: 100 })
+  @Column({ length: 100, name: 'name' })
   name: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true, name: 'description' })
   description: string;
 
-  @Column({ unique: true, length: 10 })
+  @Column({ unique: true, length: 10, name: 'invite_code' })
   inviteCode: string;
 
   @ManyToOne(() => User, (user) => user.ownedGroups, {

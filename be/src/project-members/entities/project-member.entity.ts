@@ -30,6 +30,7 @@ export class ProjectMember {
     type: 'enum',
     enum: ['leader', 'editor', 'viewer'],
     default: 'viewer',
+    name: 'role',
   })
   role: 'leader' | 'editor' | 'viewer';
 

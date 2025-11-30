@@ -14,16 +14,16 @@ export class SubTask {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ColumnField()
+  @ColumnField({ name: 'title' })
   title: string;
 
-  @ColumnField({ default: false })
+  @ColumnField({ default: false, name: 'completed' })
   completed: boolean;
 
-  @ColumnField({ type: 'timestamp', nullable: true })
+  @ColumnField({ type: 'timestamp', nullable: true, name: 'completed_at' })
   completedAt?: Date;
 
-  @ColumnField({ type: 'decimal', precision: 10, scale: 3, default: 0 })
+  @ColumnField({ type: 'decimal', precision: 10, scale: 3, default: 0, name: 'position' })
   position: string;
 
   @ColumnField({ name: 'task_id', type: 'uuid' })

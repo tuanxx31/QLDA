@@ -28,6 +28,7 @@ export class GroupMember {
     type: 'enum',
     enum: ['leader', 'member'],
     default: 'member',
+    name: 'role',
   })
   role: 'leader' | 'member';
 
@@ -35,6 +36,7 @@ export class GroupMember {
     type: 'enum',
     enum: ['pending', 'accepted', 'rejected'],
     default: 'accepted',
+    name: 'status',
   })
   status: 'pending' | 'accepted' | 'rejected';
 

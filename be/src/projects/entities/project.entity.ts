@@ -19,22 +19,23 @@ export class Project {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ name: 'name' })
   name: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true, name: 'description' })
   description?: string;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ type: 'date', nullable: true, name: 'start_date' })
   startDate?: Date;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ type: 'date', nullable: true, name: 'deadline' })
   deadline?: Date;
 
   @Column({
     type: 'enum',
     enum: ['todo', 'doing', 'done'],
     default: 'todo',
+    name: 'status',
   })
   status: 'todo' | 'doing' | 'done';
 

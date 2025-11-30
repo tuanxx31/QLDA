@@ -16,31 +16,32 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, name: 'name' })
   name: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, name: 'email' })
   email: string;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, name: 'password' })
   password: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true ,name: 'date_of_birth'})
   dateOfBirth?: Date;
 
   @Column({
     nullable: true,
     default: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+    name: 'avatar',
   })
   avatar: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true ,name: 'student_code'})
   studentCode: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, name: 'department' })
   department: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, name: 'gender' })
   gender: 'male' | 'female' | 'other';
 
   @CreateDateColumn({ name: 'created_at' })

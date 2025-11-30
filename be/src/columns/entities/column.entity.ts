@@ -14,10 +14,10 @@ export class ColumnEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ColumnField()
+  @ColumnField({ name: 'name' })
   name: string;
 
-  @ColumnField({ type: 'int', default: 0 })
+  @ColumnField({ type: 'int', default: 0, name: 'order' })
   order: number;
 
   @ManyToOne(() => Project, (project) => project.columns, {

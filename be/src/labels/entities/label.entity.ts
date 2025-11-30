@@ -6,13 +6,13 @@ export class Label {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ColumnField()
+  @ColumnField({ name: 'name' })
   name: string;
 
-  @ColumnField({ default: '#007bff' })
+  @ColumnField({ default: '#007bff', name: 'color' })
   color: string;
 
-  @ColumnField({ type: 'text', nullable: true })
+  @ColumnField({ type: 'text', nullable: true, name: 'description' })
   description?: string;
 
   @ManyToOne(()=>Project, (project)=>project.labels, { onDelete: 'CASCADE' })
