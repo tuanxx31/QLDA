@@ -23,6 +23,7 @@ import AddTaskCard from './AddTaskCard';
 import { invalidateProgressQueries } from '@/utils/invalidateProgress';
 import { invalidateStatisticsQueries } from '@/utils/invalidateStatistics';
 import { taskService } from '@/services/task.services';
+import { useProjectPermission } from '@/hooks/useProjectPermission';
 
 const { Text } = Typography;
 
@@ -42,6 +43,7 @@ export default function SortableColumn({
   const { token } = theme.useToken();
   const qc = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();
+  const { canEditColumns, canEditTasks } = useProjectPermission(projectId);
 
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(column.name);
@@ -165,23 +167,25 @@ export default function SortableColumn({
             </div>
 
             <Space size="small">
-              {!isEditing && (
+              {!isEditing && canEditColumns && (
                 <Button type="text" icon={<EditOutlined />} onClick={() => setIsEditing(true)} />
               )}
 
-              <Popconfirm
-                title="Xóa cột này?"
-                onConfirm={() => removeMutation.mutate()}
-                okText="Xác nhận"
-                cancelText="Hủy"
-              >
-                <Button
-                  type="text"
-                  danger
-                  icon={<DeleteOutlined />}
-                  loading={removeMutation.isPending}
-                />
-              </Popconfirm>
+              {canEditColumns && (
+                <Popconfirm
+                  title="Xóa cột này?"
+                  onConfirm={() => removeMutation.mutate()}
+                  okText="Xác nhận"
+                  cancelText="Hủy"
+                >
+                  <Button
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                    loading={removeMutation.isPending}
+                  />
+                </Popconfirm>
+              )}
               { !isEditing && (
                 <Button
                   type="text"
@@ -207,23 +211,25 @@ export default function SortableColumn({
         >
           <TaskList column={column} />
         </div>
-        <div
-          style={{
-            padding: '0 8px 8px 8px',
-            borderTop: `1px solid ${token.colorBorderSecondary}`,
-            backgroundColor: token.colorBgContainer,
-            flexShrink: 0,
-          }}
-        >
-          <AddTaskCard
-            isAdding={isAdding}
-            setIsAdding={setIsAdding}
-            newTitle={newTitle}
-            setNewTitle={setNewTitle}
-            onAdd={handleAddTask}
-            loading={addTaskMutation.isPending}
-          />
-        </div>
+        {canEditTasks && (
+          <div
+            style={{
+              padding: '0 8px 8px 8px',
+              borderTop: `1px solid ${token.colorBorderSecondary}`,
+              backgroundColor: token.colorBgContainer,
+              flexShrink: 0,
+            }}
+          >
+            <AddTaskCard
+              isAdding={isAdding}
+              setIsAdding={setIsAdding}
+              newTitle={newTitle}
+              setNewTitle={setNewTitle}
+              onAdd={handleAddTask}
+              loading={addTaskMutation.isPending}
+            />
+          </div>
+        )}
       </Card>
     </div>
   );

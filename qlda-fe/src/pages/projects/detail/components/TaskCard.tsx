@@ -2,7 +2,6 @@ import { Card, Avatar, Tooltip, theme, Badge } from 'antd';
 import {
   CheckCircleFilled,
   ClockCircleOutlined,
-  CheckSquareOutlined,
   CommentOutlined,
 } from '@ant-design/icons';
 import type { Task } from '@/types/task.type';
@@ -19,6 +18,7 @@ import { getUnreadCount } from '@/utils/commentBadgeUtils';
 import useAuth from '@/hooks/useAuth';
 import { getAvatarUrl } from '@/utils/avatarUtils';
 import { useTaskReadStatus } from '@/hooks/useTaskReadStatus';
+import { useProjectPermission } from '@/hooks/useProjectPermission';
 
 interface Props {
   task: Task;
@@ -29,6 +29,7 @@ export default function TaskCard({ task }: Props) {
   const { projectId } = useParams<{ projectId: string }>();
   const { token } = theme.useToken();
   const { authUser } = useAuth();
+  const { role, canEditTasks } = useProjectPermission(projectId);
 
   
   const { updateKey } = useTaskReadStatus(task.id, authUser?.id);
@@ -70,8 +71,26 @@ export default function TaskCard({ task }: Props) {
     },
   });
 
+  const canUpdateStatus = useMemo(() => {
+    // Leader và Editor luôn được phép
+    if (canEditTasks) return true;
+
+    // Viewer chỉ được update nếu là assignee
+    if (role === 'viewer') {
+      const assigneeIds = task.assignees?.map((a) => a.id) || [];
+      return assigneeIds.includes(authUser?.id || '');
+    }
+
+    return false;
+  }, [canEditTasks, role, task.assignees, authUser?.id]);
+
   const handleCheckboxChange = (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    if (!canUpdateStatus) {
+      message.warning('Bạn không có quyền cập nhật trạng thái task này');
+      return;
+    }
 
     const newStatus = task.status === 'done' ? 'todo' : 'done';
     updateStatusMutation.mutate(newStatus);
@@ -213,13 +232,14 @@ export default function TaskCard({ task }: Props) {
           onClick={handleCheckboxChange}
           style={{
             fontSize: 18,
-            cursor: 'pointer',
+            cursor: canUpdateStatus ? 'pointer' : 'not-allowed',
             color: task.status === 'done' ? '#52c41a' : 'white',
             border: `1px solid ${token.colorBorder}`,
             borderRadius: '50%',
             transition: 'color 0.2s',
             marginTop: 2,
             flexShrink: 0,
+            opacity: canUpdateStatus ? 1 : 0.5,
           }}
         />
 

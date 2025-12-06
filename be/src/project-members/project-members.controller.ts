@@ -22,6 +22,8 @@ import { ProjectMembersService } from './project-members.service';
 import { CreateProjectMemberDto } from './dto/create-project-member.dto';
 import { UpdateProjectMemberDto } from './dto/update-project-member.dto';
 import { TaskService } from 'src/tasks/tasks.service';
+import { ProjectRoleGuard } from 'src/permissions/guards/project-role.guard';
+import { RequireProjectRole } from 'src/permissions/decorators/require-project-role.decorator';
 
 @ApiTags('Project Members')
 @Controller('project-members')
@@ -49,13 +51,14 @@ export class ProjectMembersController {
   }
 
   @Post(':projectId')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, ProjectRoleGuard)
+  @RequireProjectRole('leader')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Thêm thành viên vào dự án' })
   @ApiResponse({ status: 201, description: 'Thành viên được thêm thành công' })
   @ApiResponse({
     status: 403,
-    description: 'Chỉ leader hoặc manager mới có quyền thêm thành viên',
+    description: 'Chỉ leader mới có quyền thêm thành viên',
   })
   async addMember(
     @Param('projectId') projectId: string,
@@ -70,13 +73,14 @@ export class ProjectMembersController {
   }
 
   @Post(':projectId/add-members')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, ProjectRoleGuard)
+  @RequireProjectRole('leader')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Thêm nhiều thành viên vào dự án' })
   @ApiResponse({ status: 201, description: 'Thành viên được thêm thành công' })
   @ApiResponse({
     status: 403,
-    description: 'Chỉ leader hoặc manager mới có quyền thêm thành viên',
+    description: 'Chỉ leader mới có quyền thêm thành viên',
   })
   async addMembers(
     @Param('projectId') projectId: string,
@@ -86,7 +90,8 @@ export class ProjectMembersController {
   }
 
   @Patch(':projectId/:memberId')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, ProjectRoleGuard)
+  @RequireProjectRole('leader')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Cập nhật vai trò của thành viên trong dự án' })
   @ApiResponse({ status: 200, description: 'Cập nhật vai trò thành công' })
@@ -109,7 +114,8 @@ export class ProjectMembersController {
   }
 
   @Delete(':projectId/:memberId')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, ProjectRoleGuard)
+  @RequireProjectRole('leader')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Xóa thành viên khỏi dự án' })
   @ApiResponse({ status: 200, description: 'Thành viên đã bị xóa khỏi dự án' })
@@ -130,7 +136,8 @@ export class ProjectMembersController {
   }
 
   @Put(':projectId/transfer-leader/:newLeaderId')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, ProjectRoleGuard)
+  @RequireProjectRole('leader')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Chuyển quyền leader cho thành viên khác' })
   @ApiResponse({ status: 200, description: 'Chuyển quyền leader thành công' })

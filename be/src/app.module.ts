@@ -17,6 +17,7 @@ import { LabelsModule } from './labels/labels.module';
 import { TaskModule } from './tasks/tasks.module';
 import { CommentsModule } from './comments/comments.module';
 import { StatisticsModule } from './statistics/statistics.module';
+import { PermissionsModule } from './permissions/permissions.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { StatisticsModule } from './statistics/statistics.module';
       entities: [join(__dirname, '**', '*.entity.{ts,js}')],
       synchronize: true,
     }),
+    PermissionsModule,
     UsersModule,
     AuthModule,
     GroupsModule,

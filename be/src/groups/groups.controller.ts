@@ -21,6 +21,8 @@ import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { JoinGroupDto } from './dto/join-group.dto';
 import { InviteMemberDto } from './dto/invite-member.dto';
+import { GroupRoleGuard } from 'src/permissions/guards/group-role.guard';
+import { RequireGroupRole } from 'src/permissions/decorators/require-group-role.decorator';
 @ApiTags('Groups')
 @Controller('groups')
 export class GroupsController {
@@ -102,7 +104,8 @@ export class GroupsController {
   }
 
   @Put(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, GroupRoleGuard)
+  @RequireGroupRole('leader')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Cập nhật thông tin nhóm (chỉ leader)' })
   @ApiResponse({ status: 200, description: 'Group updated successfully' })
@@ -116,7 +119,8 @@ export class GroupsController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, GroupRoleGuard)
+  @RequireGroupRole('leader')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Giải tán nhóm (chỉ leader)' })
   @ApiResponse({ status: 200, description: 'Group deleted successfully' })
@@ -137,7 +141,8 @@ export class GroupsController {
 
   
   @Post('invite')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, GroupRoleGuard)
+  @RequireGroupRole('leader')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Mời thành viên vào nhóm (chỉ leader)' })
   @ApiResponse({ status: 200, description: 'Member invited successfully' })

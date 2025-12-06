@@ -9,6 +9,8 @@ import { ColumnEntity } from './entities/column.entity';
 import { Project } from 'src/projects/entities/project.entity';
 import { CreateColumnDto } from './dto/create-column.dto';
 import { UpdateColumnDto } from './dto/update-column.dto';
+import { PermissionsService } from 'src/permissions/permissions.service';
+import { ProjectMember } from 'src/project-members/entities/project-member.entity';
 
 @Injectable()
 export class ColumnsService {
@@ -17,19 +19,23 @@ export class ColumnsService {
     private columnRepo: Repository<ColumnEntity>,
     @InjectRepository(Project)
     private projectRepo: Repository<Project>,
+    @InjectRepository(ProjectMember)
+    private projectMemberRepo: Repository<ProjectMember>,
+    private permissionsService: PermissionsService,
   ) {}
 
   async create(projectId: string, dto: CreateColumnDto, userId: string) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
-      relations: ['members', 'owner', 'members.user', 'columns'],
+      relations: ['columns'],
     });
     if (!project) throw new NotFoundException('Không tìm thấy dự án.');
   
-    const isMember =
-      project.members?.some((m) => m.user.id === userId) ||
-      project.owner.id === userId;
-    if (!isMember) throw new ForbiddenException('Không có quyền tạo cột.');
+    // Kiểm tra quyền sử dụng PermissionsService
+    const canEdit = await this.permissionsService.canEditColumn(projectId, userId);
+    if (!canEdit) {
+      throw new ForbiddenException('Không có quyền tạo cột.');
+    }
   
     const maxOrder =
       project.columns?.length > 0
@@ -46,8 +52,8 @@ export class ColumnsService {
   }
   
 
-  findAll(projectId: string) {
-    return this.columnRepo.find({
+  async findAll(projectId: string) {
+    const columns = await this.columnRepo.find({
       where: { project: { id: projectId } },
       relations: [
         'tasks',
@@ -62,19 +68,73 @@ export class ColumnsService {
         },
       },
     });
+
+    // Filter assignees theo project members cho tất cả tasks
+    if (columns.length > 0) {
+      const projectMembers = await this.projectMemberRepo.find({
+        where: { project: { id: projectId } },
+        relations: ['user'],
+      });
+
+      const projectMemberUserIds = new Set(
+        projectMembers.map((pm) => pm.user.id),
+      );
+
+      columns.forEach((column) => {
+        if (column.tasks) {
+          column.tasks.forEach((task) => {
+            task.assignees = task.assignees.filter((assignee) =>
+              projectMemberUserIds.has(assignee.id),
+            );
+          });
+        }
+      });
+    }
+
+    return columns;
   }
   
 
-  async update(id: string, dto: UpdateColumnDto) {
-    const column = await this.columnRepo.findOne({ where: { id } });
+  async update(id: string, dto: UpdateColumnDto, userId?: string) {
+    const column = await this.columnRepo.findOne({
+      where: { id },
+      relations: ['project'],
+    });
     if (!column) throw new NotFoundException('Không tìm thấy cột.');
+
+    // Kiểm tra quyền nếu có userId
+    if (userId) {
+      const canEdit = await this.permissionsService.canEditColumn(
+        column.project.id,
+        userId,
+      );
+      if (!canEdit) {
+        throw new ForbiddenException('Không có quyền cập nhật cột.');
+      }
+    }
+
     Object.assign(column, dto);
     return this.columnRepo.save(column);
   }
 
-  async remove(id: string) {
-    const column = await this.columnRepo.findOne({ where: { id } });
+  async remove(id: string, userId?: string) {
+    const column = await this.columnRepo.findOne({
+      where: { id },
+      relations: ['project'],
+    });
     if (!column) throw new NotFoundException('Không tìm thấy cột.');
+
+    // Kiểm tra quyền nếu có userId
+    if (userId) {
+      const canEdit = await this.permissionsService.canEditColumn(
+        column.project.id,
+        userId,
+      );
+      if (!canEdit) {
+        throw new ForbiddenException('Không có quyền xóa cột.');
+      }
+    }
+
     await this.columnRepo.remove(column);
     return { message: 'Đã xóa cột thành công.' };
   }

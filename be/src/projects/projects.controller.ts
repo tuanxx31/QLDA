@@ -23,6 +23,8 @@ import { ProjectProgressDto } from './dto/project-progress.dto';
 import { ColumnProgressDto } from './dto/column-progress.dto';
 import { UserProgressDto } from './dto/user-progress.dto';
 import { DeadlineSummaryDto } from './dto/deadline-summary.dto';
+import { ProjectRoleGuard } from 'src/permissions/guards/project-role.guard';
+import { RequireProjectRole } from 'src/permissions/decorators/require-project-role.decorator';
 
 @ApiTags('Projects')
 @Controller('projects')
@@ -140,10 +142,11 @@ export class ProjectsController {
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, ProjectRoleGuard)
+  @RequireProjectRole('leader')
   @ApiBearerAuth('jwt')
   @ApiOperation({
-    summary: 'Cập nhật thông tin dự án (chỉ owner hoặc manager)',
+    summary: 'Cập nhật thông tin dự án (chỉ leader)',
   })
   @ApiResponse({ status: 200, description: 'Dự án được cập nhật thành công' })
   @ApiResponse({ status: 403, description: 'Không có quyền cập nhật dự án' })
@@ -156,9 +159,10 @@ export class ProjectsController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, ProjectRoleGuard)
+  @RequireProjectRole('leader')
   @ApiBearerAuth('jwt')
-  @ApiOperation({ summary: 'Xóa dự án (chỉ owner hoặc manager)' })
+  @ApiOperation({ summary: 'Xóa dự án (chỉ leader)' })
   @ApiResponse({ status: 200, description: 'Dự án được xóa thành công' })
   @ApiResponse({ status: 403, description: 'Không có quyền xóa dự án' })
   async remove(@Param('id') id: string, @Request() req: any) {
@@ -166,7 +170,8 @@ export class ProjectsController {
   }
 
   @Patch(':id/convert-to-group/:groupId')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, ProjectRoleGuard)
+  @RequireProjectRole('leader')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Chuyển dự án cá nhân thành dự án nhóm' })
   @ApiResponse({ status: 200, description: 'Chuyển dự án thành công' })
@@ -184,7 +189,8 @@ export class ProjectsController {
   }
 
   @Patch(':id/remove-group')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, ProjectRoleGuard)
+  @RequireProjectRole('leader')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Tách dự án khỏi nhóm, trở thành dự án cá nhân' })
   @ApiResponse({

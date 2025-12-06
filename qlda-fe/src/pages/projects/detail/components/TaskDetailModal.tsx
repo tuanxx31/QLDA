@@ -39,6 +39,7 @@ import { getAvatarUrl } from "@/utils/avatarUtils";
 import { projectService } from "@/services/project.services";
 import { markTaskAsRead } from "@/utils/commentBadgeUtils";
 import useAuth from "@/hooks/useAuth";
+import { useProjectPermission } from "@/hooks/useProjectPermission";
 
 const { Title, Text } = Typography;
 type TaskLabel = NonNullable<Task["labels"]>[number];
@@ -61,6 +62,7 @@ export default function TaskDetailModal({
   const queryClient = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();
   const { authUser } = useAuth();
+  const { canDeleteTasks, canEditTasks } = useProjectPermission(projectId);
   const [taskData, setTaskData] = useState<Task | null>(task);
   
   const { data: project } = useQuery({
@@ -276,9 +278,32 @@ export default function TaskDetailModal({
     },
   });
 
+  // Ưu tiên assignees đã được filter từ backend
+  // 1. assignees từ query getAssignees() (đã filter)
+  // 2. fetchedTask.assignees (đã filter từ getById)
+  // 3. Chỉ fallback task?.assignees khi cả 2 trên chưa có
   const visibleAssignees = assignees.length
     ? assignees
-    : task?.assignees ?? [];
+    : fetchedTask?.assignees?.length
+      ? fetchedTask.assignees
+      : task?.assignees ?? [];
+
+  const unassignUsersMutation = useMutation({
+    mutationFn: (userIds: string[]) =>
+      taskService.unassignUsers(taskData!.id, userIds),
+    onSuccess: () => {
+      message.success("Đã hủy gán thành viên");
+      queryClient.invalidateQueries({ queryKey: ["taskAssignees", taskData?.id] });
+      queryClient.invalidateQueries({ queryKey: ["task", taskData?.id] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["columns"] });
+      if (projectId) {
+        invalidateProgressQueries(queryClient, projectId);
+        invalidateStatisticsQueries(queryClient, projectId);
+      }
+    },
+    onError: () => message.error("Lỗi khi hủy gán thành viên"),
+  });
 
   if (!taskData) return null;
 
@@ -377,7 +402,7 @@ export default function TaskDetailModal({
                       alignItems: "center",
                       gap: 8,
                     }}
-                    onDoubleClick={() => setEditingTitle(true)}
+                    onDoubleClick={canEditTasks ? () => setEditingTitle(true) : undefined}
                   >
                     <Title 
                       level={4} 
@@ -392,33 +417,37 @@ export default function TaskDetailModal({
                       {taskData.title}
                     </Title>
 
-                    <Tooltip title="Sửa tên">
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<EditOutlined />}
-                        onClick={() => setEditingTitle(true)}
-                        style={{ color: "#999", flexShrink: 0 }}
-                      />
-                    </Tooltip>
+                    {canEditTasks && (
+                      <Tooltip title="Sửa tên">
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<EditOutlined />}
+                          onClick={() => setEditingTitle(true)}
+                          style={{ color: "#999", flexShrink: 0 }}
+                        />
+                      </Tooltip>
+                    )}
                   </div>
                 )}
               </div>
 
-              <Space size={4} style={{ flexShrink: 0 }}>
-                <Popconfirm
-                  title="Xóa thẻ?"
-                  onConfirm={() => deleteTaskMutation.mutate()}
-                >
-                  <Button
-                    danger
-                    type="text"
-                    size="small"
-                    icon={<DeleteOutlined />}
-                    style={{ color: "#999" }}
-                  />
-                </Popconfirm>
-              </Space>
+              {canDeleteTasks && (
+                <Space size={4} style={{ flexShrink: 0 }}>
+                  <Popconfirm
+                    title="Xóa thẻ?"
+                    onConfirm={() => deleteTaskMutation.mutate()}
+                  >
+                    <Button
+                      danger
+                      type="text"
+                      size="small"
+                      icon={<DeleteOutlined />}
+                      style={{ color: "#999" }}
+                    />
+                  </Popconfirm>
+                </Space>
+              )}
             </div>
           </div>
         }
@@ -536,8 +565,8 @@ export default function TaskDetailModal({
                 {assigneesLoading ? (
                   <Spin size="small" />
                 ) : (
-                  visibleAssignees.map((u: any) => (
-                    <Tooltip key={u.id} title={u.name || u.email}>
+                  visibleAssignees.map((u: any) => {
+                    const avatarElement = (
                       <Avatar
                         size={24}
                         src={getAvatarUrl(u?.avatar)}
@@ -545,13 +574,31 @@ export default function TaskDetailModal({
                           border: "1px solid #eee",
                           backgroundColor: "#1677ff",
                           color: "#fff",
-                          cursor: "pointer",
+                          cursor: canEditTasks ? "pointer" : "default",
                         }}
                       >
                         {(u.name || u.email)?.[0]?.toUpperCase()}
                       </Avatar>
-                    </Tooltip>
-                  ))
+                    );
+
+                    return canEditTasks ? (
+                      <Popconfirm
+                        key={u.id}
+                        title="Hủy gán thành viên này?"
+                        onConfirm={() => unassignUsersMutation.mutate([u.id])}
+                        okText="Xác nhận"
+                        cancelText="Hủy"
+                      >
+                        <Tooltip title={u.name || u.email}>
+                          {avatarElement}
+                        </Tooltip>
+                      </Popconfirm>
+                    ) : (
+                      <Tooltip key={u.id} title={u.name || u.email}>
+                        {avatarElement}
+                      </Tooltip>
+                    );
+                  })
                 )}
 
                 <Tooltip title="Thêm thành viên">

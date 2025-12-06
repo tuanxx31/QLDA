@@ -19,6 +19,11 @@ const MemberAddModal = ({ open, onClose, projectId }: Props) => {
     onSuccess: () => {
       message.success('Đã thêm thành viên');
       qc.invalidateQueries({ queryKey: ['projectMembers', projectId] });
+      // Invalidate task assignees để assignees cũ tự động hiển thị lại khi thành viên được thêm lại
+      qc.invalidateQueries({ queryKey: ['taskAssignees'] });
+      qc.invalidateQueries({ queryKey: ['task'] });
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['columns'] });
       onClose();
     },
     onError: () => message.error('Không thể thêm thành viên'),

@@ -13,6 +13,7 @@ import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupMember } from 'src/group-member/entities/group-member.entity';
 import { JoinGroupDto } from './dto/join-group.dto';
 import { InviteMemberDto } from './dto/invite-member.dto';
+import { PermissionsService } from 'src/permissions/permissions.service';
 
 @Injectable()
 export class GroupsService {
@@ -25,6 +26,8 @@ export class GroupsService {
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+
+    private readonly permissionsService: PermissionsService,
   ) {}
 
   
@@ -179,11 +182,14 @@ export class GroupsService {
   async update(id: string, userId: string, dto: UpdateGroupDto) {
     const group = await this.groupRepo.findOne({
       where: { id },
-      relations: ['leader'],
     });
     if (!group) throw new NotFoundException('Không tìm thấy nhóm');
-    if (group.leader.id !== userId)
+
+    // Kiểm tra quyền sử dụng PermissionsService
+    const canEdit = await this.permissionsService.canEditGroup(id, userId);
+    if (!canEdit) {
       throw new ForbiddenException('Chỉ trưởng nhóm mới được cập nhật');
+    }
 
     Object.assign(group, dto);
     return await this.groupRepo.save(group);
@@ -192,11 +198,14 @@ export class GroupsService {
   async remove(id: string, userId: string) {
     const group = await this.groupRepo.findOne({
       where: { id },
-      relations: ['leader'],
     });
     if (!group) throw new NotFoundException('Không tìm thấy nhóm');
-    if (group.leader.id !== userId)
+
+    // Kiểm tra quyền sử dụng PermissionsService
+    const canDelete = await this.permissionsService.canDeleteGroup(id, userId);
+    if (!canDelete) {
       throw new ForbiddenException('Chỉ trưởng nhóm mới có quyền xóa');
+    }
 
     await this.groupRepo.delete(id);
     return { message: 'Đã giải tán nhóm' };
@@ -229,11 +238,17 @@ export class GroupsService {
 
     const group = await this.groupRepo.findOne({
       where: { id: groupId },
-      relations: ['leader'],
     });
     if (!group) throw new NotFoundException('Không tìm thấy nhóm');
-    if (group.leader.id !== leaderId)
+
+    // Kiểm tra quyền sử dụng PermissionsService
+    const canInvite = await this.permissionsService.canInviteMembers(
+      groupId,
+      leaderId,
+    );
+    if (!canInvite) {
       throw new ForbiddenException('Chỉ trưởng nhóm mới có quyền mời');
+    }
 
     let memberUser: User | null = null;
     if (userId)

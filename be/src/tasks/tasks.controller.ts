@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { AssignUsersDto, AssignLabelsDto } from './dto/assign.dto';
+import { AssignUsersDto, AssignLabelsDto, UnassignUsersDto } from './dto/assign.dto';
 import { TaskService } from './tasks.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -46,8 +46,10 @@ export class TaskController {
   @ApiOperation({ summary: 'Cập nhật trạng thái task' })
   @ApiResponse({ status: 200, description: 'Trạng thái task đã được cập nhật thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  updateStatus(@Param('id') id: string, @Body() body: { status: 'todo'| 'done' }) {
-    return this.taskService.updateStatus(id, body.status);
+  @ApiResponse({ status: 403, description: 'Không có quyền cập nhật trạng thái' })
+  updateStatus(@Param('id') id: string, @Body() body: { status: 'todo'| 'done' }, @Req() req) {
+    const userId = req.user?.sub ?? null;
+    return this.taskService.updateStatus(id, body.status, userId);
   }
   @Get('column/:columnId')
   @ApiBearerAuth('jwt')
@@ -73,8 +75,10 @@ export class TaskController {
   @ApiOperation({ summary: 'Cập nhật task' })
   @ApiResponse({ status: 200, description: 'Task đã được cập nhật thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  update(@Param('id') id: string, @Body() dto: UpdateTaskDto) {
-    return this.taskService.update(id, dto);
+  @ApiResponse({ status: 403, description: 'Không có quyền cập nhật task' })
+  update(@Param('id') id: string, @Body() dto: UpdateTaskDto, @Req() req) {
+    const userId = req.user?.sub ?? null;
+    return this.taskService.update(id, dto, userId);
   }
 
   @Delete(':id')
@@ -82,8 +86,10 @@ export class TaskController {
   @ApiOperation({ summary: 'Xóa task' })
   @ApiResponse({ status: 200, description: 'Task đã được xóa thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  remove(@Param('id') id: string) {
-    return this.taskService.remove(id);
+  @ApiResponse({ status: 403, description: 'Không có quyền xóa task' })
+  remove(@Param('id') id: string, @Req() req) {
+    const userId = req.user?.sub ?? null;
+    return this.taskService.remove(id, userId);
   }
 
   @Patch(':id/assignees')
@@ -91,8 +97,21 @@ export class TaskController {
   @ApiOperation({ summary: 'Gán người làm task' })
   @ApiResponse({ status: 200, description: 'Task đã được gán người làm thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  assignUsers(@Param('id') id: string, @Body() dto: AssignUsersDto) {
-    return this.taskService.assignUsers(id, dto);
+  @ApiResponse({ status: 403, description: 'Không có quyền gán người làm task' })
+  assignUsers(@Param('id') id: string, @Body() dto: AssignUsersDto, @Req() req) {
+    const userId = req.user?.sub ?? null;
+    return this.taskService.assignUsers(id, dto, userId);
+  }
+
+  @Delete(':id/assignees')
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Hủy gán người làm task' })
+  @ApiResponse({ status: 200, description: 'Task đã được hủy gán người làm thành công' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Không có quyền hủy gán người làm task' })
+  unassignUsers(@Param('id') id: string, @Body() dto: UnassignUsersDto, @Req() req) {
+    const userId = req.user?.sub ?? null;
+    return this.taskService.unassignUsers(id, dto, userId);
   }
 
   @Patch(':id/labels')
@@ -100,8 +119,10 @@ export class TaskController {
   @ApiOperation({ summary: 'Gán nhãn task' })
   @ApiResponse({ status: 200, description: 'Task đã được gán nhãn thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  assignLabels(@Param('id') id: string, @Body() dto: AssignLabelsDto) {
-    return this.taskService.assignLabels(id, dto);
+  @ApiResponse({ status: 403, description: 'Không có quyền gán nhãn task' })
+  assignLabels(@Param('id') id: string, @Body() dto: AssignLabelsDto, @Req() req) {
+    const userId = req.user?.sub ?? null;
+    return this.taskService.assignLabels(id, dto, userId);
   }
 
   @Delete(':id/labels')
@@ -109,8 +130,10 @@ export class TaskController {
   @ApiOperation({ summary: 'Bỏ gán nhãn task' })
   @ApiResponse({ status: 200, description: 'Task đã được bỏ gán nhãn thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  unassignLabels(@Param('id') id: string, @Body() dto: AssignLabelsDto) {
-    return this.taskService.unassignLabels(id, dto);
+  @ApiResponse({ status: 403, description: 'Không có quyền bỏ gán nhãn task' })
+  unassignLabels(@Param('id') id: string, @Body() dto: AssignLabelsDto, @Req() req) {
+    const userId = req.user?.sub ?? null;
+    return this.taskService.unassignLabels(id, dto, userId);
   }
 
   @Patch(':id/position')

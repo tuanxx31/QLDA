@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { groupService } from '@/services/group.services';
 import useAuth from '@/hooks/useAuth';
+import { useGroupPermission } from '@/hooks/useGroupPermission';
 import { GroupInfoCard } from '@/pages/groups/components/GroupInfoCard';
 import { GroupMembersTable } from '@/pages/groups/components/GroupMembersTable';
 import { GroupSettings } from '@/pages/groups/components/GroupSettings';
@@ -29,7 +30,7 @@ const GroupDetailPage = () => {
     enabled: !!groupId,
   });
 
-  const isLeader = group?.leader?.id === currentUser?.id;
+  const { canEdit, canDelete, canInvite, canManageMembers } = useGroupPermission(groupId);
 
   const deleteGroupMutation = useMutation({
     mutationFn: () => groupService.deleteGroup(groupId!),
@@ -87,12 +88,12 @@ const GroupDetailPage = () => {
             Sao chép mã mời
           </Button>
         </Tooltip>,
-        isLeader && (
+        canEdit && (
           <Button key="edit" onClick={() => setOpenEditGroup(true)}>
             Chỉnh sửa nhóm
           </Button>
         ),
-        isLeader && (
+        canInvite && (
           <Button
             key="add"
             icon={<UserAddOutlined />}
@@ -117,7 +118,7 @@ const GroupDetailPage = () => {
               children: (
                 <GroupMembersTable
                   group={group}
-                  isLeader={isLeader}
+                  isLeader={canManageMembers}
                   onUpdate={() =>
                     queryClient.invalidateQueries({ queryKey: ['groupDetail', groupId] })
                   }
@@ -140,7 +141,7 @@ const GroupDetailPage = () => {
                 <GroupSettings
                   group={group}
                   onDelete={() =>
-                    isLeader ? deleteGroupMutation.mutate() : leaveGroupMutation.mutate()
+                    canDelete ? deleteGroupMutation.mutate() : leaveGroupMutation.mutate()
                   }
                 />
               ),

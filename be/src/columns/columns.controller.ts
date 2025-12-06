@@ -14,6 +14,8 @@ import { UpdateColumnDto } from './dto/update-column.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { ProjectRoleGuard } from 'src/permissions/guards/project-role.guard';
+import { RequireProjectRole } from 'src/permissions/decorators/require-project-role.decorator';
 
 @Controller('projects/:projectId/columns')
 @UseGuards(AuthGuard)
@@ -21,10 +23,13 @@ export class ColumnsController {
   constructor(private readonly columnsService: ColumnsService) {}
 
   @Post()
+  @UseGuards(AuthGuard, ProjectRoleGuard)
+  @RequireProjectRole('leader', 'editor')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Tạo cột mới' })
   @ApiResponse({ status: 201, description: 'Cột đã được tạo thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Không có quyền tạo cột' })
   create(
     @Param('projectId') projectId: string,
     @Body() dto: CreateColumnDto,
@@ -43,20 +48,30 @@ export class ColumnsController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard, ProjectRoleGuard)
+  @RequireProjectRole('leader', 'editor')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Cập nhật cột' })
   @ApiResponse({ status: 200, description: 'Cột đã được cập nhật thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  update(@Param('id') id: string, @Body() dto: UpdateColumnDto) {
-    return this.columnsService.update(id, dto);
+  @ApiResponse({ status: 403, description: 'Không có quyền cập nhật cột' })
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateColumnDto,
+    @CurrentUser('sub') userId: string,
+  ) {
+    return this.columnsService.update(id, dto, userId);
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard, ProjectRoleGuard)
+  @RequireProjectRole('leader', 'editor')
   @ApiBearerAuth('jwt')
   @ApiOperation({ summary: 'Xóa cột' })
   @ApiResponse({ status: 200, description: 'Cột đã được xóa thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  remove(@Param('id') id: string) {
-    return this.columnsService.remove(id);
+  @ApiResponse({ status: 403, description: 'Không có quyền xóa cột' })
+  remove(@Param('id') id: string, @CurrentUser('sub') userId: string) {
+    return this.columnsService.remove(id, userId);
   }
 }

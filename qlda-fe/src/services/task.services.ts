@@ -30,6 +30,10 @@ export const taskService = {
     const response = await api.patch(`/tasks/${id}/assignees`, dto);
     return response.data;
   },
+  unassignUsers: async (id: string, userIds: string[]) => {
+    const response = await api.delete(`/tasks/${id}/assignees`, { data: { userIds } });
+    return response.data;
+  },
   updatePosition: async (
     id: string,
     prevTaskId?: string,

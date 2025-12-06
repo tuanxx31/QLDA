@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
@@ -10,8 +11,11 @@ import { Label } from 'src/labels/entities/label.entity';
 import { User } from 'src/users/entities/user.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { AssignUsersDto, AssignLabelsDto } from './dto/assign.dto';
+import { AssignUsersDto, AssignLabelsDto, UnassignUsersDto } from './dto/assign.dto';
 import { SubTask } from 'src/sub-tasks/entities/sub-task.entity';
+import { PermissionsService } from 'src/permissions/permissions.service';
+import { ColumnEntity } from 'src/columns/entities/column.entity';
+import { ProjectMember } from 'src/project-members/entities/project-member.entity';
 
 @Injectable()
 export class TaskService {
@@ -20,35 +24,121 @@ export class TaskService {
     @InjectRepository(SubTask) private subRepo: Repository<SubTask>,
     @InjectRepository(Label) private labelRepo: Repository<Label>,
     @InjectRepository(User) private userRepo: Repository<User>,
+    @InjectRepository(ColumnEntity) private columnRepo: Repository<ColumnEntity>,
+    @InjectRepository(ProjectMember) private projectMemberRepo: Repository<ProjectMember>,
+    private permissionsService: PermissionsService,
   ) {}
 
   async findOne(id: string) {
     const task = await this.taskRepo.findOne({
       where: { id },
-      relations: ['assignees', 'labels', 'subtasks'],
+      relations: ['assignees', 'labels', 'subtasks', 'column', 'column.project'],
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
+
+    // Filter assignees theo project members nếu có project
+    if (task.column?.project?.id) {
+      const projectMembers = await this.projectMemberRepo.find({
+        where: { project: { id: task.column.project.id } },
+        relations: ['user'],
+      });
+
+      const projectMemberUserIds = new Set(
+        projectMembers.map((pm) => pm.user.id),
+      );
+
+      task.assignees = task.assignees.filter((assignee) =>
+        projectMemberUserIds.has(assignee.id),
+      );
+    }
+
     return task;
   }
 
   async getAssignees(id: string) {
     const task = await this.taskRepo.findOne({
       where: { id },
-      relations: ['assignees'],
+      relations: ['assignees', 'column', 'column.project'],
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
-    return task.assignees;
+
+    // Nếu không có project, trả về tất cả assignees
+    if (!task.column?.project?.id) {
+      return task.assignees;
+    }
+
+    // Lấy danh sách project members
+    const projectMembers = await this.projectMemberRepo.find({
+      where: { project: { id: task.column.project.id } },
+      relations: ['user'],
+    });
+
+    // Tạo Set các userIds còn trong project
+    const projectMemberUserIds = new Set(
+      projectMembers.map((pm) => pm.user.id),
+    );
+
+    // Filter assignees chỉ giữ những người còn trong project members
+    const filteredAssignees = task.assignees.filter((assignee) =>
+      projectMemberUserIds.has(assignee.id),
+    );
+
+    return filteredAssignees;
   }
 
   async findByColumn(columnId: string) {
-    return this.taskRepo.find({
+    const column = await this.columnRepo.findOne({
+      where: { id: columnId },
+      relations: ['project'],
+    });
+
+    const tasks = await this.taskRepo.find({
       where: { columnId },
       relations: ['assignees', 'labels', 'subtasks'],
       order: { position: 'ASC' },
     });
+
+    // Filter assignees theo project members nếu có project
+    if (column?.project?.id) {
+      const projectMembers = await this.projectMemberRepo.find({
+        where: { project: { id: column.project.id } },
+        relations: ['user'],
+      });
+
+      const projectMemberUserIds = new Set(
+        projectMembers.map((pm) => pm.user.id),
+      );
+
+      tasks.forEach((task) => {
+        task.assignees = task.assignees.filter((assignee) =>
+          projectMemberUserIds.has(assignee.id),
+        );
+      });
+    }
+
+    return tasks;
   }
 
   async create(dto: CreateTaskDto, creatorId: string) {
+    // Lấy column để kiểm tra projectId
+    const column = await this.columnRepo.findOne({
+      where: { id: dto.columnId },
+      relations: ['project'],
+    });
+
+    if (!column) {
+      throw new NotFoundException('Không tìm thấy cột.');
+    }
+
+    // Kiểm tra quyền tạo task
+    const canEdit = await this.permissionsService.canEditTask(
+      column.project.id,
+      creatorId,
+    );
+    if (!canEdit) {
+      throw new ForbiddenException('Không có quyền tạo task.');
+    }
+
     const maxPosition = await this.taskRepo
       .createQueryBuilder('task')
       .select('MAX(task.position)', 'max')
@@ -80,12 +170,23 @@ export class TaskService {
     });
   }
 
-  async update(id: string, dto: UpdateTaskDto) {
+  async update(id: string, dto: UpdateTaskDto, userId?: string) {
     const task = await this.taskRepo.findOne({ 
       where: { id },
-      relations: ['assignees', 'labels', 'subtasks'],
+      relations: ['assignees', 'labels', 'subtasks', 'column', 'column.project'],
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
+
+    // Kiểm tra quyền nếu có userId
+    if (userId) {
+      const canEdit = await this.permissionsService.canEditTask(
+        task.column.project.id,
+        userId,
+      );
+      if (!canEdit) {
+        throw new ForbiddenException('Không có quyền cập nhật task.');
+      }
+    }
 
     Object.assign(task, dto);
     const saved = await this.taskRepo.save(task);
@@ -97,19 +198,45 @@ export class TaskService {
     });
   }
 
-  async remove(id: string) {
-    const task = await this.taskRepo.findOne({ where: { id } });
+  async remove(id: string, userId?: string) {
+    const task = await this.taskRepo.findOne({
+      where: { id },
+      relations: ['column', 'column.project'],
+    });
     if (!task) throw new NotFoundException('Task không tồn tại');
+
+    // Kiểm tra quyền nếu có userId
+    if (userId) {
+      const canDelete = await this.permissionsService.canDeleteTask(
+        task.column.project.id,
+        userId,
+      );
+      if (!canDelete) {
+        throw new ForbiddenException('Không có quyền xóa task.');
+      }
+    }
+
     await this.taskRepo.remove(task);
     return { message: 'Đã xóa task thành công' };
   }
 
-  async assignUsers(taskId: string, dto: AssignUsersDto) {
+  async assignUsers(taskId: string, dto: AssignUsersDto, userId?: string) {
     const task = await this.taskRepo.findOne({
       where: { id: taskId },
-      relations: ['assignees', 'labels', 'subtasks'],
+      relations: ['assignees', 'labels', 'subtasks', 'column', 'column.project'],
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
+
+    // Kiểm tra quyền nếu có userId
+    if (userId) {
+      const canEdit = await this.permissionsService.canEditTask(
+        task.column.project.id,
+        userId,
+      );
+      if (!canEdit) {
+        throw new ForbiddenException('Không có quyền gán người làm task.');
+      }
+    }
 
     const newUsers = await this.userRepo.find({
       where: { id: In(dto.userIds) },
@@ -126,6 +253,37 @@ export class TaskService {
     await this.taskRepo.save(task);
     
     
+    return this.taskRepo.findOne({
+      where: { id: taskId },
+      relations: ['assignees', 'labels', 'subtasks'],
+    });
+  }
+
+  async unassignUsers(taskId: string, dto: UnassignUsersDto, userId?: string) {
+    const task = await this.taskRepo.findOne({
+      where: { id: taskId },
+      relations: ['assignees', 'labels', 'subtasks', 'column', 'column.project'],
+    });
+    if (!task) throw new NotFoundException('Task không tồn tại');
+
+    // Kiểm tra quyền nếu có userId
+    if (userId) {
+      const canEdit = await this.permissionsService.canEditTask(
+        task.column.project.id,
+        userId,
+      );
+      if (!canEdit) {
+        throw new ForbiddenException('Không có quyền hủy gán người làm task.');
+      }
+    }
+
+    // Filter bỏ các assignees có id trong dto.userIds
+    task.assignees = task.assignees.filter(
+      (assignee) => !dto.userIds.includes(assignee.id),
+    );
+
+    await this.taskRepo.save(task);
+
     return this.taskRepo.findOne({
       where: { id: taskId },
       relations: ['assignees', 'labels', 'subtasks'],
@@ -223,12 +381,26 @@ export class TaskService {
     });
   }
 
-  async updateStatus(id: string, status: 'todo'| 'done') {
+  async updateStatus(id: string, status: 'todo'| 'done', userId?: string) {
     const task = await this.taskRepo.findOne({ 
       where: { id },
-      relations: ['assignees', 'labels', 'subtasks'],
+      relations: ['assignees', 'labels', 'subtasks', 'column', 'column.project'],
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
+
+    // Kiểm tra quyền nếu có userId
+    if (userId) {
+      const assigneeIds = task.assignees.map((a) => a.id);
+      const canUpdate = await this.permissionsService.canUpdateTaskStatus(
+        task.column.project.id,
+        userId,
+        assigneeIds,
+      );
+      if (!canUpdate) {
+        throw new ForbiddenException('Không có quyền cập nhật trạng thái task.');
+      }
+    }
+
     task.status = status;
     task.completedAt = status === 'done' ? new Date() : undefined as unknown as Date;
     await this.taskRepo.save(task);
@@ -242,12 +414,23 @@ export class TaskService {
     return updated || task;
   }
 
-  async assignLabels(taskId: string, dto: AssignLabelsDto) {
+  async assignLabels(taskId: string, dto: AssignLabelsDto, userId?: string) {
     const task = await this.taskRepo.findOne({
       where: { id: taskId },
-      relations: ['assignees', 'labels', 'subtasks'],
+      relations: ['assignees', 'labels', 'subtasks', 'column', 'column.project'],
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
+
+    // Kiểm tra quyền nếu có userId
+    if (userId) {
+      const canEdit = await this.permissionsService.canEditTask(
+        task.column.project.id,
+        userId,
+      );
+      if (!canEdit) {
+        throw new ForbiddenException('Không có quyền gán nhãn task.');
+      }
+    }
 
     const newLabels = await this.labelRepo.find({
       where: { id: In(dto.labelIds) },
@@ -270,12 +453,23 @@ export class TaskService {
     });
   }
 
-  async unassignLabels(taskId: string, dto: AssignLabelsDto) {
+  async unassignLabels(taskId: string, dto: AssignLabelsDto, userId?: string) {
     const task = await this.taskRepo.findOne({
       where: { id: taskId },
-      relations: ['assignees', 'labels', 'subtasks'],
+      relations: ['assignees', 'labels', 'subtasks', 'column', 'column.project'],
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
+
+    // Kiểm tra quyền nếu có userId
+    if (userId) {
+      const canEdit = await this.permissionsService.canEditTask(
+        task.column.project.id,
+        userId,
+      );
+      if (!canEdit) {
+        throw new ForbiddenException('Không có quyền bỏ gán nhãn task.');
+      }
+    }
 
     task.labels = task.labels.filter(
       (l) => !dto.labelIds.includes(l.id),

@@ -1,5 +1,5 @@
 import { Modal, Button, Table, Input, Avatar, Tag, Space, Typography, message } from 'antd';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { groupMemberService } from '@/services/group.services';
 import { projectMemberService } from '@/services/project.services';
@@ -26,6 +26,7 @@ type MemberLike = {
 };
 
 const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess }: Props) => {
+  const queryClient = useQueryClient();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [search, setSearch] = useState('');
   const [pageSize, setPageSize] = useState(8);
@@ -89,6 +90,12 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
       projectMemberService.addMembers(projectId, payload),
     onSuccess: () => {
       message.success('Đã thêm thành viên vào dự án');
+      queryClient.invalidateQueries({ queryKey: ['projectMembers', projectId] });
+      // Invalidate task assignees để assignees cũ tự động hiển thị lại khi thành viên được thêm lại
+      queryClient.invalidateQueries({ queryKey: ['taskAssignees'] });
+      queryClient.invalidateQueries({ queryKey: ['task'] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['columns'] });
       onClose();
       onSuccess?.();
     },

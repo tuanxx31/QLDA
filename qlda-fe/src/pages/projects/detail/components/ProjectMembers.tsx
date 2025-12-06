@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { projectMemberService } from '@/services/project.services';
 import { ProjectMembersTable } from './ProjectMembersTable ';
 import type { ProjectMember } from '@/types/project.type';
-import useAuth from '@/hooks/useAuth';
+import { useProjectPermission } from '@/hooks/useProjectPermission';
 interface Props {
   projectId: string;
 }
@@ -21,14 +21,15 @@ const ProjectMembers = ({ projectId }: Props) => {
     onSuccess: () => {
       message.success('Đã xóa thành viên');
       qc.invalidateQueries({ queryKey: ['projectMembers', projectId] });
+      // Invalidate task assignees để filter lại assignees khi thành viên bị xóa
+      qc.invalidateQueries({ queryKey: ['taskAssignees'] });
+      qc.invalidateQueries({ queryKey: ['task'] });
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['columns'] });
     },
   });
 
-  const auth = useAuth();
-
-  const isLeader =
-    projectMembers?.find((member: ProjectMember) => member.user.id === auth.authUser?.id)?.role ===
-    'leader';
+  const { canManageMembers } = useProjectPermission(projectId);
 
   return (
     <Tabs
@@ -42,8 +43,15 @@ const ProjectMembers = ({ projectId }: Props) => {
             <ProjectMembersTable
               projectMembers={projectMembers}
               projectId={projectId}
-              isLeader={isLeader}
-              onUpdate={() => qc.invalidateQueries({ queryKey: ['projectMembers', projectId] })}
+              isLeader={canManageMembers}
+              onUpdate={() => {
+                qc.invalidateQueries({ queryKey: ['projectMembers', projectId] });
+                // Invalidate task assignees để filter lại assignees khi thành viên bị xóa
+                qc.invalidateQueries({ queryKey: ['taskAssignees'] });
+                qc.invalidateQueries({ queryKey: ['task'] });
+                qc.invalidateQueries({ queryKey: ['tasks'] });
+                qc.invalidateQueries({ queryKey: ['columns'] });
+              }}
             />
           ),
         },

@@ -1,0 +1,18 @@
+Đã hoàn thành
+Backend (Phase 1-3)
+Tạo PermissionsModule và PermissionsService với các methods kiểm tra quyền
+Tạo ProjectRoleGuard và GroupRoleGuard
+Tạo decorators @RequireProjectRole() và @RequireGroupRole()
+Áp dụng guards vào Projects, Project Members, Columns, Tasks, và Groups controllers
+Refactor services để sử dụng PermissionsService
+Frontend (Phase 4-6)
+Tạo permission types và utilities
+Tạo hooks useProjectPermission() và useGroupPermission()
+Tạo component PermissionWrapper
+Cập nhật Project Detail Page để sử dụng permission hooks
+Cập nhật SortableColumn để ẩn/hiện buttons dựa trên permission
+Cập nhật TaskCard để kiểm tra quyền update status (viewer chỉ được update nếu là assignee)
+Cập nhật ProjectMembers để sử dụng permission hook
+Cập nhật TaskDetailModal để ẩn edit/delete buttons dựa trên permission
+Cập nhật Group Detail Page để sử dụng permission hook
+Hệ thống phân quyền đã được tích hợp và sẵn sàng sử dụng. Tất cả các endpoints backend đã được bảo vệ bằng guards, và frontend đã được cập nhật để hiển thị/ẩn các actions dựa trên quyền của user.

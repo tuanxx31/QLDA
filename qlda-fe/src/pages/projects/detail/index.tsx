@@ -11,6 +11,7 @@ import MemberAddModal from './components/MemberAddModal';
 import MemberAddFromGroupModal from './components/MemberAddFromGroupModal';
 import useAuth from '@/hooks/useAuth';
 import { usePageContentHeight } from '@/hooks/usePageContentHeight';
+import { useProjectPermission } from '@/hooks/useProjectPermission';
 
 const { Title } = Typography;
 
@@ -29,7 +30,7 @@ const ProjectDetailPage = () => {
     enabled: !!projectId,
   });
 
-  const isLeader = auth.authUser?.id === project?.owner?.id;
+  const { canManageMembers: canManageProjectMembers } = useProjectPermission(projectId);
 
   if (isLoading) {
     return (
@@ -68,15 +69,17 @@ const ProjectDetailPage = () => {
       }
       subTitle={project.description || 'Không có mô tả'}
       extra={[
-        isLeader && <Button
-          key="addMember"
-          icon={<UserAddOutlined />}
-          type="primary"
-          onClick={() => setOpenAddMember(true)}
-        >
-          Thêm thành viên
-        </Button>,
-        isGroupProject && isLeader && (
+        canManageProjectMembers && (
+          <Button
+            key="addMember"
+            icon={<UserAddOutlined />}
+            type="primary"
+            onClick={() => setOpenAddMember(true)}
+          >
+            Thêm thành viên
+          </Button>
+        ),
+        isGroupProject && canManageProjectMembers && (
           <Button
             key="addFromGroup"
             icon={<UserAddOutlined />}
