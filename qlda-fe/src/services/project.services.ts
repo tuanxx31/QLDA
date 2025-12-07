@@ -91,8 +91,12 @@ export const projectMemberService = {
     const res = await api.put(`/project-members/${projectId}/transfer-leader/${newLeaderId}`);
     return res.data;
   },
-  async addMembers(projectId: string, data: { userIds: string[] }) {
+  async addMembers(projectId: string, data: { userIds: string[]; role?: 'viewer' | 'editor' | 'leader' }) {
     const res = await api.post(`/project-members/${projectId}/add-members`, data);
+    return res.data;
+  },
+  async updateMemberRole(projectId: string, memberId: string, role: 'viewer' | 'editor' | 'leader') {
+    const res = await api.patch(`/project-members/${projectId}/${memberId}`, { role });
     return res.data;
   },
 };

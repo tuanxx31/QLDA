@@ -1,8 +1,9 @@
-import { ModalForm, ProFormText } from '@ant-design/pro-components';
+import { ModalForm, ProFormText, ProFormSelect } from '@ant-design/pro-components';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { projectMemberService } from '@/services/project.services';
-import { message } from 'antd';
+import { message, Alert } from 'antd';
 import type { CreateProjectMemberDto } from '@/types/project.type';
+import { PROJECT_ROLE_OPTIONS } from '@/utils/roleUtils';
 
 interface Props {
   open: boolean;
@@ -26,7 +27,10 @@ const MemberAddModal = ({ open, onClose, projectId }: Props) => {
       qc.invalidateQueries({ queryKey: ['columns'] });
       onClose();
     },
-    onError: () => message.error('Không thể thêm thành viên'),
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || 'Không thể thêm thành viên';
+      message.error(errorMessage);
+    },
   });
 
   return (
@@ -44,7 +48,14 @@ const MemberAddModal = ({ open, onClose, projectId }: Props) => {
         placeholder="Nhập email thành viên cần thêm"
         rules={[{ required: true, message: 'Vui lòng nhập email' }]}
       />
-        {}
+      <ProFormSelect
+        name="role"
+        label="Vai trò"
+        placeholder="Chọn vai trò"
+        initialValue="viewer"
+        rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
+        options={PROJECT_ROLE_OPTIONS}
+      />
     </ModalForm>
   );
 };

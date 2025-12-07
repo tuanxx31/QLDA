@@ -36,7 +36,7 @@ export interface UpdateProjectDto extends Partial<CreateProjectDto> {
 export interface ProjectMember {
   id: string;
   user: User;
-  role: 'leader' | 'member';
+  role: 'leader' | 'editor' | 'viewer';
   joinedAt: string;
 }
 

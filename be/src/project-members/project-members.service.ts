@@ -47,10 +47,19 @@ export class ProjectMembersService {
     if (already)
       throw new BadRequestException('Người dùng đã nằm trong dự án.');
 
+    // Kiểm tra nếu đã có leader và đang cố thêm leader mới
+    const hasLeader = project.members.some((m) => m.role === 'leader');
+    let role = dto.role || 'viewer';
+    if (role === 'leader' && hasLeader) {
+      throw new BadRequestException(
+        'Dự án đã có trưởng dự án. Mỗi dự án chỉ có thể có 1 trưởng dự án. Vui lòng sử dụng chức năng chuyển quyền để thay đổi trưởng dự án.',
+      );
+    }
+
     const newMember = this.projectMemberRepo.create({
       project,
       user,
-      role: dto.role || 'viewer',
+      role,
     });
     return this.projectMemberRepo.save(newMember);
   }
@@ -69,7 +78,7 @@ export class ProjectMembersService {
     }));
   }
 
-  async addMembers(projectId: string, dto: { userIds: string[] }) {
+  async addMembers(projectId: string, dto: { userIds: string[]; role?: 'viewer' | 'editor' | 'leader' }) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
       relations: ['members', 'members.user'],
@@ -88,11 +97,20 @@ export class ProjectMembersService {
     if (already.length > 0)
       throw new BadRequestException('Người dùng đã nằm trong dự án.');
 
+    // Kiểm tra nếu đã có leader và đang cố thêm leader mới
+    const hasLeader = project.members.some((m) => m.role === 'leader');
+    let role = dto.role || 'viewer';
+    if (role === 'leader' && hasLeader) {
+      throw new BadRequestException(
+        'Dự án đã có trưởng dự án. Mỗi dự án chỉ có thể có 1 trưởng dự án. Vui lòng sử dụng chức năng chuyển quyền để thay đổi trưởng dự án.',
+      );
+    }
+
     const newMembers = users.map((user) =>
       this.projectMemberRepo.create({
         project,
         user,
-        role: 'viewer' as const,
+        role: role as 'viewer' | 'editor' | 'leader',
       }),
     );
     return this.projectMemberRepo.save(newMembers);
@@ -120,6 +138,18 @@ export class ProjectMembersService {
       relations: ['project', 'user'],
     });
     if (!member) throw new NotFoundException('Không tìm thấy thành viên.');
+
+    // Kiểm tra nếu đang cố set role 'leader' cho member khác khi đã có leader
+    if (dto.role === 'leader') {
+      const existingLeader = project.members.find(
+        (m) => m.role === 'leader' && m.id !== memberId,
+      );
+      if (existingLeader) {
+        throw new BadRequestException(
+          'Dự án đã có trưởng dự án. Mỗi dự án chỉ có thể có 1 trưởng dự án. Vui lòng sử dụng chức năng chuyển quyền để thay đổi trưởng dự án.',
+        );
+      }
+    }
 
     member.role = dto.role;
     return this.projectMemberRepo.save(member);

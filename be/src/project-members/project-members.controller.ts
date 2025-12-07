@@ -21,6 +21,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { ProjectMembersService } from './project-members.service';
 import { CreateProjectMemberDto } from './dto/create-project-member.dto';
 import { UpdateProjectMemberDto } from './dto/update-project-member.dto';
+import { AddProjectMembersDto } from './dto/add-project-members.dto';
 import { TaskService } from 'src/tasks/tasks.service';
 import { ProjectRoleGuard } from 'src/permissions/guards/project-role.guard';
 import { RequireProjectRole } from 'src/permissions/decorators/require-project-role.decorator';
@@ -84,7 +85,7 @@ export class ProjectMembersController {
   })
   async addMembers(
     @Param('projectId') projectId: string,
-    @Body() dto: { userIds: string[] },
+    @Body() dto: AddProjectMembersDto,
   ) {
     return await this.projectMembersService.addMembers(projectId, dto);
   }

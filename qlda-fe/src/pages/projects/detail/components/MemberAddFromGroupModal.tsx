@@ -1,4 +1,4 @@
-import { Modal, Button, Table, Input, Avatar, Tag, Space, Typography, message } from 'antd';
+import { Modal, Button, Table, Input, Avatar, Tag, Space, Typography, message, Select } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { groupMemberService } from '@/services/group.services';
@@ -6,6 +6,8 @@ import { projectMemberService } from '@/services/project.services';
 import type { ColumnsType } from 'antd/es/table';
 import { CheckOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons';
 import { getAvatarUrl } from '@/utils/avatarUtils';
+import { getProjectRoleLabel, PROJECT_ROLE_OPTIONS } from '@/utils/roleUtils';
+import { useResponsiveModalWidth } from '@/hooks/useResponsiveModalWidth';
 
 interface Props {
   open: boolean;
@@ -30,6 +32,16 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [search, setSearch] = useState('');
   const [pageSize, setPageSize] = useState(8);
+  const [selectedRole, setSelectedRole] = useState<'viewer' | 'editor' | 'leader'>('viewer');
+
+  const modalWidth = useResponsiveModalWidth({
+    xs: 320,
+    sm: 480,
+    md: 640,
+    lg: 720,
+    xl: 850,
+    xxl: 900,
+  });
 
   const { data: groupMembers, isLoading: loadingGroup } = useQuery({
     queryKey: ['groupMembers', groupId],
@@ -47,6 +59,7 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
     if (!open) {
       setSelectedRowKeys([]);
       setSearch('');
+      setSelectedRole('viewer');
     }
   }, [open]);
 
@@ -86,7 +99,7 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
   const dataSource = useMemo(() => filtered.map(u => ({ key: u.id, ...u })), [filtered]);
 
   const mutation = useMutation({
-    mutationFn: (payload: { userIds: string[] }) =>
+    mutationFn: (payload: { userIds: string[]; role?: 'viewer' | 'editor' | 'leader' }) =>
       projectMemberService.addMembers(projectId, payload),
     onSuccess: () => {
       message.success('Đã thêm thành viên vào dự án');
@@ -99,6 +112,10 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
       onClose();
       onSuccess?.();
     },
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || 'Không thể thêm thành viên vào dự án';
+      message.error(errorMessage);
+    },
   });
 
   const handleSubmit = async () => {
@@ -106,7 +123,10 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
       message.warning('Hãy chọn ít nhất 1 thành viên');
       return;
     }
-    await mutation.mutateAsync({ userIds: selectedRowKeys as string[] });
+    await mutation.mutateAsync({ 
+      userIds: selectedRowKeys as string[],
+      role: selectedRole,
+    });
   };
 
   const handleSelectAllFiltered = () => {
@@ -168,7 +188,14 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
       open={open}
       title="Thêm thành viên từ nhóm"
       onCancel={onClose}
-      width={720}
+      width={{
+        xs: 320,
+        sm: 480,
+        md: 640,
+        lg: 720,
+        xl: 850,
+        xxl: 900,
+      }}
       destroyOnClose
       footer={[
         <Space key="left" style={{ marginRight: 'auto' }}>
@@ -181,7 +208,7 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
         </Space>,
         <Space key="right">
           <Typography.Text type="secondary">
-            Đã chọn: <b>{selectedRowKeys.length}</b>
+            Đã chọn: <b>{selectedRowKeys.length}</b> • Vai trò: <b>{getProjectRoleLabel(selectedRole)}</b>
           </Typography.Text>
           <Button onClick={onClose}>Hủy</Button>
           <Button
@@ -195,15 +222,26 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
         </Space>,
       ]}
     >
-      <Space style={{ width: '100%', marginBottom: 12 }}>
-        <Input.Search
-          allowClear
-          placeholder="Tìm theo tên hoặc email…"
-          onSearch={v => setSearch(v)}
-          onChange={e => setSearch(e.target.value)}
-          value={search}
-          style={{ maxWidth: 320 }}
-        />
+      <Space style={{ width: '100%', marginBottom: 12 }} direction="vertical" size="middle">
+        <Space>
+          <Input.Search
+            allowClear
+            placeholder="Tìm theo tên hoặc email…"
+            onSearch={v => setSearch(v)}
+            onChange={e => setSearch(e.target.value)}
+            value={search}
+            style={{ maxWidth: 320 }}
+          />
+        </Space>
+        <Space>
+          <Typography.Text strong>Vai trò cho tất cả thành viên được chọn:</Typography.Text>
+          <Select
+            value={selectedRole}
+            onChange={(value) => setSelectedRole(value)}
+            style={{ minWidth: 200 }}
+            options={PROJECT_ROLE_OPTIONS}
+          />
+        </Space>
       </Space>
 
       <Table
