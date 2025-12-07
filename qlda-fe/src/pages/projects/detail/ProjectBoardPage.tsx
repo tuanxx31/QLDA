@@ -1,5 +1,5 @@
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Space, Typography, message, Spin, Card, theme, Tooltip } from 'antd';
+import { Button, Space, Typography, message, Spin, Card, Tooltip, Tag } from 'antd';
 import { ArrowLeftOutlined, FullscreenOutlined, FullscreenExitOutlined } from '@ant-design/icons';
 import {
   DndContext,
@@ -27,6 +27,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { columnService } from '@/services/column.services';
 import { taskService } from '@/services/task.services';
+import { projectService } from '@/services/project.services';
 import type { Column } from '@/types/project-board';
 import type { Task } from '@/types/task.type';
 import AddColumnCard from './components/AddColumnCard';
@@ -36,6 +37,8 @@ import SortableTask from './components/SortableTask';
 import { invalidateProgressQueries } from '@/utils/invalidateProgress';
 import { invalidateStatisticsQueries } from '@/utils/invalidateStatistics';
 import { usePageContentHeight } from '@/hooks/usePageContentHeight';
+import { useProjectPermission } from '@/hooks/useProjectPermission';
+import { getProjectRoleLabel, getProjectRoleColor, getProjectRoleDescription } from '@/utils/roleUtils';
 
 const { Title } = Typography;
 
@@ -43,8 +46,15 @@ export default function ProjectBoardPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { token } = theme.useToken();
   const { minHeight } = usePageContentHeight();
+  const { role, canEditColumns, canEditTasks } = useProjectPermission(projectId);
+  
+  const { data: project } = useQuery({
+    queryKey: ['project', projectId],
+    queryFn: async () => await projectService.getById(projectId!),
+    enabled: !!projectId,
+  });
+
   const [columns, setColumns] = useState<Column[]>([]);
   const [activeColumn, setActiveColumn] = useState<Column | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
@@ -119,11 +129,13 @@ export default function ProjectBoardPage() {
     const activeId = String(event.active.id);
 
     if (type === 'column') {
+      if (!canEditColumns) return;
       const col = columns.find(c => c.id === activeId);
       if (col) setActiveColumn(col);
     }
 
     if (type === 'task') {
+      if (!canEditTasks) return;
       const t = columns.flatMap(c => c.tasks ?? []).find(t => t.id === activeId);
       if (t) setActiveTask(t);
 
@@ -135,7 +147,7 @@ export default function ProjectBoardPage() {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const handleDragMove = (event: DragMoveEvent) => {
-    const { active, over, activatorEvent } = event;
+    const { active, over } = event;
     if (!over) return;
 
     const activeType = active.data?.current?.type;
@@ -144,7 +156,7 @@ export default function ProjectBoardPage() {
     const activeId = String(active.id);
     const overId = String(over.id);
 
-    if (activeType === 'task' && over && active.id !== over.id) {
+    if (activeType === 'task' && over && active.id !== over.id && canEditTasks) {
       setColumns(prev => {
         const draft = JSON.parse(JSON.stringify(prev)) as Column[];
 
@@ -208,6 +220,10 @@ export default function ProjectBoardPage() {
     const type = active.data?.current?.type;
 
     if (type === 'column') {
+      if (!canEditColumns) {
+        setActiveColumn(null);
+        return;
+      }
       setColumns(prev => {
         const oldIdx = prev.findIndex(c => c.id === activeId);
         const newIdx = prev.findIndex(c => c.id === overId);
@@ -223,6 +239,13 @@ export default function ProjectBoardPage() {
       });
 
       setActiveColumn(null);
+      return;
+    }
+
+    if (!canEditTasks) {
+      setActiveTask(null);
+      setActiveColumn(null);
+      setDragTaskFromColumnId(null);
       return;
     }
 
@@ -302,11 +325,18 @@ export default function ProjectBoardPage() {
             onClick={() => navigate(`/projects/${projectId}`)}
           />
           <Title level={4} style={{ margin: 0 }}>
-            Bảng công việc
+            Bảng công việc{project?.name ? ` - ${project.name}` : ''}
           </Title>
         </Space>
       }
       extra={[
+        role && (
+          <Tooltip key="role" title={getProjectRoleDescription(role)}>
+            <Tag color={getProjectRoleColor(role)}>
+              {getProjectRoleLabel(role)}
+            </Tag>
+          </Tooltip>
+        ),
         <Tooltip title={isFullScreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'} key="fs">
           <Button
             type="text"
@@ -314,7 +344,7 @@ export default function ProjectBoardPage() {
             onClick={toggleFullScreen}
           />
         </Tooltip>,
-      ]}
+      ].filter(Boolean)}
     >
       <Card
         style={{ 
@@ -322,12 +352,14 @@ export default function ProjectBoardPage() {
           display: 'flex',
           flexDirection: 'column',
         }}
-        bodyStyle={{ 
-          padding: 0, 
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: 0,
+        styles={{
+          body: {
+            padding: 0,
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
+          },
         }}
       >
         <DndContext
@@ -356,13 +388,15 @@ export default function ProjectBoardPage() {
               {columns.map(col => (
                 <SortableColumn key={col.id} column={col} />
               ))}
-              <AddColumnCard
-                isAdding={isAddingColumn}
-                setIsAdding={setIsAddingColumn}
-                newName={newColumnName}
-                setNewName={setNewColumnName}
-                onAdd={name => addColumn.mutate(name)}
-              />
+              {canEditColumns && (
+                <AddColumnCard
+                  isAdding={isAddingColumn}
+                  setIsAdding={setIsAddingColumn}
+                  newName={newColumnName}
+                  setNewName={setNewColumnName}
+                  onAdd={name => addColumn.mutate(name)}
+                />
+              )}
             </div>
           </SortableContext>
 

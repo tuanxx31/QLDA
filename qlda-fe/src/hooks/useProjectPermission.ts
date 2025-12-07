@@ -7,9 +7,9 @@ import {
   canEditProject,
   canDeleteProject,
   canManageMembers,
-  canEditTasks,
-  canDeleteTasks,
-  canEditColumns,
+  canEditTasks as canEditTasksFn,
+  canDeleteTasks as canDeleteTasksFn,
+  canEditColumns as canEditColumnsFn,
   canViewProject,
 } from '@/utils/permissions';
 
@@ -58,9 +58,9 @@ export function useProjectPermission(projectId: string | undefined) {
       canEdit: canEditProject(role),
       canDelete: canDeleteProject(role),
       canManageMembers: canManageMembers(role),
-      canEditTasks: canEditTasks(role),
-      canDeleteTasks: canDeleteTasks(role),
-      canEditColumns: canEditColumns(role),
+      canEditTasks: canEditTasksFn(role),
+      canDeleteTasks: canDeleteTasksFn(role),
+      canEditColumns: canEditColumnsFn(role),
       canView: canViewProject(role),
     };
   }, [project, userId]);

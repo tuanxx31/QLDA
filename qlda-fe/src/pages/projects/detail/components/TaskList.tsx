@@ -4,8 +4,12 @@ import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import type { Column } from '@/types/project-board';
 import SortableTask from './SortableTask';
 import TaskDetailModal from './TaskDetailModal';
+import { useParams } from 'react-router-dom';
+import { useProjectPermission } from '@/hooks/useProjectPermission';
 
 export default function TaskList({ column }: { column: Column }) {
+  const { projectId } = useParams<{ projectId: string }>();
+  const { canEditTasks } = useProjectPermission(projectId);
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
   
   const tasks = column.tasks || [];
@@ -34,6 +38,7 @@ export default function TaskList({ column }: { column: Column }) {
                 key={task.id}
                 task={task}
                 onClick={handleTaskClick}
+                disabled={!canEditTasks}
               />
             ))}
           </Space>

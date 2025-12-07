@@ -36,3 +36,13 @@ export const PROJECT_ROLE_SIMPLE_OPTIONS = [
   { label: 'Người chỉnh sửa', value: 'editor' as ProjectRole },
 ];
 
+export const PROJECT_ROLE_DESCRIPTIONS: Record<ProjectRole, string> = {
+  leader: 'Trưởng dự án - Có tất cả quyền: quản lý thành viên, chỉnh sửa dự án, chỉnh sửa cột và nhiệm vụ',
+  editor: 'Người chỉnh sửa - Có thể chỉnh sửa cột và nhiệm vụ, nhưng không thể quản lý thành viên hoặc chỉnh sửa thông tin dự án',
+  viewer: 'Người xem - Chỉ có thể xem và cập nhật trạng thái của nhiệm vụ được gán cho mình',
+};
+
+export function getProjectRoleDescription(role: ProjectRole): string {
+  return PROJECT_ROLE_DESCRIPTIONS[role] || '';
+}
+

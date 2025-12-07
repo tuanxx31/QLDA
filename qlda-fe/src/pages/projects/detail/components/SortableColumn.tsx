@@ -34,16 +34,16 @@ export default function SortableColumn({
   column: Column;
   isOverlay?: boolean;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: column.id,
-    disabled: isOverlay,
-    data: { type: 'column', columnId: column.id },
-  });
-
   const { token } = theme.useToken();
   const qc = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();
   const { canEditColumns, canEditTasks } = useProjectPermission(projectId);
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: column.id,
+    disabled: isOverlay || !canEditColumns,
+    data: { type: 'column', columnId: column.id },
+  });
 
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(column.name);
@@ -186,7 +186,7 @@ export default function SortableColumn({
                   />
                 </Popconfirm>
               )}
-              { !isEditing && (
+              {!isEditing && canEditColumns && (
                 <Button
                   type="text"
                   icon={<HolderOutlined />}

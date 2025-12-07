@@ -10,9 +10,10 @@ import type { Task } from '@/types/task.type';
 interface SortableTaskProps {
   task: Task;
   onClick?: (taskId: string) => void;
+  disabled?: boolean;
 }
 
-const SortableTask: React.FC<SortableTaskProps> = ({ task, onClick }) => {
+const SortableTask: React.FC<SortableTaskProps> = ({ task, onClick, disabled = false }) => {
   const { token } = theme.useToken();
 
   const {
@@ -24,6 +25,7 @@ const SortableTask: React.FC<SortableTaskProps> = ({ task, onClick }) => {
     isDragging,
   } = useSortable({
     id: task.id,
+    disabled,
     data: {
       type: 'task',
       taskId: task.id,
@@ -66,23 +68,25 @@ const SortableTask: React.FC<SortableTaskProps> = ({ task, onClick }) => {
             <TaskCard task={task} />
           </div>
 
-          <div
-            {...attributes}
-            {...listeners}
-            onClick={handleDragHandleClick}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 4,
-              cursor: 'grab',
-              borderRadius: 4,
-              color: token.colorTextTertiary,
-              flexShrink: 0,
-            }}
-          >
-            <HolderOutlined />
-          </div>
+          {!disabled && (
+            <div
+              {...attributes}
+              {...listeners}
+              onClick={handleDragHandleClick}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 4,
+                cursor: 'grab',
+                borderRadius: 4,
+                color: token.colorTextTertiary,
+                flexShrink: 0,
+              }}
+            >
+              <HolderOutlined />
+            </div>
+          )}
         </div>
       </Card>
     </div>
