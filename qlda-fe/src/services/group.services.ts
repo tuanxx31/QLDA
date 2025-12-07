@@ -1,4 +1,10 @@
-import type { CreateGroupDto, Group, GroupMember, InviteGroupDto } from '@/types/group.type';
+import type {
+  CreateGroupDto,
+  Group,
+  GroupMember,
+  InviteGroupDto,
+  PendingApprovalGroupDto,
+} from '@/types/group.type';
 import { api } from './api';
 import type { InviteMemberDto } from '@/types/group.type';
 
@@ -38,6 +44,11 @@ export const groupService = {
     return res.data;
   },
 
+  async findPendingApprovals(): Promise<PendingApprovalGroupDto[]> {
+    const res = await api.get('/groups/pending-approvals');
+    return res.data;
+  },
+
   async acceptInvite(groupId: string) {
     const res = await api.post(`/groups/accept-invite/${groupId}`);
     return res.data;
@@ -57,6 +68,26 @@ export const groupService = {
   },
   async updateGroup(groupId: string, data: { name: string; description?: string }) {
     const res = await api.put(`/groups/${groupId}`, data);
+    return res.data;
+  },
+
+  async joinByCode(inviteCode: string) {
+    const res = await api.post('/groups/join', { inviteCode });
+    return res.data;
+  },
+
+  async approveJoinRequest(groupId: string, userId: string) {
+    const res = await api.post(`/groups/${groupId}/approve-join/${userId}`);
+    return res.data;
+  },
+
+  async rejectJoinRequest(groupId: string, userId: string) {
+    const res = await api.post(`/groups/${groupId}/reject-join/${userId}`);
+    return res.data;
+  },
+
+  async getPendingJoinRequests(groupId: string) {
+    const res = await api.get(`/groups/${groupId}/pending-join-requests`);
     return res.data;
   },
 };

@@ -101,7 +101,7 @@ export class GroupMemberService {
       where: {
         group: { id: groupId },
         user: { id: newLeaderId },
-        status: 'accepted',
+        status: 'accepted' as any,
       },
     });
     if (!targetMember)

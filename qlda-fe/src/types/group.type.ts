@@ -23,7 +23,7 @@ export interface GroupMember {
   email: string;
   avatar: string;
   role: string;
-  status: string;
+  status: 'pending_invite' | 'pending_approval' | 'accepted' | 'rejected';
   joinedAt: string;
 }
 
@@ -41,6 +41,17 @@ export interface InviteGroupDto {
     email: string;
   };
   invitedAt: string;
+}
+
+export interface PendingApprovalGroupDto {
+  groupId: string;
+  groupName: string;
+  leader: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  requestedAt: string;
 }
 
 export interface Label {

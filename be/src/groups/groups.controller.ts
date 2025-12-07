@@ -64,6 +64,19 @@ export class GroupsController {
     return await this.groupsService.findPendingInvites(req.user.sub as string);
   }
 
+  @Get('pending-approvals')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Lấy danh sách nhóm đang chờ duyệt' })
+  @ApiResponse({
+    status: 200,
+    description: 'Pending approvals retrieved successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async findPendingApprovals(@Request() req: any) {
+    return await this.groupsService.findPendingApprovals(req.user.sub as string);
+  }
+
   @Post('accept-invite/:groupId')
   @UseGuards(AuthGuard)
   @ApiBearerAuth('jwt')
@@ -149,5 +162,57 @@ export class GroupsController {
   @ApiResponse({ status: 403, description: 'Forbidden - Not leader' })
   async inviteMember(@Body() dto: InviteMemberDto, @Request() req: any) {
     return await this.groupsService.inviteMember(req.user.sub as string, dto);
+  }
+
+  @Post(':groupId/approve-join/:userId')
+  @UseGuards(AuthGuard, GroupRoleGuard)
+  @RequireGroupRole('leader')
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Duyệt yêu cầu tham gia nhóm (chỉ leader)' })
+  @ApiResponse({ status: 200, description: 'Join request approved successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Not leader' })
+  async approveJoinRequest(
+    @Param('groupId') groupId: string,
+    @Param('userId') userId: string,
+    @Request() req: any,
+  ) {
+    return await this.groupsService.approveJoinRequest(
+      groupId,
+      userId,
+      req.user.sub as string,
+    );
+  }
+
+  @Post(':groupId/reject-join/:userId')
+  @UseGuards(AuthGuard, GroupRoleGuard)
+  @RequireGroupRole('leader')
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Từ chối yêu cầu tham gia nhóm (chỉ leader)' })
+  @ApiResponse({ status: 200, description: 'Join request rejected successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Not leader' })
+  async rejectJoinRequest(
+    @Param('groupId') groupId: string,
+    @Param('userId') userId: string,
+    @Request() req: any,
+  ) {
+    return await this.groupsService.rejectJoinRequest(
+      groupId,
+      userId,
+      req.user.sub as string,
+    );
+  }
+
+  @Get(':id/pending-join-requests')
+  @UseGuards(AuthGuard, GroupRoleGuard)
+  @RequireGroupRole('leader')
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Lấy danh sách yêu cầu tham gia chờ duyệt (chỉ leader)' })
+  @ApiResponse({ status: 200, description: 'Pending join requests retrieved successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Not leader' })
+  async findPendingJoinRequests(@Param('id') id: string, @Request() req: any) {
+    return await this.groupsService.findPendingJoinRequests(
+      id,
+      req.user.sub as string,
+    );
   }
 }

@@ -34,11 +34,11 @@ export class GroupMember {
 
   @Column({
     type: 'enum',
-    enum: ['pending', 'accepted', 'rejected'],
+    enum: ['pending_invite', 'pending_approval', 'accepted', 'rejected'],
     default: 'accepted',
     name: 'status',
   })
-  status: 'pending' | 'accepted' | 'rejected';
+  status: 'pending_invite' | 'pending_approval' | 'accepted' | 'rejected';
 
   @CreateDateColumn({ name: 'joined_at' })
   joinedAt: Date;

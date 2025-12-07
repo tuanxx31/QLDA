@@ -89,7 +89,7 @@ export class GroupsService {
 
   async findPendingInvites(userId: string) {
     const invites = await this.groupMemberRepo.find({
-      where: { user: { id: userId }, status: 'pending' },
+      where: { user: { id: userId }, status: 'pending_invite' },
       relations: ['group', 'group.leader'],
       order: { joinedAt: 'DESC' },
     });
@@ -105,13 +105,32 @@ export class GroupsService {
       invitedAt: m.joinedAt,
     }));
   }
+
+  async findPendingApprovals(userId: string) {
+    const approvals = await this.groupMemberRepo.find({
+      where: { user: { id: userId }, status: 'pending_approval' },
+      relations: ['group', 'group.leader'],
+      order: { joinedAt: 'DESC' },
+    });
+
+    return approvals.map((m) => ({
+      groupId: m.group.id,
+      groupName: m.group.name,
+      leader: {
+        id: m.group.leader.id,
+        name: m.group.leader.name,
+        email: m.group.leader.email,
+      },
+      requestedAt: m.joinedAt,
+    }));
+  }
   async acceptInvite(groupId: string, userId: string) {
     const member = await this.groupMemberRepo.findOne({
       where: { group: { id: groupId }, user: { id: userId } },
     });
 
     if (!member) throw new NotFoundException('Không tìm thấy lời mời');
-    if (member.status !== 'pending')
+    if (member.status !== 'pending_invite')
       throw new BadRequestException('Lời mời đã được xử lý');
 
     member.status = 'accepted';
@@ -125,7 +144,7 @@ export class GroupsService {
     });
 
     if (!member) throw new NotFoundException('Không tìm thấy lời mời');
-    if (member.status !== 'pending')
+    if (member.status !== 'pending_invite')
       throw new BadRequestException('Lời mời đã được xử lý');
 
     member.status = 'rejected';
@@ -148,8 +167,11 @@ export class GroupsService {
     const isMember = group.members.some(
       (m) => m.user.id === userId && m.status === 'accepted',
     );
+    const hasPendingRequest = group.members.some(
+      (m) => m.user.id === userId && (m.status === 'pending_invite' || m.status === 'pending_approval'),
+    );
 
-    if (!isLeader && !isMember) {
+    if (!isLeader && !isMember && !hasPendingRequest) {
       throw new ForbiddenException('Bạn không có quyền truy cập nhóm này');
     }
 
@@ -220,17 +242,17 @@ export class GroupsService {
       where: { user: { id: userId }, group: { id: group.id } },
     });
     if (exist)
-      throw new BadRequestException('Bạn đã tham gia hoặc đang được mời');
+      throw new BadRequestException('Bạn đã tham gia hoặc đang chờ duyệt');
 
     const member = this.groupMemberRepo.create({
       group: { id: group.id },
       user: { id: userId },
       role: 'member',
-      status: 'accepted',
+      status: 'pending_approval',
     });
     await this.groupMemberRepo.save(member);
 
-    return { message: 'Đã tham gia nhóm thành công', groupId: group.id };
+    return { message: 'Đã gửi yêu cầu tham gia nhóm. Chờ trưởng nhóm duyệt', groupId: group.id };
   }
 
   async inviteMember(leaderId: string, dto: InviteMemberDto) {
@@ -271,7 +293,7 @@ export class GroupsService {
       group: { id: groupId },
       user: memberUser,
       role: 'member',
-      status: 'pending',
+      status: 'pending_invite',
     });
     await this.groupMemberRepo.save(newMember);
 
@@ -279,5 +301,71 @@ export class GroupsService {
       message: 'Đã gửi lời mời thành viên',
       inviteCode: group.inviteCode,
     };
+  }
+
+  async approveJoinRequest(groupId: string, userId: string, leaderId: string) {
+    const group = await this.groupRepo.findOne({
+      where: { id: groupId },
+      relations: ['leader'],
+    });
+    if (!group) throw new NotFoundException('Không tìm thấy nhóm');
+    if (group.leader.id !== leaderId)
+      throw new ForbiddenException('Chỉ trưởng nhóm mới có quyền duyệt');
+
+    const member = await this.groupMemberRepo.findOne({
+      where: { group: { id: groupId }, user: { id: userId } },
+    });
+    if (!member) throw new NotFoundException('Không tìm thấy yêu cầu tham gia');
+    if (member.status !== 'pending_approval')
+      throw new BadRequestException('Yêu cầu đã được xử lý');
+
+    member.status = 'accepted';
+    await this.groupMemberRepo.save(member);
+    return { message: 'Đã duyệt yêu cầu tham gia nhóm' };
+  }
+
+  async rejectJoinRequest(groupId: string, userId: string, leaderId: string) {
+    const group = await this.groupRepo.findOne({
+      where: { id: groupId },
+      relations: ['leader'],
+    });
+    if (!group) throw new NotFoundException('Không tìm thấy nhóm');
+    if (group.leader.id !== leaderId)
+      throw new ForbiddenException('Chỉ trưởng nhóm mới có quyền từ chối');
+
+    const member = await this.groupMemberRepo.findOne({
+      where: { group: { id: groupId }, user: { id: userId } },
+    });
+    if (!member) throw new NotFoundException('Không tìm thấy yêu cầu tham gia');
+    if (member.status !== 'pending_approval')
+      throw new BadRequestException('Yêu cầu đã được xử lý');
+
+    member.status = 'rejected';
+    await this.groupMemberRepo.save(member);
+    return { message: 'Đã từ chối yêu cầu tham gia nhóm' };
+  }
+
+  async findPendingJoinRequests(groupId: string, leaderId: string) {
+    const group = await this.groupRepo.findOne({
+      where: { id: groupId },
+      relations: ['leader'],
+    });
+    if (!group) throw new NotFoundException('Không tìm thấy nhóm');
+    if (group.leader.id !== leaderId)
+      throw new ForbiddenException('Chỉ trưởng nhóm mới có quyền xem');
+
+    const requests = await this.groupMemberRepo.find({
+      where: { group: { id: groupId }, status: 'pending_approval' },
+      relations: ['user'],
+      order: { joinedAt: 'DESC' },
+    });
+
+    return requests.map((m) => ({
+      id: m.user.id,
+      name: m.user.name,
+      email: m.user.email,
+      avatar: m.user.avatar,
+      requestedAt: m.joinedAt,
+    }));
   }
 }

@@ -1,6 +1,6 @@
 import { ProCard, ProTable } from '@ant-design/pro-components';
 import { Space, Avatar, Tag, Popconfirm, Button, Typography, message } from 'antd';
-import { DeleteOutlined, CrownOutlined } from '@ant-design/icons';
+import { DeleteOutlined, CrownOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { groupService } from '@/services/group.services';
 import { useMutation } from '@tanstack/react-query';
 import { getAvatarUrl } from '@/utils/avatarUtils';
@@ -22,6 +22,24 @@ export const GroupMembersTable = ({ group, isLeader, onUpdate }: any) => {
       message.success('Đã chuyển quyền trưởng nhóm!');
       onUpdate();
     },
+  });
+
+  const approveJoinRequestMutation = useMutation({
+    mutationFn: (memberId: string) => groupService.approveJoinRequest(group.id, memberId),
+    onSuccess: () => {
+      message.success('Đã duyệt yêu cầu tham gia nhóm!');
+      onUpdate();
+    },
+    onError: () => message.error('Không thể duyệt yêu cầu'),
+  });
+
+  const rejectJoinRequestMutation = useMutation({
+    mutationFn: (memberId: string) => groupService.rejectJoinRequest(group.id, memberId),
+    onSuccess: () => {
+      message.success('Đã từ chối yêu cầu tham gia nhóm!');
+      onUpdate();
+    },
+    onError: () => message.error('Không thể từ chối yêu cầu'),
   });
 
   return (
@@ -63,23 +81,16 @@ export const GroupMembersTable = ({ group, isLeader, onUpdate }: any) => {
           {
             title: 'Trạng thái',
             dataIndex: 'status',
-            render: (_: any, member: any) => (
-              <Tag
-                color={
-                  member.status === 'accepted'
-                    ? 'green'
-                    : member.status === 'pending'
-                      ? 'orange'
-                      : 'red'
-                }
-              >
-                {member.status === 'accepted'
-                  ? 'Đã tham gia'
-                  : member.status === 'pending'
-                    ? 'Chờ duyệt'
-                    : 'Từ chối'}
-              </Tag>
-            ),
+            render: (_: any, member: any) => {
+              const statusConfig: Record<string, { color: string; text: string }> = {
+                accepted: { color: 'green', text: 'Đã tham gia' },
+                pending_invite: { color: 'gold', text: 'Chờ xác nhận' },
+                pending_approval: { color: 'orange', text: 'Chờ duyệt' },
+                rejected: { color: 'red', text: 'Từ chối' },
+              };
+              const config = statusConfig[member.status] || { color: 'default', text: member.status };
+              return <Tag color={config.color}>{config.text}</Tag>;
+            },
           },
           {
             title: 'Ngày tham gia',
@@ -95,10 +106,41 @@ export const GroupMembersTable = ({ group, isLeader, onUpdate }: any) => {
                 {
                   title: 'Thao tác',
                   key: 'actions',
-                  render: (_: any, member: any) =>
-                    member.id === group.leader.id ? (
-                      <Text type="secondary">—</Text>
-                    ) : (
+                  render: (_: any, member: any) => {
+                    if (member.id === group.leader.id) {
+                      return <Text type="secondary">—</Text>;
+                    }
+
+                    // Actions for pending_approval (user requested to join)
+                    if (member.status === 'pending_approval') {
+                      return (
+                        <Space>
+                          <Popconfirm
+                            title="Duyệt yêu cầu tham gia nhóm?"
+                            onConfirm={() => approveJoinRequestMutation.mutate(member.id)}
+                            okText="Xác nhận"
+                            cancelText="Hủy"
+                          >
+                            <Button
+                              type="text"
+                              icon={<CheckOutlined />}
+                              style={{ color: '#52c41a' }}
+                            />
+                          </Popconfirm>
+                          <Popconfirm
+                            title="Từ chối yêu cầu tham gia nhóm?"
+                            onConfirm={() => rejectJoinRequestMutation.mutate(member.id)}
+                            okText="Xác nhận"
+                            cancelText="Hủy"
+                          >
+                            <Button type="text" danger icon={<CloseOutlined />} />
+                          </Popconfirm>
+                        </Space>
+                      );
+                    }
+
+                    // Actions for accepted members
+                    return (
                       <Space>
                         <Popconfirm
                           title="Xóa thành viên này khỏi nhóm?"
@@ -119,7 +161,8 @@ export const GroupMembersTable = ({ group, isLeader, onUpdate }: any) => {
                           </Popconfirm>
                         )}
                       </Space>
-                    ),
+                    );
+                  },
                 },
               ]
             : []),

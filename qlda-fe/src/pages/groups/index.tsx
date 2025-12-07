@@ -1,17 +1,20 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Empty, Skeleton, Card } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, TeamOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
 import { groupService } from '@/services/group.services';
 import { GroupCard } from '@/pages/groups/components/GroupCard';
 import { GroupPendingList } from '@/pages/groups/components/GroupPendingList';
+import { GroupPendingApprovalsList } from '@/pages/groups/components/GroupPendingApprovalsList';
 import { CreateGroupFormModal } from './components/CreateGroupFormModal';
+import { JoinGroupModal } from './components/JoinGroupModal';
 import { useState } from 'react';
 import { usePageContentHeight } from '@/hooks/usePageContentHeight';
 
 const GroupsPage = () => {
   const queryClient = useQueryClient();
   const [openModal, setOpenModal] = useState(false);
+  const [openJoinModal, setOpenJoinModal] = useState(false);
   const { minHeight } = usePageContentHeight();
   const { data: groups, isLoading } = useQuery({
     queryKey: ['myGroups'],
@@ -22,6 +25,13 @@ const GroupsPage = () => {
     <PageContainer
       title="Nhóm của tôi"
       extra={[
+        <Button
+          key="join"
+          icon={<TeamOutlined />}
+          onClick={() => setOpenJoinModal(true)}
+        >
+          Tham gia nhóm
+        </Button>,
         <Button
           key="create"
           type="primary"
@@ -35,6 +45,9 @@ const GroupsPage = () => {
     >
       <Card style={{ minHeight }}>
         <GroupPendingList
+          onUpdate={() => queryClient.invalidateQueries({ queryKey: ['myGroups'] })}
+        />
+        <GroupPendingApprovalsList
           onUpdate={() => queryClient.invalidateQueries({ queryKey: ['myGroups'] })}
         />
 
@@ -57,6 +70,7 @@ const GroupsPage = () => {
         )}
 
         <CreateGroupFormModal open={openModal} onClose={() => setOpenModal(false)} />
+        <JoinGroupModal open={openJoinModal} onClose={() => setOpenJoinModal(false)} />
       </Card>
     </PageContainer>
   );

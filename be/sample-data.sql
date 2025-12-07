@@ -43,20 +43,20 @@ INSERT INTO `group_members` (`id`, `group_id`, `user_id`, `role`, `status`, `joi
 ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '22222222-2222-2222-2222-222222222222', 'leader', 'accepted', '2025-02-15 08:00:00'),
 ('ffffffff-ffff-ffff-ffff-ffffffffffff', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '33333333-3333-3333-3333-333333333333', 'member', 'accepted', '2025-02-15 08:30:00'),
 ('11111111-1111-1111-1111-111111111112', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '44444444-4444-4444-4444-444444444444', 'member', 'accepted', '2025-02-15 09:00:00'),
-('11111111-1111-1111-1111-111111111113', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '55555555-5555-5555-5555-555555555555', 'member', 'pending', '2025-02-15 09:30:00'),
+('11111111-1111-1111-1111-111111111113', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '55555555-5555-5555-5555-555555555555', 'member', 'pending_invite', '2025-02-15 09:30:00'),
 ('11111111-1111-1111-1111-111111111114', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '66666666-6666-6666-6666-666666666666', 'member', 'accepted', '2025-02-15 10:00:00'),
 -- Group 2: Nhóm Nghiên cứu AI
 ('11111111-1111-1111-1111-111111111115', 'cccccccc-cccc-cccc-cccc-cccccccccccc', '44444444-4444-4444-4444-444444444444', 'leader', 'accepted', '2025-02-16 09:00:00'),
 ('11111111-1111-1111-1111-111111111116', 'cccccccc-cccc-cccc-cccc-cccccccccccc', '77777777-7777-7777-7777-777777777777', 'member', 'accepted', '2025-02-16 09:30:00'),
 ('11111111-1111-1111-1111-111111111117', 'cccccccc-cccc-cccc-cccc-cccccccccccc', '88888888-8888-8888-8888-888888888888', 'member', 'accepted', '2025-02-16 10:00:00'),
 ('11111111-1111-1111-1111-111111111118', 'cccccccc-cccc-cccc-cccc-cccccccccccc', '99999999-9999-9999-9999-999999999999', 'member', 'rejected', '2025-02-16 10:30:00'),
-('11111111-1111-1111-1111-111111111119', 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'member', 'pending', '2025-02-16 11:00:00'),
+('11111111-1111-1111-1111-111111111119', 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'member', 'pending_invite', '2025-02-16 11:00:00'),
 -- Group 3: Nhóm DevOps
 ('11111111-1111-1111-1111-11111111111a', 'dddddddd-dddd-dddd-dddd-dddddddddddd', '66666666-6666-6666-6666-666666666666', 'leader', 'accepted', '2025-02-17 10:00:00'),
 ('11111111-1111-1111-1111-11111111111b', 'dddddddd-dddd-dddd-dddd-dddddddddddd', '22222222-2222-2222-2222-222222222222', 'member', 'accepted', '2025-02-17 10:30:00'),
 ('11111111-1111-1111-1111-11111111111c', 'dddddddd-dddd-dddd-dddd-dddddddddddd', '33333333-3333-3333-3333-333333333333', 'member', 'accepted', '2025-02-17 11:00:00'),
 ('11111111-1111-1111-1111-11111111111d', 'dddddddd-dddd-dddd-dddd-dddddddddddd', '88888888-8888-8888-8888-888888888888', 'member', 'accepted', '2025-02-17 11:30:00'),
-('11111111-1111-1111-1111-11111111111e', 'dddddddd-dddd-dddd-dddd-dddddddddddd', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'member', 'pending', '2025-02-17 12:00:00');
+('11111111-1111-1111-1111-11111111111e', 'dddddddd-dddd-dddd-dddd-dddddddddddd', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'member', 'pending_invite', '2025-02-17 12:00:00');
 
 -- ============================================
 -- 4. PROJECTS (5 projects)
