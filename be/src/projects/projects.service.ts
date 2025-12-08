@@ -267,7 +267,6 @@ export class ProjectsService {
       )
       .orderBy('project.created_at', 'DESC')
       .getMany();
-    console.log({projects});
     return projects;
   }
 
