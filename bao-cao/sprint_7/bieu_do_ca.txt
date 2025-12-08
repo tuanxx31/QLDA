@@ -1,0 +1,40 @@
+@startuml
+skinparam dpi 150
+skinparam usecase {
+  BackgroundColor #EEF6FB
+  BorderColor #3B82F6
+  ArrowColor #000000
+  FontSize 16
+}
+skinparam actorStyle stickman
+left to right direction
+
+actor "Người dùng" as User
+
+(Quản lý bình luận và trao đổi trong task) as MainUC
+
+(Thêm bình luận cho nhiệm vụ)
+(Chỉnh sửa bình luận)
+(Xóa bình luận)
+(Hiển thị danh sách bình luận của nhiệm vụ)
+(Upload file đính kèm cho bình luận)
+(Mention người dùng trong bình luận bằng @username)
+(Hiển thị tổng số bình luận của mỗi nhiệm vụ)
+(Hiển thị số bình luận chưa đọc của người dùng)
+(Hiển thị mention dạng highlight)
+(Cập nhật bình luận theo thời gian thực)
+
+User --> MainUC
+
+MainUC -- (Thêm bình luận cho nhiệm vụ)
+MainUC -- (Chỉnh sửa bình luận)
+MainUC -- (Xóa bình luận)
+MainUC -- (Hiển thị danh sách bình luận của nhiệm vụ)
+MainUC -- (Upload file đính kèm cho bình luận)
+MainUC -- (Mention người dùng trong bình luận bằng @username)
+MainUC -- (Hiển thị tổng số bình luận của mỗi nhiệm vụ)
+MainUC -- (Hiển thị số bình luận chưa đọc của người dùng)
+MainUC -- (Hiển thị mention dạng highlight)
+MainUC -- (Cập nhật bình luận theo thời gian thực)
+
+@enduml

@@ -124,6 +124,20 @@ Sprint 6: Quản lý tiến độ (Level 2)
    - Kiểm thử giao diện hiển thị tiến độ
    - Sửa lỗi và hoàn thiện sprint
 
+Sprint 7: Quản lý bình luận và trao đổi trong task [18/11/2025 --> 25/11/2025]
+1. Phân tích dữ liệu và thiết kế bảng bình luận (Comment)
+2. Tạo bảng bình luận trong cơ sở dữ liệu (Comment)
+3. Lập trình thêm bình luận cho nhiệm vụ
+4. Lập trình chỉnh sửa bình luận
+5. Lập trình xóa bình luận
+6. Lập trình hiển thị danh sách bình luận của nhiệm vụ
+7. Lập trình upload file đính kèm cho bình luận
+8. Lập trình mention (tag) người dùng trong bình luận bằng cú pháp @username
+9. Lập trình hiển thị tổng số bình luận của mỗi nhiệm vụ
+10. Lập trình hiển thị số bình luận chưa đọc của từng người dùng
+11. Hiển thị mention dạng highlight trong giao diện
+12. Lập trình cập nhật bình luận theo thời gian thực (thêm / sửa / xóa)
+
 Sprint 8: Thống kê dự án
 [28/11/2025 → 05/12/2025]
 

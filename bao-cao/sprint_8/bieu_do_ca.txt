@@ -1,0 +1,32 @@
+@startuml
+skinparam dpi 150
+skinparam usecase {
+  BackgroundColor #EEF6FB
+  BorderColor #3B82F6
+  ArrowColor #000000
+  FontSize 16
+}
+skinparam actorStyle stickman
+left to right direction
+
+actor "Người dùng" as User
+
+(Thống kê dự án) as MainUC
+
+(Xem thống kê tổng quan)
+(Xem thống kê xu hướng nhiệm vụ)
+(Xem thống kê hiệu suất thành viên)
+(Xem thống kê hoạt động bình luận)
+(Xem thống kê phân bổ công việc)
+(Xem thống kê chất lượng hoàn thành)
+
+User --> MainUC
+
+MainUC -- (Xem thống kê tổng quan)
+MainUC -- (Xem thống kê xu hướng nhiệm vụ)
+MainUC -- (Xem thống kê hiệu suất thành viên)
+MainUC -- (Xem thống kê hoạt động bình luận)
+MainUC -- (Xem thống kê phân bổ công việc)
+MainUC -- (Xem thống kê chất lượng hoàn thành)
+
+@enduml

@@ -1,0 +1,141 @@
+@startuml
+!pragma useUnicode true
+skinparam dpi 150
+skinparam sequence {
+  LifeLineBorderColor #3B82F6
+  LifeLineBackgroundColor #E6F2FF
+  ArrowColor #000000
+  ParticipantFontSize 15
+  BoxFontSize 15
+  ParticipantBorderColor #3B82F6
+  ParticipantBackgroundColor #E6F2FF
+}
+hide footbox
+
+actor "Người dùng" as User
+participant ":Giao diện" as UI
+participant ":Hệ thống" as System
+participant ":Cơ sở dữ liệu" as DB
+
+' --- Người dùng hoạt động suốt quá trình ---
+activate User
+
+' === 1. Hiển thị danh sách bình luận và tổng số bình luận ===
+User -> UI: 1. Mở chi tiết nhiệm vụ
+activate UI
+UI -> System: 2. Yêu cầu danh sách bình luận\nvà tổng số bình luận của nhiệm vụ
+activate System
+System -> DB: 3. Truy vấn các Comment theo TaskId\nvà tổng số bình luận
+activate DB
+DB --> System: [Thành công] Danh sách Comment + tổng số
+deactivate DB
+System --> UI: 4. Trả danh sách bình luận\nvà tổng số bình luận
+deactivate System
+UI --> User: 5. Hiển thị danh sách bình luận\nvà số bình luận trên nhiệm vụ
+deactivate UI
+
+' === 2. Thêm bình luận (có thể kèm file đính kèm và mention) ===
+User -> UI: 6a. Nhập nội dung bình luận\nvà chọn file đính kèm (nếu có)
+activate UI
+UI -> System: 6b. Gửi yêu cầu tạo Comment mới\n(nội dung, TaskId, file, danh sách @username)
+activate System
+System -> DB: 6c. Lưu Comment mới
+activate DB
+DB --> System: [Thành công] CommentId
+deactivate DB
+
+System -> DB: 6d. Nếu có file đính kèm\nlưu thông tin file gắn với Comment
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+
+System -> DB: 6e. Nếu có mention @username\nlưu danh sách mention cho Comment
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+
+System -> DB: 6f. Cập nhật tổng số bình luận của Task\nvà số bình luận chưa đọc của các user liên quan
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+
+System --> UI: 6g. Trả kết quả tạo Comment thành công\nkèm dữ liệu Comment mới
+deactivate System
+UI --> User: 6h. Hiển thị bình luận mới,\nfile đính kèm và highlight mention
+deactivate UI
+
+' === 3. Chỉnh sửa bình luận ===
+User -> UI: 7a. Chọn "Chỉnh sửa" một bình luận của mình
+activate UI
+UI -> System: 7b. Gửi yêu cầu cập nhật nội dung Comment
+activate System
+System -> DB: 7c. Cập nhật nội dung Comment trong DB\nvà thời gian chỉnh sửa
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 7d. Trả kết quả cập nhật bình luận
+deactivate System
+UI --> User: 7e. Hiển thị nội dung bình luận đã chỉnh sửa\n(kèm thông tin đã chỉnh sửa)
+deactivate UI
+
+' === 4. Xóa bình luận ===
+User -> UI: 8a. Chọn "Xóa bình luận"
+activate UI
+UI -> System: 8b. Gửi yêu cầu xóa Comment
+activate System
+System -> DB: 8c. Xóa Comment (và file đính kèm liên quan)
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+
+System -> DB: 8d. Cập nhật lại tổng số bình luận\nvà số bình luận chưa đọc (nếu cần)
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+
+System --> UI: 8e. Trả kết quả xóa bình luận
+deactivate System
+UI --> User: 8f. Loại bỏ bình luận khỏi danh sách
+deactivate UI
+
+' === 5. Hiển thị số bình luận chưa đọc của người dùng ===
+User -> UI: 9a. Mở danh sách nhiệm vụ hoặc chi tiết nhiệm vụ
+activate UI
+UI -> System: 9b. Yêu cầu số bình luận chưa đọc\ncủa người dùng cho từng nhiệm vụ
+activate System
+System -> DB: 9c. Truy vấn số Comment chưa đọc\ntheo UserId và TaskId
+activate DB
+DB --> System: [Thành công] Thống kê số chưa đọc
+deactivate DB
+System --> UI: 9d. Trả dữ liệu số bình luận chưa đọc
+deactivate System
+UI --> User: 9e. Hiển thị badge số bình luận chưa đọc\ntrên từng nhiệm vụ hoặc trong chi tiết nhiệm vụ
+deactivate UI
+
+' === 6. Cập nhật trạng thái đã đọc khi người dùng xem bình luận ===
+User -> UI: 10a. Cuộn xem danh sách bình luận của nhiệm vụ
+activate UI
+UI -> System: 10b. Gửi yêu cầu đánh dấu đã đọc\ncác bình luận vừa xem
+activate System
+System -> DB: 10c. Cập nhật trạng thái đã đọc\ncho các Comment tương ứng
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 10d. Trả kết quả cập nhật đã đọc
+deactivate System
+UI --> User: 10e. Cập nhật lại số bình luận chưa đọc
+deactivate UI
+
+' === 7. Cập nhật bình luận theo thời gian thực ===
+User -> UI: 11a. Đang mở màn hình chi tiết nhiệm vụ\nvới danh sách bình luận
+activate UI
+... Thao tác từ người dùng khác ...
+System -> UI: 11b. Đẩy sự kiện thời gian thực\n(thêm / sửa / xóa Comment)
+activate System
+UI --> User: 11c. Tự động cập nhật danh sách bình luận\nvà số bình luận chưa đọc
+deactivate System
+deactivate UI
+
+deactivate User
+
+@enduml

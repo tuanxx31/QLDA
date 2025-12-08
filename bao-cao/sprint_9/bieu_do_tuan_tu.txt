@@ -1,0 +1,127 @@
+@startuml
+!pragma useUnicode true
+skinparam dpi 150
+skinparam sequence {
+  LifeLineBorderColor #3B82F6
+  LifeLineBackgroundColor #E6F2FF
+  ArrowColor #000000
+  ParticipantFontSize 15
+  BoxFontSize 15
+  ParticipantBorderColor #3B82F6
+  ParticipantBackgroundColor #E6F2FF
+}
+hide footbox
+
+actor "Người dùng" as User
+participant ":Giao diện" as UI
+participant ":Hệ thống" as System
+participant ":Cơ sở dữ liệu" as DB
+
+activate User
+
+' === 1. Mở dự án / nhóm và tải quyền ===
+User -> UI: 1. Mở trang chi tiết dự án / nhóm
+activate UI
+UI -> System: 2. Yêu cầu permission của người dùng
+activate System
+System -> DB: 3. Lấy vai trò và quyền của người dùng
+activate DB
+DB --> System: Vai trò + quyền
+deactivate DB
+
+System -> UI: 4. Trả danh sách permission
+deactivate System
+UI -> UI: 5. Ẩn/hiện các chức năng theo quyền
+UI --> User: 6. Hiển thị giao diện theo phân quyền
+deactivate UI
+
+' === 2. Quản lý vai trò thành viên dự án ===
+User -> UI: 7. Mở danh sách thành viên dự án
+activate UI
+UI -> System: 8. Lấy danh sách thành viên + vai trò
+activate System
+System -> DB: 9. Truy vấn dữ liệu thành viên dự án
+activate DB
+DB --> System: Danh sách + vai trò
+deactivate DB
+
+System --> UI: 10. Trả danh sách thành viên
+deactivate System
+UI --> User: 11. Hiển thị thành viên + badge vai trò
+deactivate UI
+
+User -> UI: 12. Yêu cầu cập nhật vai trò thành viên
+activate UI
+UI -> System: 13. Gửi yêu cầu cập nhật vai trò
+activate System
+System -> DB: 14. Cập nhật vai trò người dùng trong dự án
+activate DB
+DB --> System: Đã cập nhật
+deactivate DB
+
+System --> UI: 15. Trả kết quả cập nhật vai trò
+deactivate System
+UI --> User: 16. Hiển thị danh sách đã cập nhật
+deactivate UI
+
+' === 3. Thao tác nhiệm vụ theo quyền ===
+User -> UI: 17. Thực hiện hành động trên nhiệm vụ
+activate UI
+UI -> System: 18. Gửi yêu cầu thao tác nhiệm vụ
+activate System
+
+System -> DB: 19. Kiểm tra quyền và thông tin nhiệm vụ
+activate DB
+DB --> System: Dữ liệu vai trò + nhiệm vụ
+deactivate DB
+
+System -> DB: 20. Cập nhật nhiệm vụ (tạo/sửa/xóa/đổi trạng thái)
+activate DB
+DB --> System: Đã cập nhật nhiệm vụ
+deactivate DB
+
+System --> UI: 21. Trả kết quả thao tác nhiệm vụ
+deactivate System
+UI --> User: 22. Cập nhật giao diện nhiệm vụ
+deactivate UI
+
+' === 4. Chuyển quyền trưởng dự án ===
+User -> UI: 23. Chọn chuyển quyền leader dự án
+activate UI
+UI -> System: 24. Gửi yêu cầu chuyển quyền leader
+activate System
+
+System -> DB: 25. Lấy thông tin leader hiện tại
+activate DB
+DB --> System: Leader hiện tại
+deactivate DB
+
+System -> DB: 26. Cập nhật leader mới vào dự án
+activate DB
+DB --> System: Đã cập nhật leader
+deactivate DB
+
+System --> UI: 27. Trả kết quả chuyển quyền trưởng dự án
+deactivate System
+UI --> User: 28. Hiển thị leader mới
+deactivate UI
+
+' === 5. Làm mới giao diện theo phân quyền mới ===
+User -> UI: 29. Tải lại trang dự án / nhóm
+activate UI
+UI -> System: 30. Yêu cầu permission mới
+activate System
+System -> DB: 31. Lấy lại vai trò và quyền
+activate DB
+DB --> System: Permission mới
+deactivate DB
+
+System --> UI: 32. Trả permission mới
+deactivate System
+UI -> UI: 33. Cập nhật hiển thị chức năng theo quyền mới
+UI --> User: 34. Giao diện được cập nhật phân quyền
+deactivate UI
+
+deactivate User
+
+@enduml

@@ -1,0 +1,34 @@
+@startuml
+skinparam dpi 150
+skinparam usecase {
+  BackgroundColor #EEF6FB
+  BorderColor #3B82F6
+  ArrowColor #000000
+  FontSize 16
+}
+skinparam actorStyle stickman
+left to right direction
+
+actor "Người dùng" as User
+
+(Quản lý phân quyền) as MainUC
+
+(Cấu hình vai trò trong dự án)
+(Cấu hình vai trò trong nhóm)
+(Thực hiện thao tác dự án theo quyền)
+(Thực hiện thao tác nhiệm vụ theo quyền)
+(Thực hiện thao tác nhóm theo quyền)
+(Chuyển quyền trưởng dự án)
+(Xem giao diện theo phân quyền)
+
+User --> MainUC
+
+MainUC -- (Cấu hình vai trò trong dự án)
+MainUC -- (Cấu hình vai trò trong nhóm)
+MainUC -- (Thực hiện thao tác dự án theo quyền)
+MainUC -- (Thực hiện thao tác nhiệm vụ theo quyền)
+MainUC -- (Thực hiện thao tác nhóm theo quyền)
+MainUC -- (Chuyển quyền trưởng dự án)
+MainUC -- (Xem giao diện theo phân quyền)
+
+@enduml
