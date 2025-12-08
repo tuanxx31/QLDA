@@ -61,6 +61,13 @@ export class ProjectMembersService {
       user,
       role,
     });
+
+    // Cập nhật owner_id khi thêm member với role='leader'
+    if (role === 'leader') {
+      project.owner = user;
+      await this.projectRepo.save(project);
+    }
+
     return this.projectMemberRepo.save(newMember);
   }
 
@@ -81,7 +88,7 @@ export class ProjectMembersService {
   async addMembers(projectId: string, dto: { userIds: string[]; role?: 'viewer' | 'editor' | 'leader' }) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
-      relations: ['members', 'members.user'],
+      relations: ['owner', 'members', 'members.user'],
     });
     if (!project) throw new NotFoundException('Không tìm thấy dự án.');
 
@@ -113,6 +120,14 @@ export class ProjectMembersService {
         role: role as 'viewer' | 'editor' | 'leader',
       }),
     );
+
+    // Cập nhật owner_id khi thêm members với role='leader'
+    // Nếu role='leader', lấy user đầu tiên làm owner (vì chỉ có 1 leader)
+    if (role === 'leader' && users.length > 0) {
+      project.owner = users[0];
+      await this.projectRepo.save(project);
+    }
+
     return this.projectMemberRepo.save(newMembers);
   }
   async updateMemberRole(
@@ -123,7 +138,7 @@ export class ProjectMembersService {
   ) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
-      relations: ['members', 'members.user'],
+      relations: ['owner', 'members', 'members.user'],
     });
     if (!project) throw new NotFoundException('Không tìm thấy dự án.');
 
@@ -149,6 +164,9 @@ export class ProjectMembersService {
           'Dự án đã có trưởng dự án. Mỗi dự án chỉ có thể có 1 trưởng dự án. Vui lòng sử dụng chức năng chuyển quyền để thay đổi trưởng dự án.',
         );
       }
+      // Cập nhật owner_id khi role được set thành leader
+      project.owner = member.user;
+      await this.projectRepo.save(project);
     }
 
     member.role = dto.role;
@@ -180,7 +198,7 @@ export class ProjectMembersService {
   ) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
-      relations: ['members', 'members.user'],
+      relations: ['owner', 'members', 'members.user'],
     });
     if (!project) throw new NotFoundException('Không tìm thấy dự án.');
 
@@ -198,6 +216,10 @@ export class ProjectMembersService {
 
     currentLeader.role = 'editor';
     newLeader.role = 'leader';
+
+    // Cập nhật owner_id thành newLeader.user
+    project.owner = newLeader.user;
+    await this.projectRepo.save(project);
 
     await this.projectMemberRepo.save([currentLeader, newLeader]);
 

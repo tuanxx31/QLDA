@@ -255,18 +255,20 @@ export class ProjectsService {
   }
 
   async findAllByUser(userId: string) {
-    return this.projectRepo
+    const projects = await this.projectRepo
       .createQueryBuilder('project')
       .leftJoinAndSelect('project.owner', 'owner')
       .leftJoinAndSelect('project.group', 'group')
       .leftJoinAndSelect('project.members', 'members')
       .leftJoinAndSelect('members.user', 'memberUser')
       .where(
-        'owner.id = :userId OR memberUser.id = :userId',
+        'memberUser.id = :userId',
         { userId },
       )
       .orderBy('project.created_at', 'DESC')
       .getMany();
+    console.log({projects});
+    return projects;
   }
 
   async findAllByGroup(groupId: string, userId: string) {
