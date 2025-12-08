@@ -1,0 +1,36 @@
+@startuml
+skinparam dpi 150
+skinparam usecase {
+  BackgroundColor #EEF6FB
+  BorderColor #3B82F6
+  ArrowColor #000000
+  FontSize 16
+}
+skinparam actorStyle stickman
+left to right direction
+
+actor "Người dùng" as User
+
+(Quản lý nhóm) as MainUC
+
+(Tạo nhóm mới)
+(Chỉnh sửa thông tin nhóm)
+(Xóa nhóm)
+(Mời thành viên vào nhóm)
+(Chấp nhận / từ chối lời mời nhóm)
+(Xem danh sách nhóm của tôi)
+(Xem chi tiết nhóm và danh sách thành viên)
+(Rời khỏi nhóm)
+
+User --> MainUC
+
+MainUC -- (Tạo nhóm mới)
+MainUC -- (Chỉnh sửa thông tin nhóm)
+MainUC -- (Xóa nhóm)
+MainUC -- (Mời thành viên vào nhóm)
+MainUC -- (Chấp nhận / từ chối lời mời nhóm)
+MainUC -- (Xem danh sách nhóm của tôi)
+MainUC -- (Xem chi tiết nhóm và danh sách thành viên)
+MainUC -- (Rời khỏi nhóm)
+
+@enduml

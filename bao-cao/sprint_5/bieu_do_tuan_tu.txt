@@ -1,0 +1,95 @@
+@startuml
+!pragma useUnicode true
+skinparam dpi 150
+skinparam sequence {
+  LifeLineBorderColor #3B82F6
+  LifeLineBackgroundColor #E6F2FF
+  ArrowColor #000000
+  ParticipantFontSize 15
+  BoxFontSize 15
+  ParticipantBorderColor #3B82F6
+  ParticipantBackgroundColor #E6F2FF
+}
+hide footbox
+
+actor "Người dùng" as User
+participant ":Giao diện" as UI
+participant ":Hệ thống" as System
+participant ":Cơ sở dữ liệu" as DB
+
+' --- Người dùng hoạt động suốt quá trình ---
+activate User
+
+' --- Hiển thị cột trong bảng ---
+User -> UI: 1. Mở bảng dự án\n(ví dụ: Kanban của một Project)
+activate UI
+UI -> System: 2. Yêu cầu danh sách cột của dự án
+activate System
+System -> DB: 3. Truy vấn các BoardColumn theo ProjectId\n(theo thứ tự sắp xếp)
+activate DB
+DB --> System: [Thành công] Danh sách cột
+deactivate DB
+System --> UI: 4. Trả về danh sách cột
+deactivate System
+UI --> User: 5. Hiển thị các cột trong bảng dự án
+deactivate UI
+
+' --- Thêm cột mới cho dự án ---
+User -> UI: 6a. Chọn "Thêm cột mới"\nnhập tên cột
+activate UI
+UI -> System: 6b. Gửi yêu cầu tạo BoardColumn mới
+activate System
+System -> DB: 6c. Thêm bản ghi BoardColumn\nvới ProjectId và vị trí cuối cùng
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 6d. Trả kết quả tạo cột thành công
+deactivate System
+UI --> User: 6e. Hiển thị cột mới trên bảng
+deactivate UI
+
+' --- Sửa cột ---
+User -> UI: 7a. Chọn sửa một cột\n(ví dụ: đổi tên cột)
+activate UI
+UI -> System: 7b. Gửi yêu cầu cập nhật thông tin cột
+activate System
+System -> DB: 7c. Cập nhật BoardColumn trong DB
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 7d. Trả kết quả cập nhật thành công
+deactivate System
+UI --> User: 7e. Hiển thị thông tin cột đã cập nhật
+deactivate UI
+
+' --- Xoá cột ---
+User -> UI: 8a. Chọn "Xoá cột"
+activate UI
+UI -> System: 8b. Gửi yêu cầu xoá BoardColumn
+activate System
+System -> DB: 8c. Xoá bản ghi BoardColumn\nvà xử lý liên quan (nếu có)
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 8d. Trả kết quả xoá thành công
+deactivate System
+UI --> User: 8e. Cập nhật lại danh sách cột trên bảng
+deactivate UI
+
+' --- Kéo thả cột (cập nhật thứ tự cột) ---
+User -> UI: 9a. Kéo thả cột để thay đổi vị trí
+activate UI
+UI -> System: 9b. Gửi thứ tự mới của các cột\n(sau khi kéo thả)
+activate System
+System -> DB: 9c. Cập nhật thứ tự (sortOrder)\ncủa các BoardColumn trong DB
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 9d. Trả kết quả cập nhật thứ tự
+deactivate System
+UI --> User: 9e. Hiển thị bảng dự án với thứ tự cột mới
+deactivate UI
+
+deactivate User
+
+@enduml

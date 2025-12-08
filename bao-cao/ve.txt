@@ -1,2 +1,2 @@
-https://plantuml-editor.kkeisuke.dev/
-https://www.planttext.com/ 
+https://plantuml-editor.kkeisuke.dev/ biểu đồ tuần tự
+https://www.planttext.com/ biểu đồ ca

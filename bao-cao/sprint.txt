@@ -1,0 +1,225 @@
+Sprint 1: Quản lý tài khoản
+[07/10/25 → 14/10/25]
+1. Phân tích dữ liệu cho việc lưu trữ tài khoản người dùng trong hệ thống
+2. Tạo bảng tài khoản trong cơ sở dữ liệu (User)
+3. Lập trình đăng ký tài khoản mới
+4. Lập trình đăng nhập tài khoản
+5. Lập trình hiển thị thông tin tài khoản cá nhân
+6. Lập trình chỉnh sửa thông tin cá nhân
+7. Lập trình đổi mật khẩu
+8. Lập trình đăng xuất tài khoản
+9. Kiểm tra xác thực JWT và middleware bảo vệ API
+10. Tối ưu giao diện trang đăng nhập, đăng ký, hồ sơ cá nhân
+11. Kiểm thử và hoàn thiện module “Quản lý tài khoản”
+
+Sprint 2: Quản lý nhóm
+[15/10/25 → 22/10/25]
+1. Phân tích dữ liệu và thiết kế quan hệ giữa người dùng và nhóm (User - Group)
+2. Tạo bảng nhóm trong cơ sở dữ liệu (Group)
+3. Lập trình tạo nhóm mới
+4. Lập trình chỉnh sửa thông tin nhóm (tên, mô tả, trưởng nhóm)
+5. Lập trình xóa nhóm
+6. Lập trình mời thành viên vào nhóm
+7. Lập trình chấp nhận / từ chối lời mời nhóm
+8. Lập trình hiển thị danh sách nhóm của người dùng
+9. Lập trình xem chi tiết nhóm và danh sách thành viên
+10. Lập trình rời khỏi nhóm
+11. Kiểm thử và hoàn thiện module “Quản lý nhóm”
+
+Sprint 3: Quản lý dự án
+[23/10/25 → 30/10/25]
+1. Phân tích dữ liệu và quan hệ giữa nhóm, dự án và thành viên
+2. Tạo bảng dự án trong cơ sở dữ liệu (Project)
+3. Lập trình tạo dự án mới (thuộc nhóm hoặc cá nhân)
+4. Lập trình chỉnh sửa thông tin dự án
+5. Lập trình xóa dự án
+6. Lập trình thêm thành viên vào dự án
+7. Lập trình hiển thị danh sách dự án của người dùng
+8. Lập trình xem chi tiết dự án (mô tả, thời hạn, người phụ trách, thành viên, tiến độ)
+9. Lập trình thay đổi trạng thái dự án (todo, doing, done)
+10. Kiểm thử và hoàn thiện module “Quản lý dự án”
+
+Sprint 4: Quản lý bảng dự án [29/10/2025 --> 04/11/2025]
+1. Phân tích dữ liệu và thiết kế quan hệ giữa dự án và bảng công việc (Project - BoardColumn )
+2. Tạo bảng lưu trữ cột (BoardColumn) trong cơ sở dữ liệu
+3. Lập trình hiển thị cột trong bảng
+4. Lập trình thêm cột mới cho dự án
+5. Lập trình sửa cột
+6. Lập trình xoá cột
+7. Lập trình kéo thả cột ( cập nhật thứ tự cột)
+8. Kiểm thử toàn bộ chức năng quản lý bảng dự án (thêm, sửa, xoá, kéo thả)
+
+Sprint 5: Quản lý Task [04/11/2025 --> 11/11/2025]
+1. Phân tích dữ liệu và thiết kế quan hệ giữa bảng, nhiệm vụ và nhãn (Column - Task - Label)
+2. Tạo bảng nhiệm vụ (Task) trong cơ sở dữ liệu
+3. Tạo bảng nhãn (Label) và bảng trung gian gán nhãn cho Task
+4. Lập trình hiển thị danh sách nhiệm vụ theo cột (Kanban)
+5. Lập trình gán nhãn cho nhiệm vụ
+6. Lập trình cập nhật vị trí nhiệm vụ (kéo thả giữa các cột)
+7. Lập trình xem chi tiết nhiệm vụ (mô tả, hạn chót, người thực hiện, nhãn, mức ưu tiên)
+8. Lập trình thêm nhiệm vụ mới
+9. Lập trình gán người thực hiện cho nhiệm vụ
+10. Lập trình chỉnh sửa thông tin nhiệm vụ (tiêu đề, mô tả, hạn chót)
+11. Lập trình xóa nhiệm vụ
+12. Kiểm thử và hoàn thiện module “Quản lý nhiệm vụ”
+
+Sprint 6: Quản lý tiến độ (Level 2)
+[12/11/25 → 19/11/25]
+
+1. Phân tích dữ liệu tiến độ
+   - Phân tích các trường dữ liệu của nhiệm vụ: trạng thái, người thực hiện, hạn chót, ngày hoàn thành
+   - Xác định công thức tính tiến độ cho dự án, cột, người thực hiện, và thống kê hạn chót
+   - Thống nhất cấu trúc dữ liệu trả về cho bảng điều khiển tiến độ
+
+2. Lập trình thêm hạn chót (deadline) cho dự án
+   - Thêm trường hạn chót vào dự án
+   - Cập nhật giao diện chỉnh sửa dự án để cho phép chọn hạn chót
+   - Hiển thị hạn chót trong trang chi tiết dự án
+   - Kiểm tra trạng thái “dự án quá hạn” nếu hạn chót nhỏ hơn ngày hiện tại
+
+3. Lập trình tiến độ tổng của dự án
+   - Tính tổng số nhiệm vụ, số nhiệm vụ đã hoàn thành, số nhiệm vụ chưa hoàn thành
+   - Tính phần trăm tiến độ của dự án
+   - Tạo API lấy tiến độ tổng
+   - Hiển thị thanh tiến độ và biểu đồ nhiệm vụ đã hoàn thành / chưa hoàn thành
+
+4. Lập trình tiến độ theo từng cột
+   - Tính số nhiệm vụ trong mỗi cột
+   - Tính số nhiệm vụ hoàn thành và chưa hoàn thành theo từng cột
+   - Tính phần trăm tiến độ của từng cột
+   - Tạo API lấy tiến độ các cột
+   - Hiển thị biểu đồ cột về tiến độ từng cột
+
+5. Lập trình tiến độ theo từng người thực hiện
+   - Thống kê số nhiệm vụ của mỗi người
+   - Tính số nhiệm vụ đã hoàn thành và chưa hoàn thành của từng người
+   - Tính phần trăm tiến độ của từng người
+   - Tạo API lấy tiến độ theo người thực hiện
+   - Hiển thị bảng thống kê tiến độ theo người thực hiện
+
+6. Lập trình thống kê hạn chót của nhiệm vụ
+   - Xác định nhiệm vụ quá hạn
+   - Xác định nhiệm vụ sắp đến hạn (trong 3 ngày)
+   - Xác định nhiệm vụ hoàn thành đúng hạn
+   - Xác định nhiệm vụ hoàn thành trễ hạn
+   - Tạo API thống kê hạn chót
+   - Hiển thị danh sách nhiệm vụ quá hạn và sắp đến hạn
+
+7. Lập trình cập nhật tiến độ theo thao tác người dùng
+   - Cập nhật bảng điều khiển tiến độ khi người dùng:
+     + đánh dấu hoàn thành nhiệm vụ
+     + tạo nhiệm vụ mới
+     + xóa nhiệm vụ
+     + thay đổi người thực hiện
+     + thay đổi hạn chót
+     + kéo nhiệm vụ sang cột khác
+
+8. Lập trình bảng điều khiển tiến độ của dự án
+   - Hiển thị tiến độ tổng, tiến độ theo cột, tiến độ theo người thực hiện và thống kê hạn chót
+   - Hiển thị biểu đồ và bảng thống kê
+   - Tối ưu giao diện trang chi tiết dự án
+
+9. Kiểm thử và hoàn thiện chức năng quản lý tiến độ
+   - Kiểm thử các API
+   - Kiểm thử giao diện hiển thị tiến độ
+   - Sửa lỗi và hoàn thiện sprint
+
+Sprint 8: Thống kê dự án
+[28/11/2025 → 05/12/2025]
+
+1. Lập trình thống kê tổng quan của dự án (Overview Analytics)
+   - Thống kê tổng số cột, tổng số nhiệm vụ, tổng số thành viên, tổng số bình luận
+   - Thống kê nhiệm vụ theo trạng thái (todo, doing, done) nhằm phân tích chứ không tính tiến độ
+   - Hiển thị dạng thẻ thống kê trên Dashboard
+
+2. Lập trình thống kê xu hướng nhiệm vụ theo thời gian (Timeline Analytics)
+   - Thống kê nhiệm vụ tạo mới theo ngày/tuần/tháng
+   - Thống kê nhiệm vụ hoàn thành theo ngày/tuần/tháng
+   - Hiển thị biểu đồ đường (line chart) để phân tích xu hướng công việc
+
+3. Lập trình thống kê hiệu suất thành viên (Performance Analytics)
+   - Thống kê số nhiệm vụ hoàn thành của từng thành viên
+   - Thống kê mức độ tham gia (task activity) của từng thành viên
+   - Hiển thị biểu đồ so sánh hiệu suất giữa các thành viên (bar chart)
+
+4. Lập trình thống kê hoạt động bình luận (Comment Analytics)
+   - Thống kê tổng số bình luận của dự án
+   - Thống kê bình luận theo từng nhiệm vụ và theo từng thành viên
+   - Thống kê các nhiệm vụ có số bình luận nhiều nhất (top nhiệm vụ)
+   - Hiển thị bảng và biểu đồ hoạt động bình luận
+
+5. Lập trình thống kê phân bổ công việc (Workload Distribution Analytics)
+   - Thống kê nhiệm vụ theo loại, theo mức độ ưu tiên hoặc theo cột
+   - Thống kê khối lượng công việc theo từng thành viên
+   - Hiển thị biểu đồ phân bổ (pie chart / bar chart)
+   - (Khác với thống kê tiến độ của Sprint 6 → không dùng phần trăm hoàn thành)
+
+6. Lập trình thống kê chất lượng hoàn thành (Completion Quality Analytics)
+   - Thống kê tỷ lệ nhiệm vụ hoàn thành đúng hạn và trễ hạn
+   - Hiển thị biểu đồ và tỷ lệ tổng hợp (không liệt kê từng nhiệm vụ như Sprint 6)
+   - Phân tích chất lượng hoàn thành ở cấp dự án
+
+7. Lập trình trang Dashboard thống kê dự án
+   - Tích hợp tất cả các thống kê: overview, timeline, hiệu suất thành viên, bình luận, phân bổ công việc, chất lượng hoàn thành
+   - Thiết kế giao diện tổng hợp, dễ theo dõi, trực quan bằng biểu đồ và bảng thống kê
+   - Tối ưu tốc độ tải và đồng bộ dữ liệu khi dự án thay đổi
+
+8. Kiểm thử và hoàn thiện chức năng thống kê dự án
+   - Kiểm thử dữ liệu trả về của API thống kê
+   - Kiểm thử hiển thị biểu đồ và bảng trên Dashboard
+   - Xử lý trường hợp dữ liệu lớn, trống, lỗi
+   - Sửa lỗi và hoàn thiện sprint
+
+
+Sprint 9: Quản lý phân quyền
+Thời gian: 20/11/25 → 27/11/25
+
+1. Xây dựng mô hình phân quyền cho hệ thống
+- Xác định vai trò trong nhóm (leader, member) và dự án (leader, editor, viewer)
+- Xác định các hành động được phép của từng vai trò
+- Thiết kế cấu trúc dữ liệu permission trả về từ API
+- Thiết kế luồng kiểm tra quyền cho nhóm, dự án, nhiệm vụ và cột
+
+2. Tạo module phân quyền và áp dụng vào hệ thống
+- Tạo module phân quyền chung cho toàn hệ thống
+- Tạo chức năng kiểm tra quyền đối với dự án và nhóm
+- Tích hợp kiểm tra quyền vào API của dự án, nhóm, nhiệm vụ và cột
+- Chuẩn hóa toàn bộ logic phân quyền, loại bỏ các kiểm tra thủ công cũ
+
+3. Quản lý phân quyền trong Dự án
+- Giới hạn quyền sửa và xóa dự án theo vai trò người dùng
+- Giới hạn quyền thêm, sửa và xóa thành viên dự án
+- Giới hạn quyền tạo, sửa, xóa cột cho leader/editor
+- Giới hạn quyền tạo, sửa, xóa nhiệm vụ cho leader/editor
+- Viewer chỉ được cập nhật trạng thái nhiệm vụ nếu là người được giao
+- Cập nhật giao diện để ẩn hoặc hiển thị hành động theo quyền
+
+4. Quản lý phân quyền trong Nhóm
+- Chỉ leader được phép chỉnh sửa thông tin nhóm
+- Chỉ leader được phép xóa nhóm
+- Chỉ leader được mời hoặc xóa thành viên khỏi nhóm
+- Giao diện tự động hiển thị hoặc ẩn thao tác theo vai trò người dùng
+
+5. Xây dựng hệ thống kiểm tra quyền trên giao diện
+- Tạo hệ thống lấy và lưu vai trò người dùng trong dự án hoặc nhóm
+- Kiểm tra quyền để ẩn/hiện nút edit, delete, add member, modify task, modify column
+- Tạo wrapper UI để kiểm soát hiển thị component dựa trên quyền
+
+6. Đảm bảo hệ thống chỉ có một trưởng dự án
+- Thiết lập quy tắc chỉ có một leader duy nhất trong mỗi dự án
+- Ngăn việc chọn leader cho nhiều người cùng lúc
+- Chỉ cho phép chuyển quyền leader qua chức năng chuyển quyền
+- Thêm tooltip hoặc thông báo trong giao diện giải thích quy tắc
+
+7. Cải thiện giao diện liên quan đến phân quyền
+- Loại bỏ lựa chọn role “leader” khi thêm thành viên dự án
+- Hiển thị rõ badge vai trò trong danh sách thành viên
+- Thêm tooltip giải thích cách chuyển quyền leader
+- Điều chỉnh giao diện của chi tiết dự án, nhiệm vụ và nhóm theo phân quyền mới
+
+8. Kiểm thử và hoàn thiện chức năng phân quyền
+- Kiểm thử phân quyền theo từng vai trò người dùng
+- Kiểm thử các hành động bị giới hạn trong nhóm và dự án
+- Kiểm thử giao diện ẩn/hiện các hành động theo quyền
+- Kiểm thử luồng chuyển quyền leader
+- Sửa lỗi và hoàn thiện toàn bộ module phân quyền

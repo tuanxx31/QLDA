@@ -1,0 +1,30 @@
+@startuml
+skinparam dpi 150
+skinparam usecase {
+  BackgroundColor #EEF6FB
+  BorderColor #3B82F6
+  ArrowColor #000000
+  FontSize 16
+}
+skinparam actorStyle stickman
+left to right direction
+
+actor "Người dùng" as User
+
+(Quản lý bảng dự án) as MainUC
+
+(Hiển thị cột trong bảng)
+(Thêm cột mới cho dự án)
+(Sửa cột)
+(Xoá cột)
+(Kéo thả cột để cập nhật thứ tự)
+
+User --> MainUC
+
+MainUC -- (Hiển thị cột trong bảng)
+MainUC -- (Thêm cột mới cho dự án)
+MainUC -- (Sửa cột)
+MainUC -- (Xoá cột)
+MainUC -- (Kéo thả cột để cập nhật thứ tự)
+
+@enduml

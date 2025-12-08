@@ -1,0 +1,150 @@
+@startuml
+!pragma useUnicode true
+skinparam dpi 150
+skinparam sequence {
+  LifeLineBorderColor #3B82F6
+  LifeLineBackgroundColor #E6F2FF
+  ArrowColor #000000
+  ParticipantFontSize 15
+  BoxFontSize 15
+  ParticipantBorderColor #3B82F6
+  ParticipantBackgroundColor #E6F2FF
+}
+hide footbox
+
+actor "Người dùng" as User
+participant ":Giao diện" as UI
+participant ":Hệ thống" as System
+participant ":Cơ sở dữ liệu" as DB
+
+' --- Người dùng hoạt động suốt quá trình ---
+activate User
+
+' --- Xem danh sách nhóm của tôi ---
+User -> UI: 1. Mở màn hình \"Nhóm của tôi\"
+activate UI
+UI -> System: 2. Yêu cầu danh sách nhóm của người dùng
+activate System
+System -> DB: 3. Truy vấn các nhóm theo UserId
+activate DB
+DB --> System: [Thành công] Danh sách nhóm
+deactivate DB
+System --> UI: 4. Trả về danh sách nhóm
+deactivate System
+UI --> User: Hiển thị danh sách nhóm của tôi
+deactivate UI
+
+' --- Tạo nhóm mới ---
+User -> UI: 5a. Chọn \"Tạo nhóm mới\"\nnhập tên, mô tả
+activate UI
+UI -> System: 5b. Gửi yêu cầu tạo nhóm mới
+activate System
+System -> DB: 5c. Thêm bản ghi nhóm mới\nvà quan hệ User-Group (trưởng nhóm)
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 5d. Trả kết quả tạo nhóm thành công
+deactivate System
+UI --> User: 5e. Hiển thị nhóm mới trong danh sách
+deactivate UI
+
+' --- Chỉnh sửa thông tin nhóm ---
+User -> UI: 6a. Chọn nhóm và chỉnh sửa\n(tên, mô tả, trưởng nhóm)
+activate UI
+UI -> System: 6b. Gửi yêu cầu cập nhật thông tin nhóm
+activate System
+System -> DB: 6c. Cập nhật thông tin nhóm trong DB
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 6d. Trả kết quả cập nhật thành công
+deactivate System
+UI --> User: 6e. Hiển thị thông tin nhóm đã cập nhật
+deactivate UI
+
+' --- Xóa nhóm ---
+User -> UI: 7a. Chọn \"Xóa nhóm\"
+activate UI
+UI -> System: 7b. Gửi yêu cầu xóa nhóm
+activate System
+System -> DB: 7c. Xóa nhóm và các quan hệ User-Group liên quan
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 7d. Trả kết quả xóa thành công
+deactivate System
+UI --> User: 7e. Cập nhật lại danh sách nhóm
+deactivate UI
+
+' --- Mời thành viên vào nhóm ---
+User -> UI: 8a. Chọn nhóm và gửi lời mời thành viên
+activate UI
+UI -> System: 8b. Gửi yêu cầu tạo lời mời nhóm
+activate System
+System -> DB: 8c. Lưu lời mời nhóm\n(User mời, User được mời, Group)
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 8d. Trả kết quả mời thành viên thành công
+deactivate System
+UI --> User: 8e. Hiển thị trạng thái đã gửi lời mời
+deactivate UI
+
+' --- Chấp nhận / từ chối lời mời nhóm ---
+User -> UI: 9a. Mở màn hình \"Lời mời nhóm\"
+activate UI
+UI -> System: 9b. Yêu cầu danh sách lời mời của người dùng
+activate System
+System -> DB: 9c. Truy vấn các lời mời theo UserId
+activate DB
+DB --> System: [Thành công] Danh sách lời mời
+deactivate DB
+System --> UI: 9d. Trả danh sách lời mời
+deactivate System
+UI --> User: 9e. Hiển thị các lời mời nhóm
+deactivate UI
+
+User -> UI: 10a. Chọn chấp nhận / từ chối\nmột lời mời
+activate UI
+UI -> System: 10b. Gửi yêu cầu xử lý lời mời
+activate System
+System -> DB: 10c. Cập nhật trạng thái lời mời\nvà quan hệ User-Group (nếu chấp nhận)
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 10d. Trả kết quả xử lý lời mời
+deactivate System
+UI --> User: 10e. Cập nhật trạng thái lời mời\nvà danh sách nhóm của tôi
+deactivate UI
+
+' --- Xem chi tiết nhóm và danh sách thành viên ---
+User -> UI: 11a. Chọn xem chi tiết một nhóm
+activate UI
+UI -> System: 11b. Gửi yêu cầu lấy chi tiết nhóm\nvà danh sách thành viên
+activate System
+System -> DB: 11c. Truy vấn thông tin nhóm\nvà các thành viên trong nhóm
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 11d. Trả chi tiết nhóm và thành viên
+deactivate System
+UI --> User: 11e. Hiển thị màn hình chi tiết nhóm
+deactivate UI
+
+' --- Rời khỏi nhóm ---
+User -> UI: 12a. Chọn \"Rời khỏi nhóm\"
+activate UI
+UI -> System: 12b. Gửi yêu cầu rời khỏi nhóm
+activate System
+System -> DB: 12c. Xóa quan hệ User-Group tương ứng
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 12d. Trả kết quả rời nhóm thành công
+deactivate System
+UI --> User: 12e. Cập nhật lại danh sách nhóm của tôi
+deactivate UI
+
+deactivate User
+
+@enduml

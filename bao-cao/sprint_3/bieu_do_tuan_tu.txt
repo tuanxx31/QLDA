@@ -1,0 +1,123 @@
+@startuml
+!pragma useUnicode true
+skinparam dpi 150
+skinparam sequence {
+  LifeLineBorderColor #3B82F6
+  LifeLineBackgroundColor #E6F2FF
+  ArrowColor #000000
+  ParticipantFontSize 15
+  BoxFontSize 15
+  ParticipantBorderColor #3B82F6
+  ParticipantBackgroundColor #E6F2FF
+}
+hide footbox
+
+actor "Người dùng" as User
+participant ":Giao diện" as UI
+participant ":Hệ thống" as System
+participant ":Cơ sở dữ liệu" as DB
+
+' --- Người dùng hoạt động suốt quá trình ---
+activate User
+
+' --- Xem danh sách dự án của tôi ---
+User -> UI: 1. Mở màn hình "Dự án của tôi"
+activate UI
+UI -> System: 2. Yêu cầu danh sách dự án của người dùng
+activate System
+System -> DB: 3. Truy vấn các dự án\nmà người dùng là người tạo hoặc thành viên
+activate DB
+DB --> System: [Thành công] Danh sách dự án
+deactivate DB
+System --> UI: 4. Trả về danh sách dự án
+deactivate System
+UI --> User: 5. Hiển thị danh sách dự án của tôi
+deactivate UI
+
+' --- Tạo dự án mới (thuộc nhóm hoặc cá nhân) ---
+User -> UI: 6a. Chọn "Tạo dự án mới"\nnhập tên, mô tả, thời hạn,\nthuộc nhóm hoặc cá nhân
+activate UI
+UI -> System: 6b. Gửi yêu cầu tạo dự án mới
+activate System
+System -> DB: 6c. Thêm bản ghi dự án mới\nvà gán người tạo làm người phụ trách
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 6d. Trả kết quả tạo dự án thành công
+deactivate System
+UI --> User: 6e. Hiển thị dự án mới trong danh sách
+deactivate UI
+
+' --- Chỉnh sửa thông tin dự án ---
+User -> UI: 7a. Chọn một dự án và chỉnh sửa\n(tên, mô tả, thời hạn, người phụ trách)
+activate UI
+UI -> System: 7b. Gửi yêu cầu cập nhật thông tin dự án
+activate System
+System -> DB: 7c. Cập nhật thông tin dự án trong DB
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 7d. Trả kết quả cập nhật thành công
+deactivate System
+UI --> User: 7e. Hiển thị thông tin dự án đã cập nhật
+deactivate UI
+
+' --- Xóa dự án ---
+User -> UI: 8a. Chọn "Xóa dự án"
+activate UI
+UI -> System: 8b. Gửi yêu cầu xóa dự án
+activate System
+System -> DB: 8c. Xóa bản ghi dự án\nvà các quan hệ liên quan (thành viên dự án)
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 8d. Trả kết quả xóa thành công
+deactivate System
+UI --> User: 8e. Cập nhật lại danh sách dự án
+deactivate UI
+
+' --- Thêm thành viên vào dự án ---
+User -> UI: 9a. Mở chi tiết dự án và chọn "Thêm thành viên"
+activate UI
+UI -> System: 9b. Gửi yêu cầu thêm thành viên vào dự án
+activate System
+System -> DB: 9c. Thêm quan hệ User-Project\n(trở thành thành viên dự án)
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 9d. Trả kết quả thêm thành viên thành công
+deactivate System
+UI --> User: 9e. Hiển thị danh sách thành viên đã cập nhật
+deactivate UI
+
+' --- Xem chi tiết dự án ---
+User -> UI: 10a. Chọn xem chi tiết một dự án
+activate UI
+UI -> System: 10b. Gửi yêu cầu lấy chi tiết dự án
+activate System
+System -> DB: 10c. Truy vấn thông tin dự án\n(mô tả, thời hạn, người phụ trách,\nthành viên, tiến độ, trạng thái)
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 10d. Trả chi tiết dự án
+deactivate System
+UI --> User: 10e. Hiển thị màn hình chi tiết dự án
+deactivate UI
+
+' --- Thay đổi trạng thái dự án (todo, doing, done) ---
+User -> UI: 11a. Chọn thay đổi trạng thái dự án\n(todo → doing → done)
+activate UI
+UI -> System: 11b. Gửi yêu cầu cập nhật trạng thái dự án
+activate System
+System -> DB: 11c. Cập nhật trạng thái dự án trong DB
+activate DB
+DB --> System: [Thành công]
+deactivate DB
+System --> UI: 11d. Trả kết quả cập nhật trạng thái
+deactivate System
+UI --> User: 11e. Hiển thị trạng thái dự án mới
+deactivate UI
+
+deactivate User
+
+@enduml

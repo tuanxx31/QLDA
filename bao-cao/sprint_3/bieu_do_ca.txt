@@ -1,0 +1,34 @@
+@startuml
+skinparam dpi 150
+skinparam usecase {
+  BackgroundColor #EEF6FB
+  BorderColor #3B82F6
+  ArrowColor #000000
+  FontSize 16
+}
+skinparam actorStyle stickman
+left to right direction
+
+actor "Người dùng" as User
+
+(Quản lý dự án) as MainUC
+
+(Tạo dự án mới)
+(Chỉnh sửa thông tin dự án)
+(Xóa dự án)
+(Thêm thành viên vào dự án)
+(Xem danh sách dự án của tôi)
+(Xem chi tiết dự án - mô tả, thời hạn, người phụ trách, thành viên, tiến độ)
+(Thay đổi trạng thái dự án - todo / doing / done)
+
+User --> MainUC
+
+MainUC -- (Tạo dự án mới)
+MainUC -- (Chỉnh sửa thông tin dự án)
+MainUC -- (Xóa dự án)
+MainUC -- (Thêm thành viên vào dự án)
+MainUC -- (Xem danh sách dự án của tôi)
+MainUC -- (Xem chi tiết dự án - mô tả, thời hạn, người phụ trách, thành viên, tiến độ)
+MainUC -- (Thay đổi trạng thái dự án - todo / doing / done)
+
+@enduml
