@@ -7,6 +7,12 @@
 SET FOREIGN_KEY_CHECKS = 0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+SET CHARACTER_SET_CLIENT = utf8mb4;
+SET CHARACTER_SET_CONNECTION = utf8mb4;
+SET CHARACTER_SET_RESULTS = utf8mb4;
+SET COLLATION_CONNECTION = utf8mb4_unicode_ci;
 
 -- ============================================
 -- 1. USERS (10 users)
