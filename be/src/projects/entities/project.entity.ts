@@ -50,10 +50,6 @@ export class Project {
   @JoinColumn({ name: 'group_id' })
   group?: Group | null;
 
-  @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'manager_id' })
-  manager?: User | null;
-
   @OneToMany(() => ProjectMember, (member) => member.project, {
     cascade: true,
   })

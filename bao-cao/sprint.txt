@@ -63,7 +63,7 @@ Sprint 5: Quản lý Task [04/11/2025 --> 11/11/2025]
 11. Lập trình xóa nhiệm vụ
 12. Kiểm thử và hoàn thiện module “Quản lý nhiệm vụ”
 
-Sprint 6: Quản lý tiến độ (Level 2)
+Sprint 6: Quản lý tiến độ 
 [12/11/25 → 19/11/25]
 
 1. Phân tích dữ liệu tiến độ

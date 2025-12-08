@@ -10,7 +10,6 @@ export interface Project {
   deadline?: string | null;
   owner: User;
   group?: Group | null;
-  manager?: User;
   createdAt: string;
   updatedAt: string;
 }

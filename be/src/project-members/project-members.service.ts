@@ -32,7 +32,7 @@ export class ProjectMembersService {
   ) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
-      relations: ['owner', 'manager', 'members', 'members.user'],
+      relations: ['owner', 'members', 'members.user'],
     });
     if (!project) throw new NotFoundException('Không tìm thấy dự án.');
 
@@ -200,9 +200,6 @@ export class ProjectMembersService {
     newLeader.role = 'leader';
 
     await this.projectMemberRepo.save([currentLeader, newLeader]);
-
-    project.manager = newLeader.user;
-    await this.projectRepo.save(project);
 
     return { message: 'Đã chuyển quyền trưởng dự án.' };
   }

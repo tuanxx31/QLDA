@@ -52,7 +52,6 @@ export class ProjectsService {
       ...dto,
       owner,
       group,
-      manager: owner,
     });
 
     const saved: Project = await this.projectRepo.save(project);
@@ -259,12 +258,11 @@ export class ProjectsService {
     return this.projectRepo
       .createQueryBuilder('project')
       .leftJoinAndSelect('project.owner', 'owner')
-      .leftJoinAndSelect('project.manager', 'manager')
       .leftJoinAndSelect('project.group', 'group')
       .leftJoinAndSelect('project.members', 'members')
       .leftJoinAndSelect('members.user', 'memberUser')
       .where(
-        'owner.id = :userId OR manager.id = :userId OR memberUser.id = :userId',
+        'owner.id = :userId OR memberUser.id = :userId',
         { userId },
       )
       .orderBy('project.created_at', 'DESC')
@@ -293,7 +291,7 @@ export class ProjectsService {
 
     return this.projectRepo.find({
       where: whereCondition,
-      relations: ['group', 'manager', 'members', 'members.user'],
+      relations: ['group', 'members', 'members.user'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -301,7 +299,7 @@ export class ProjectsService {
   async findOne(id: string) {
     const project = await this.projectRepo.findOne({
       where: { id },
-      relations: ['group', 'owner', 'manager', 'members', 'members.user'],
+      relations: ['group', 'owner', 'members', 'members.user'],
     });
     if (!project) throw new NotFoundException('Không tìm thấy dự án.');
     return project;
@@ -310,11 +308,16 @@ export class ProjectsService {
   async update(id: string, dto: UpdateProjectDto, userId: string) {
     const project = await this.projectRepo.findOne({
       where: { id },
-      relations: ['owner', 'manager'],
+      relations: ['owner', 'members', 'members.user'],
     });
     if (!project) throw new NotFoundException('Không tìm thấy dự án.');
 
-    if (project.owner.id !== userId && project.manager?.id !== userId)
+    const isOwner = project.owner.id === userId;
+    const isLeader = project.members.some(
+      (m) => m.user.id === userId && m.role === 'leader',
+    );
+
+    if (!isOwner && !isLeader)
       throw new ForbiddenException('Không có quyền chỉnh sửa dự án.');
 
     Object.assign(project, dto);
