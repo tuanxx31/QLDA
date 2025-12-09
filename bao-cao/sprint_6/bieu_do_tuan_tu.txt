@@ -17,119 +17,74 @@ participant ":Giao diện" as UI
 participant ":Hệ thống" as System
 participant ":Cơ sở dữ liệu" as DB
 
-' --- Người dùng hoạt động suốt quá trình ---
 activate User
 
-' --- Hiển thị danh sách nhiệm vụ theo cột (Kanban) ---
-User -> UI: 1. Mở bảng nhiệm vụ của dự án
+' === 1. Mở bảng điều khiển tiến độ ===
+User -> UI: Mở bảng điều khiển tiến độ
 activate UI
-UI -> System: 2. Yêu cầu danh sách cột và nhiệm vụ
+UI -> System: Yêu cầu dữ liệu tổng quan
 activate System
-System -> DB: 3. Truy vấn các cột và Task theo ProjectId
+System -> DB: Truy vấn dự án, cột, nhiệm vụ,\nngười thực hiện, hạn chót
 activate DB
-DB --> System: [Thành công] Danh sách cột và Task
+DB --> System: Dữ liệu thô
 deactivate DB
-System --> UI: 4. Trả dữ liệu cột và Task
+
+System -> System: Tính toán tiến độ tổng,\ntiến độ theo cột, theo người,\nvà thống kê hạn chót
+System --> UI: Trả dữ liệu đã xử lý
 deactivate System
-UI --> User: 5. Hiển thị Kanban (nhiệm vụ theo từng cột)
+UI --> User: Hiển thị bảng điều khiển tiến độ
 deactivate UI
 
-' --- Thêm nhiệm vụ mới ---
-User -> UI: 6a. Chọn "Thêm nhiệm vụ" ở một cột\nnhập tiêu đề, mô tả, hạn chót
+' === 2. Cập nhật hạn chót dự án ===
+User -> UI: Cập nhật hạn chót dự án
 activate UI
-UI -> System: 6b. Gửi yêu cầu tạo Task mới cho cột
+UI -> System: Gửi yêu cầu cập nhật deadline
 activate System
-System -> DB: 6c. Thêm bản ghi Task mới\n(gồm columnId, title, description, dueDate, priority)
+System -> DB: Cập nhật deadline vào Project
 activate DB
-DB --> System: [Thành công]
+DB --> System
 deactivate DB
-System --> UI: 6d. Trả kết quả tạo Task thành công
+
+System -> System: Kiểm tra dự án quá hạn
+System --> UI: Trả trạng thái dự án
 deactivate System
-UI --> User: 6e. Hiển thị Task mới trên cột tương ứng
+UI --> User: Hiển thị trạng thái mới
 deactivate UI
 
-' --- Gán nhãn cho nhiệm vụ ---
-User -> UI: 7a. Mở popup nhãn của một Task\nchọn nhãn cần gán
+' === 3. Xem thống kê (gộp thành 1 nhóm) ===
+User -> UI: Xem thống kê tiến độ\n(tổng, theo cột, theo người, hạn chót)
 activate UI
-UI -> System: 7b. Gửi yêu cầu gán nhãn cho Task
+UI -> System: Yêu cầu thống kê tương ứng
 activate System
-System -> DB: 7c. Cập nhật bảng trung gian Task-Label\n(thêm hoặc xoá bản ghi)
+System -> DB: Truy vấn nhiệm vụ + dữ liệu liên quan
 activate DB
-DB --> System: [Thành công]
+DB --> System
 deactivate DB
-System --> UI: 7d. Trả kết quả gán nhãn
+
+System -> System: Tính toán thống kê\n- Tổng tiến độ\n- Theo cột\n- Theo người\n- Tình trạng hạn chót
+System --> UI: Trả dữ liệu thống kê
 deactivate System
-UI --> User: 7e. Cập nhật danh sách nhãn hiển thị trên Task
+UI --> User: Hiển thị biểu đồ và bảng thống kê
 deactivate UI
 
-' --- Cập nhật vị trí nhiệm vụ (kéo thả giữa các cột) ---
-User -> UI: 8a. Kéo thả một Task sang vị trí mới\n(có thể khác cột)
+' === 4. Người dùng thao tác với nhiệm vụ ===
+User -> UI: Thao tác nhiệm vụ\n(tạo / xóa / hoàn thành /\nđổi người / đổi hạn chót /\nkéo thả cột)
 activate UI
-UI -> System: 8b. Gửi vị trí mới của Task\n(columnId mới, sortOrder mới)
+UI -> System: Gửi yêu cầu cập nhật nhiệm vụ
 activate System
-System -> DB: 8c. Cập nhật columnId và sortOrder\ncủa Task trong DB
+System -> DB: Cập nhật nhiệm vụ
 activate DB
-DB --> System: [Thành công]
+DB --> System
 deactivate DB
-System --> UI: 8d. Trả kết quả cập nhật vị trí
-deactivate System
-UI --> User: 8e. Hiển thị lại Kanban với vị trí Task mới
-deactivate UI
 
-' --- Xem chi tiết nhiệm vụ ---
-User -> UI: 9a. Click vào một Task để xem chi tiết
-activate UI
-UI -> System: 9b. Gửi yêu cầu lấy chi tiết Task
-activate System
-System -> DB: 9c. Truy vấn Task, nhãn, người thực hiện,\nvà thông tin khác
+System -> DB: Tính lại thống kê tiến độ dự án
 activate DB
-DB --> System: [Thành công] Thông tin chi tiết Task
+DB --> System: Dữ liệu tổng hợp mới
 deactivate DB
-System --> UI: 9d. Trả dữ liệu chi tiết Task
-deactivate System
-UI --> User: 9e. Hiển thị màn hình chi tiết nhiệm vụ
-deactivate UI
 
-' --- Gán người thực hiện cho nhiệm vụ ---
-User -> UI: 10a. Trong chi tiết nhiệm vụ\nchọn người thực hiện
-activate UI
-UI -> System: 10b. Gửi yêu cầu gán assignee cho Task
-activate System
-System -> DB: 10c. Cập nhật trường assigneeId của Task
-activate DB
-DB --> System: [Thành công]
-deactivate DB
-System --> UI: 10d. Trả kết quả gán người thực hiện
+System --> UI: Trả tiến độ đã cập nhật
 deactivate System
-UI --> User: 10e. Hiển thị người thực hiện trên Task
-deactivate UI
-
-' --- Chỉnh sửa thông tin nhiệm vụ ---
-User -> UI: 11a. Chỉnh sửa tiêu đề, mô tả, hạn chót,\nưu tiên trong chi tiết nhiệm vụ
-activate UI
-UI -> System: 11b. Gửi yêu cầu cập nhật Task
-activate System
-System -> DB: 11c. Cập nhật các trường tương ứng của Task
-activate DB
-DB --> System: [Thành công]
-deactivate DB
-System --> UI: 11d. Trả kết quả cập nhật nhiệm vụ
-deactivate System
-UI --> User: 11e. Hiển thị thông tin Task đã cập nhật
-deactivate UI
-
-' --- Xóa nhiệm vụ ---
-User -> UI: 12a. Chọn "Xóa nhiệm vụ"
-activate UI
-UI -> System: 12b. Gửi yêu cầu xóa Task
-activate System
-System -> DB: 12c. Xóa Task và các bản ghi liên quan\n(Task-Label, comment, v.v. nếu có)
-activate DB
-DB --> System: [Thành công]
-deactivate DB
-System --> UI: 12d. Trả kết quả xóa nhiệm vụ
-deactivate System
-UI --> User: 12e. Loại bỏ Task khỏi bảng Kanban
+UI --> User: Cập nhật bảng điều khiển tiến độ
 deactivate UI
 
 deactivate User
