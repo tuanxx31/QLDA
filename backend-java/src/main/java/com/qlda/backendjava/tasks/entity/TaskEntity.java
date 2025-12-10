@@ -1,5 +1,7 @@
 package com.qlda.backendjava.tasks.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.qlda.backendjava.columns.entity.ColumnEntity;
 import com.qlda.backendjava.users.entity.UserEntity;
 import jakarta.persistence.*;
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class TaskEntity {
 
     @Id
@@ -58,6 +61,7 @@ public class TaskEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", insertable = false, updatable = false)
+    @JsonIgnore
     private UserEntity creator;
 
     @Column(name = "column_id", nullable = false)
@@ -65,6 +69,7 @@ public class TaskEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "column_id", insertable = false, updatable = false)
+    @JsonIgnore
     private ColumnEntity column;
 
     @ManyToMany(fetch = FetchType.LAZY)

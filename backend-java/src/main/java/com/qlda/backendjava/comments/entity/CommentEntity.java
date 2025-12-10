@@ -1,5 +1,7 @@
 package com.qlda.backendjava.comments.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.qlda.backendjava.tasks.entity.TaskEntity;
 import com.qlda.backendjava.users.entity.UserEntity;
 import jakarta.persistence.*;
@@ -17,6 +19,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class CommentEntity {
 
     @Id
@@ -33,6 +36,7 @@ public class CommentEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @JsonIgnore
     private UserEntity user;
 
     @Column(name = "task_id", nullable = false)
@@ -40,6 +44,7 @@ public class CommentEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", insertable = false, updatable = false)
+    @JsonIgnore
     private TaskEntity task;
 
     @Column(name = "file_url", nullable = true)

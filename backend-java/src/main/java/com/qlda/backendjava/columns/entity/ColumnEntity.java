@@ -1,5 +1,7 @@
 package com.qlda.backendjava.columns.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.qlda.backendjava.projects.entity.ProjectEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,10 +10,11 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
-@Table(name = "columns")
+@Table(name = "`columns`")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ColumnEntity {
 
     @Id
@@ -23,11 +26,12 @@ public class ColumnEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "order", nullable = false)
+    @Column(name = "`order`", nullable = false)
     private Integer order = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
+    @JsonIgnore
     private ProjectEntity project;
 }
 

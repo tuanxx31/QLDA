@@ -4,7 +4,6 @@ import com.qlda.backendjava.comments.dto.CreateCommentDto;
 import com.qlda.backendjava.comments.dto.UpdateCommentDto;
 import com.qlda.backendjava.comments.entity.CommentEntity;
 import com.qlda.backendjava.comments.service.CommentService;
-import com.qlda.backendjava.common.ApiResponse;
 import com.qlda.backendjava.common.service.FileUploadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -30,48 +29,47 @@ public class CommentController {
     private final FileUploadService fileUploadService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Map<String, Object>>> findAll(
+    public ResponseEntity<Map<String, Object>> findAll(
             @PathVariable String taskId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int limit) {
         Map<String, Object> result = commentService.findAll(taskId, page, limit);
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<CommentEntity>> create(
+    public ResponseEntity<CommentEntity> create(
             @PathVariable String taskId,
             @Valid @RequestBody CreateCommentDto dto,
             Authentication authentication) {
         String userId = authentication.getName();
         CommentEntity comment = commentService.create(taskId, userId, dto);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(comment));
+        return ResponseEntity.status(HttpStatus.CREATED).body(comment);
     }
 
     @PatchMapping("/{commentId}")
-    public ResponseEntity<ApiResponse<CommentEntity>> update(
+    public ResponseEntity<CommentEntity> update(
             @PathVariable String taskId,
             @PathVariable String commentId,
             @Valid @RequestBody UpdateCommentDto dto,
             Authentication authentication) {
         String userId = authentication.getName();
         CommentEntity comment = commentService.update(commentId, userId, dto);
-        return ResponseEntity.ok(ApiResponse.success(comment));
+        return ResponseEntity.ok(comment);
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<ApiResponse<Map<String, String>>> remove(
+    public ResponseEntity<Map<String, String>> remove(
             @PathVariable String taskId,
             @PathVariable String commentId,
             Authentication authentication) {
         String userId = authentication.getName();
         Map<String, String> result = commentService.remove(commentId, userId);
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> uploadFile(
+    public ResponseEntity<Map<String, Object>> uploadFile(
             @PathVariable String taskId,
             @RequestParam("file") MultipartFile file) {
         try {
@@ -82,8 +80,7 @@ public class CommentController {
             result.put("fileUrl", fileUrl);
             result.put("filename", file.getOriginalFilename());
             result.put("size", file.getSize());
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success(result));
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (Exception e) {
             throw new com.qlda.backendjava.common.exception.BadRequestException(e.getMessage());
         }

@@ -1,5 +1,7 @@
 package com.qlda.backendjava.projects.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.qlda.backendjava.groups.entity.GroupEntity;
 import com.qlda.backendjava.users.entity.UserEntity;
 import jakarta.persistence.*;
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ProjectEntity {
 
     @Id
@@ -42,10 +45,12 @@ public class ProjectEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
+    @JsonIgnore
     private UserEntity owner;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = true)
+    @JsonIgnore
     private GroupEntity group;
 
     @Column(name = "created_at", nullable = false, updatable = false)

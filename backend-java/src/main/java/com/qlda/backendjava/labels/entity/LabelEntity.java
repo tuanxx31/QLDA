@@ -1,5 +1,7 @@
 package com.qlda.backendjava.labels.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.qlda.backendjava.projects.entity.ProjectEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,6 +14,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class LabelEntity {
 
     @Id
@@ -31,6 +34,7 @@ public class LabelEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
+    @JsonIgnore
     private ProjectEntity project;
 }
 

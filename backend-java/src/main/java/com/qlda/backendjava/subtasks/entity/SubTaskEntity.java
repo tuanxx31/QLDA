@@ -1,5 +1,7 @@
 package com.qlda.backendjava.subtasks.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.qlda.backendjava.tasks.entity.TaskEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class SubTaskEntity {
 
     @Id
@@ -40,6 +43,7 @@ public class SubTaskEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", insertable = false, updatable = false)
+    @JsonIgnore
     private TaskEntity task;
 }
 

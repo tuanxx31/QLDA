@@ -4,7 +4,6 @@ import com.qlda.backendjava.auth.dto.LoginResponse;
 import com.qlda.backendjava.auth.dto.LoginUserDto;
 import com.qlda.backendjava.auth.dto.RegisterUserDto;
 import com.qlda.backendjava.auth.service.AuthService;
-import com.qlda.backendjava.common.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,10 +29,9 @@ public class AuthController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Email đã tồn tại hoặc dữ liệu không hợp lệ")
     })
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<Map<String, String>>> register(@Valid @RequestBody RegisterUserDto dto) {
+    public ResponseEntity<Map<String, String>> register(@Valid @RequestBody RegisterUserDto dto) {
         Map<String, String> result = authService.register(dto);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(result));
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     @Operation(summary = "Đăng nhập", description = "Xác thực người dùng và trả về JWT token")
@@ -42,9 +40,9 @@ public class AuthController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Email hoặc mật khẩu không đúng")
     })
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginUserDto dto) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginUserDto dto) {
         LoginResponse result = authService.login(dto);
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return ResponseEntity.ok(result);
     }
 }
 

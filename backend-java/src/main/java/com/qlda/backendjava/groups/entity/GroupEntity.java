@@ -1,5 +1,7 @@
 package com.qlda.backendjava.groups.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.qlda.backendjava.users.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,10 +14,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "groups")
+@Table(name = "`groups`")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class GroupEntity {
 
     @Id
@@ -35,6 +38,7 @@ public class GroupEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id", nullable = false)
+    @JsonIgnore
     private UserEntity leader;
 
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)

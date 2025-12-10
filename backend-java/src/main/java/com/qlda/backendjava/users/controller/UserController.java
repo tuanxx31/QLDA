@@ -1,6 +1,5 @@
 package com.qlda.backendjava.users.controller;
 
-import com.qlda.backendjava.common.ApiResponse;
 import com.qlda.backendjava.users.dto.UpdatePasswordDto;
 import com.qlda.backendjava.users.dto.UpdateUserDto;
 import com.qlda.backendjava.users.dto.UserProfileDto;
@@ -28,47 +27,47 @@ public class UserController {
 
     @Operation(summary = "Lấy thông tin profile", description = "Lấy thông tin profile của người dùng hiện tại")
     @GetMapping("/profile")
-    public ResponseEntity<ApiResponse<UserProfileDto>> getProfile(Authentication authentication) {
+    public ResponseEntity<UserProfileDto> getProfile(Authentication authentication) {
         String userId = authentication.getName();
         UserProfileDto profile = userService.getProfile(userId);
-        return ResponseEntity.ok(ApiResponse.success(profile));
+        return ResponseEntity.ok(profile);
     }
 
     @Operation(summary = "Cập nhật profile", description = "Cập nhật thông tin profile của người dùng")
     @PutMapping("/profile")
-    public ResponseEntity<ApiResponse<Map<String, String>>> updateProfile(
+    public ResponseEntity<Map<String, String>> updateProfile(
             Authentication authentication,
             @Valid @RequestBody UpdateUserDto dto) {
         String userId = authentication.getName();
         Map<String, String> result = userService.updateProfile(userId, dto);
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "Đổi mật khẩu", description = "Thay đổi mật khẩu của người dùng hiện tại")
     @PutMapping("/change-password")
-    public ResponseEntity<ApiResponse<Map<String, String>>> updatePassword(
+    public ResponseEntity<Map<String, String>> updatePassword(
             Authentication authentication,
             @Valid @RequestBody UpdatePasswordDto dto) {
         String userId = authentication.getName();
         Map<String, String> result = userService.updatePassword(userId, dto);
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return ResponseEntity.ok(result);
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<ApiResponse<Map<String, String>>> deleteUser(Authentication authentication) {
+    public ResponseEntity<Map<String, String>> deleteUser(Authentication authentication) {
         String userId = authentication.getName();
         Map<String, String> result = userService.remove(userId);
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "Upload avatar", description = "Tải lên ảnh đại diện cho người dùng")
     @PostMapping("/avatar")
-    public ResponseEntity<ApiResponse<Map<String, String>>> uploadAvatar(
+    public ResponseEntity<Map<String, String>> uploadAvatar(
             Authentication authentication,
             @RequestParam("file") MultipartFile file) {
         String userId = authentication.getName();
         Map<String, String> result = userService.updateAvatar(userId, file);
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return ResponseEntity.ok(result);
     }
 }
 

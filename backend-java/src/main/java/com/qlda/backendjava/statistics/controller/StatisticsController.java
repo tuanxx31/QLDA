@@ -1,6 +1,5 @@
 package com.qlda.backendjava.statistics.controller;
 
-import com.qlda.backendjava.common.ApiResponse;
 import com.qlda.backendjava.statistics.dto.*;
 import com.qlda.backendjava.statistics.service.StatisticsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,46 +23,46 @@ public class StatisticsController {
     private final StatisticsService statisticsService;
 
     @GetMapping("/overview")
-    public ResponseEntity<ApiResponse<ProjectOverviewDto>> getProjectOverview(@PathVariable String projectId) {
+    public ResponseEntity<ProjectOverviewDto> getProjectOverview(@PathVariable String projectId) {
         ProjectOverviewDto overview = statisticsService.getProjectOverview(projectId);
-        return ResponseEntity.ok(ApiResponse.success(overview));
+        return ResponseEntity.ok(overview);
     }
 
     @GetMapping("/columns")
-    public ResponseEntity<ApiResponse<List<ColumnStatisticsDto>>> getColumnStatistics(@PathVariable String projectId) {
+    public ResponseEntity<List<ColumnStatisticsDto>> getColumnStatistics(@PathVariable String projectId) {
         List<ColumnStatisticsDto> statistics = statisticsService.getColumnStatistics(projectId);
-        return ResponseEntity.ok(ApiResponse.success(statistics));
+        return ResponseEntity.ok(statistics);
     }
 
     @GetMapping("/members")
-    public ResponseEntity<ApiResponse<List<MemberStatisticsDto>>> getMemberStatistics(@PathVariable String projectId) {
+    public ResponseEntity<List<MemberStatisticsDto>> getMemberStatistics(@PathVariable String projectId) {
         List<MemberStatisticsDto> statistics = statisticsService.getMemberStatistics(projectId);
-        return ResponseEntity.ok(ApiResponse.success(statistics));
+        return ResponseEntity.ok(statistics);
     }
 
     @GetMapping("/timeline")
-    public ResponseEntity<ApiResponse<List<TimelineStatisticsDto>>> getTimelineStatistics(
+    public ResponseEntity<List<TimelineStatisticsDto>> getTimelineStatistics(
             @PathVariable String projectId,
             @RequestParam(required = false, defaultValue = "day") String period,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
         List<TimelineStatisticsDto> statistics = statisticsService.getTimelineStatistics(
                 projectId, period, startDate, endDate);
-        return ResponseEntity.ok(ApiResponse.success(statistics));
+        return ResponseEntity.ok(statistics);
     }
 
     @GetMapping("/comments")
-    public ResponseEntity<ApiResponse<CommentStatisticsDto>> getCommentStatistics(
+    public ResponseEntity<CommentStatisticsDto> getCommentStatistics(
             @PathVariable String projectId,
             @RequestParam(required = false, defaultValue = "all") String filter) {
         CommentStatisticsDto statistics = statisticsService.getCommentStatistics(projectId, filter);
-        return ResponseEntity.ok(ApiResponse.success(statistics));
+        return ResponseEntity.ok(statistics);
     }
 
     @GetMapping("/deadlines")
-    public ResponseEntity<ApiResponse<DeadlineAnalyticsDto>> getDeadlineAnalytics(@PathVariable String projectId) {
+    public ResponseEntity<DeadlineAnalyticsDto> getDeadlineAnalytics(@PathVariable String projectId) {
         DeadlineAnalyticsDto analytics = statisticsService.getDeadlineAnalytics(projectId);
-        return ResponseEntity.ok(ApiResponse.success(analytics));
+        return ResponseEntity.ok(analytics);
     }
 }
 

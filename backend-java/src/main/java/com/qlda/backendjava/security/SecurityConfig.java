@@ -37,6 +37,10 @@ public class SecurityConfig {
                 .logout(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                org.springframework.http.HttpMethod.OPTIONS,
+                                "/**"
+                        ).permitAll()
+                        .requestMatchers(
                                 "/api/auth/**",
                                 "/uploads/**",
                                 "/swagger-ui/**",

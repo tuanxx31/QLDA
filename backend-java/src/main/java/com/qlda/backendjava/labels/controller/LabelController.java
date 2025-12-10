@@ -1,6 +1,5 @@
 package com.qlda.backendjava.labels.controller;
 
-import com.qlda.backendjava.common.ApiResponse;
 import com.qlda.backendjava.labels.dto.CreateLabelDto;
 import com.qlda.backendjava.labels.dto.UpdateLabelDto;
 import com.qlda.backendjava.labels.entity.LabelEntity;
@@ -27,42 +26,41 @@ public class LabelController {
     private final LabelService labelService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Object>> create(@Valid @RequestBody CreateLabelDto dto) {
+    public ResponseEntity<Object> create(@Valid @RequestBody CreateLabelDto dto) {
         Object result = labelService.create(dto);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(result));
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<LabelEntity>>> findAll() {
+    public ResponseEntity<List<LabelEntity>> findAll() {
         List<LabelEntity> labels = labelService.findAll();
-        return ResponseEntity.ok(ApiResponse.success(labels));
+        return ResponseEntity.ok(labels);
     }
 
     @GetMapping("/project/{projectId}")
-    public ResponseEntity<ApiResponse<List<LabelEntity>>> findByProject(@PathVariable String projectId) {
+    public ResponseEntity<List<LabelEntity>> findByProject(@PathVariable String projectId) {
         List<LabelEntity> labels = labelService.findByProject(projectId);
-        return ResponseEntity.ok(ApiResponse.success(labels));
+        return ResponseEntity.ok(labels);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<LabelEntity>> findOne(@PathVariable String id) {
+    public ResponseEntity<LabelEntity> findOne(@PathVariable String id) {
         LabelEntity label = labelService.findOne(id);
-        return ResponseEntity.ok(ApiResponse.success(label));
+        return ResponseEntity.ok(label);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<LabelEntity>> update(
+    public ResponseEntity<LabelEntity> update(
             @PathVariable String id,
             @Valid @RequestBody UpdateLabelDto dto) {
         LabelEntity label = labelService.update(id, dto);
-        return ResponseEntity.ok(ApiResponse.success(label));
+        return ResponseEntity.ok(label);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Map<String, String>>> remove(@PathVariable String id) {
+    public ResponseEntity<Map<String, String>> remove(@PathVariable String id) {
         Map<String, String> result = labelService.remove(id);
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return ResponseEntity.ok(result);
     }
 }
 

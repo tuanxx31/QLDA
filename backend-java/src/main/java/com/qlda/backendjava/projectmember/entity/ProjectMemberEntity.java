@@ -1,5 +1,7 @@
 package com.qlda.backendjava.projectmember.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.qlda.backendjava.projects.entity.ProjectEntity;
 import com.qlda.backendjava.users.entity.UserEntity;
 import jakarta.persistence.*;
@@ -17,6 +19,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ProjectMemberEntity {
 
     @Id
@@ -27,6 +30,7 @@ public class ProjectMemberEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
+    @JsonIgnore
     private ProjectEntity project;
 
     @ManyToOne(fetch = FetchType.LAZY)

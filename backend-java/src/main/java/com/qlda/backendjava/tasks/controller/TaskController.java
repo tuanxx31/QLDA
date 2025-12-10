@@ -1,6 +1,5 @@
 package com.qlda.backendjava.tasks.controller;
 
-import com.qlda.backendjava.common.ApiResponse;
 import com.qlda.backendjava.tasks.dto.*;
 import com.qlda.backendjava.tasks.entity.TaskEntity;
 import com.qlda.backendjava.tasks.service.TaskService;
@@ -28,130 +27,128 @@ public class TaskController {
     private final TaskService taskService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<TaskEntity>> findOne(@PathVariable String id) {
+    public ResponseEntity<TaskEntity> findOne(@PathVariable String id) {
         TaskEntity task = taskService.findOne(id);
-        return ResponseEntity.ok(ApiResponse.success(task));
+        return ResponseEntity.ok(task);
     }
 
     @GetMapping("/{id}/assignees")
-    public ResponseEntity<ApiResponse<List<com.qlda.backendjava.users.entity.UserEntity>>> getAssignees(@PathVariable String id) {
+    public ResponseEntity<List<com.qlda.backendjava.users.entity.UserEntity>> getAssignees(@PathVariable String id) {
         List<com.qlda.backendjava.users.entity.UserEntity> assignees = taskService.getAssignees(id);
-        return ResponseEntity.ok(ApiResponse.success(assignees));
+        return ResponseEntity.ok(assignees);
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<TaskEntity>> updateStatus(
+    public ResponseEntity<TaskEntity> updateStatus(
             @PathVariable String id,
             @RequestBody Map<String, String> body,
             Authentication authentication) {
         String userId = authentication.getName();
         String status = body.get("status");
         TaskEntity task = taskService.updateStatus(id, status, userId);
-        return ResponseEntity.ok(ApiResponse.success(task));
+        return ResponseEntity.ok(task);
     }
 
     @GetMapping("/column/{columnId}")
-    public ResponseEntity<ApiResponse<List<TaskEntity>>> findByColumn(@PathVariable String columnId) {
+    public ResponseEntity<List<TaskEntity>> findByColumn(@PathVariable String columnId) {
         List<TaskEntity> tasks = taskService.findByColumn(columnId);
-        return ResponseEntity.ok(ApiResponse.success(tasks));
+        return ResponseEntity.ok(tasks);
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<TaskEntity>> create(
+    public ResponseEntity<TaskEntity> create(
             @Valid @RequestBody CreateTaskDto dto,
             Authentication authentication) {
         String creatorId = authentication.getName();
         TaskEntity task = taskService.create(dto, creatorId);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(task));
+        return ResponseEntity.status(HttpStatus.CREATED).body(task);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<TaskEntity>> update(
+    public ResponseEntity<TaskEntity> update(
             @PathVariable String id,
             @Valid @RequestBody UpdateTaskDto dto,
             Authentication authentication) {
         String userId = authentication.getName();
         TaskEntity task = taskService.update(id, dto, userId);
-        return ResponseEntity.ok(ApiResponse.success(task));
+        return ResponseEntity.ok(task);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Map<String, String>>> remove(
+    public ResponseEntity<Map<String, String>> remove(
             @PathVariable String id,
             Authentication authentication) {
         String userId = authentication.getName();
         Map<String, String> result = taskService.remove(id, userId);
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return ResponseEntity.ok(result);
     }
 
     @PatchMapping("/{id}/assignees")
-    public ResponseEntity<ApiResponse<TaskEntity>> assignUsers(
+    public ResponseEntity<TaskEntity> assignUsers(
             @PathVariable String id,
             @Valid @RequestBody AssignUsersDto dto,
             Authentication authentication) {
         String userId = authentication.getName();
         TaskEntity task = taskService.assignUsers(id, dto, userId);
-        return ResponseEntity.ok(ApiResponse.success(task));
+        return ResponseEntity.ok(task);
     }
 
     @DeleteMapping("/{id}/assignees")
-    public ResponseEntity<ApiResponse<TaskEntity>> unassignUsers(
+    public ResponseEntity<TaskEntity> unassignUsers(
             @PathVariable String id,
             @Valid @RequestBody UnassignUsersDto dto,
             Authentication authentication) {
         String userId = authentication.getName();
         TaskEntity task = taskService.unassignUsers(id, dto, userId);
-        return ResponseEntity.ok(ApiResponse.success(task));
+        return ResponseEntity.ok(task);
     }
 
     @PatchMapping("/{id}/labels")
-    public ResponseEntity<ApiResponse<TaskEntity>> assignLabels(
+    public ResponseEntity<TaskEntity> assignLabels(
             @PathVariable String id,
             @Valid @RequestBody AssignLabelsDto dto,
             Authentication authentication) {
         String userId = authentication.getName();
         TaskEntity task = taskService.assignLabels(id, dto, userId);
-        return ResponseEntity.ok(ApiResponse.success(task));
+        return ResponseEntity.ok(task);
     }
 
     @DeleteMapping("/{id}/labels")
-    public ResponseEntity<ApiResponse<TaskEntity>> unassignLabels(
+    public ResponseEntity<TaskEntity> unassignLabels(
             @PathVariable String id,
             @Valid @RequestBody AssignLabelsDto dto,
             Authentication authentication) {
         String userId = authentication.getName();
         TaskEntity task = taskService.unassignLabels(id, dto, userId);
-        return ResponseEntity.ok(ApiResponse.success(task));
+        return ResponseEntity.ok(task);
     }
 
     @PatchMapping("/{id}/position")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> updatePosition(
+    public ResponseEntity<Map<String, Object>> updatePosition(
             @PathVariable String id,
             @RequestBody Map<String, String> body) {
         String prevTaskId = body.get("prevTaskId");
         String nextTaskId = body.get("nextTaskId");
         String columnId = body.get("columnId");
         Map<String, Object> result = taskService.updatePosition(id, prevTaskId, nextTaskId, columnId);
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/{id}/subtasks")
-    public ResponseEntity<ApiResponse<SubTaskEntity>> addSubTask(
+    public ResponseEntity<SubTaskEntity> addSubTask(
             @PathVariable String id,
             @RequestBody Map<String, String> body) {
         String title = body.get("title");
         SubTaskEntity subTask = taskService.addSubTask(id, title);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(subTask));
+        return ResponseEntity.status(HttpStatus.CREATED).body(subTask);
     }
 
     @PatchMapping("/subtasks/{id}")
-    public ResponseEntity<ApiResponse<TaskEntity>> updateSubTask(
+    public ResponseEntity<TaskEntity> updateSubTask(
             @PathVariable String id,
             @RequestBody Map<String, Object> update) {
         TaskEntity task = taskService.updateSubTask(id, update);
-        return ResponseEntity.ok(ApiResponse.success(task));
+        return ResponseEntity.ok(task);
     }
 }
 

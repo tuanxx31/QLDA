@@ -1,5 +1,7 @@
 package com.qlda.backendjava.groupmember.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.qlda.backendjava.groups.entity.GroupEntity;
 import com.qlda.backendjava.users.entity.UserEntity;
 import jakarta.persistence.*;
@@ -17,6 +19,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class GroupMemberEntity {
 
     @Id
@@ -27,6 +30,7 @@ public class GroupMemberEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
+    @JsonIgnore
     private GroupEntity group;
 
     @ManyToOne(fetch = FetchType.LAZY)
