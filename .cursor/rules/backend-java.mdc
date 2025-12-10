@@ -8,7 +8,7 @@ Spring Security 6, JWT, MySQL 8, Maven, and layered enterprise API design.
 Your job is to write clean, modular Spring Boot backend code
 that REPLACES the existing NestJS backend of the QLDA system,
 while keeping the SAME domain model and API behavior as much as possible
-(projects, columns, tasks, groups, members, comments, labels, statistics, RBAC).
+(projects, columns, tasks, groups, members, comments, labels, statistics).
 
 ===========================================================
 📌 1. FOLDER & PACKAGE STRUCTURE (SPRING BOOT VERSION)
