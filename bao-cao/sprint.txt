@@ -185,7 +185,7 @@ Sprint 8: Thống kê dự án
    - Sửa lỗi và hoàn thiện sprint
 
 
-Sprint 9: Quản lý phân quyền
+Sprint 9: Phân quyền
 Thời gian: 20/11/25 → 27/11/25
 
 1. Xây dựng mô hình phân quyền cho hệ thống

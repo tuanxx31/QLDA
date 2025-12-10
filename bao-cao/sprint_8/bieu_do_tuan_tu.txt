@@ -17,136 +17,134 @@ participant ":Giao diện" as UI
 participant ":Hệ thống" as System
 participant ":Cơ sở dữ liệu" as DB
 
-' --- Người dùng hoạt động suốt quá trình ---
 activate User
 
 ' === 1. Mở trang Dashboard thống kê dự án ===
-User -> UI: 1. Mở trang Dashboard thống kê dự án
+User -> UI: 1. Mở trang Dashboard thống kê
 activate UI
 UI -> System: 2. Yêu cầu dữ liệu thống kê dự án
 activate System
-System -> DB: 3. Truy vấn dữ liệu thô\n(Project, Column, Task, Member, Comment)
+System -> DB: 3. Lấy dữ liệu dự án, cột, nhiệm vụ, thành viên và bình luận
 activate DB
-DB --> System: [Thành công] Dữ liệu thô
+DB --> System: Dữ liệu thô
 deactivate DB
 
-System -> System: 4. Tính toán các thống kê:
-System -> System: 4.1 Thống kê tổng quan (số cột,\n số nhiệm vụ, thành viên, bình luận)
-System -> System: 4.2 Thống kê nhiệm vụ theo trạng thái\n(todo / doing / done)
-System -> System: 4.3 Thống kê xu hướng nhiệm vụ theo thời gian\n(tạo mới, hoàn thành theo ngày/tuần/tháng)
-System -> System: 4.4 Thống kê hiệu suất thành viên\n(số nhiệm vụ hoàn thành, mức độ tham gia)
-System -> System: 4.5 Thống kê hoạt động bình luận\n(tổng số, theo task, theo thành viên, top task)
-System -> System: 4.6 Thống kê phân bổ công việc\n(theo loại, mức độ ưu tiên, theo cột, theo thành viên)
-System -> System: 4.7 Thống kê chất lượng hoàn thành\n(tỷ lệ đúng hạn / trễ hạn)
-
-System --> UI: 5. Trả dữ liệu thống kê tổng hợp\n(overview, timeline, performance, comment,\nworkload, completion quality)
+System -> System: 4. Tính toán thống kê\n(tổng quan, trạng thái nhiệm vụ,\nxu hướng, hiệu suất, bình luận,\nphân bổ công việc, chất lượng hoàn thành)
+System --> UI: 5. Trả dữ liệu thống kê đã tổng hợp
 deactivate System
-UI --> User: 6. Hiển thị Dashboard thống kê dự án\n(thẻ thống kê, biểu đồ, bảng)
+UI --> User: 6. Hiển thị Dashboard thống kê
 deactivate UI
 
-' === 2. Xem chi tiết thống kê tổng quan ===
-User -> UI: 7a. Xem khu vực thống kê tổng quan
+
+' === 2. Xem thống kê tổng quan ===
+User -> UI: 7. Chọn khu vực thống kê tổng quan
 activate UI
-UI -> System: 7b. Yêu cầu làm mới thống kê tổng quan (nếu cần)
+UI -> System: 8. Yêu cầu dữ liệu tổng quan
 activate System
-System -> DB: 7c. Thống kê lại tổng số cột,\n nhiệm vụ, thành viên, bình luận
+System -> DB: 9. Thống kê số cột, nhiệm vụ, thành viên, bình luận
 activate DB
-DB --> System: [Thành công]
+DB --> System: Thống kê tổng quan
 deactivate DB
-System --> UI: 7d. Trả dữ liệu overview
+System --> UI: 10. Trả dữ liệu tổng quan
 deactivate System
-UI --> User: 7e. Hiển thị thẻ thống kê tổng quan
+UI --> User: 11. Hiển thị thẻ thống kê tổng quan
 deactivate UI
 
-' === 3. Xem thống kê xu hướng nhiệm vụ theo thời gian ===
-User -> UI: 8a. Chọn xem thống kê xu hướng nhiệm vụ\n(ví dụ: lọc theo tuần/tháng)
+
+' === 3. Xem thống kê xu hướng nhiệm vụ ===
+User -> UI: 12. Chọn xem xu hướng nhiệm vụ
 activate UI
-UI -> System: 8b. Gửi khoảng thời gian và loại thống kê\n(theo ngày/tuần/tháng)
+UI -> System: 13. Yêu cầu thống kê theo mốc thời gian
 activate System
-System -> DB: 8c. Thống kê số nhiệm vụ tạo mới\nvà số nhiệm vụ hoàn thành theo mốc thời gian
+System -> DB: 14. Lấy số nhiệm vụ tạo mới và hoàn thành theo thời gian
 activate DB
-DB --> System: [Thành công] Dữ liệu timeline
+DB --> System: Dữ liệu xu hướng
 deactivate DB
-System --> UI: 8d. Trả dữ liệu cho biểu đồ đường
+System --> UI: 15. Gửi dữ liệu biểu đồ xu hướng
 deactivate System
-UI --> User: 8e. Hiển thị line chart xu hướng nhiệm vụ
+UI --> User: 16. Hiển thị biểu đồ xu hướng nhiệm vụ
 deactivate UI
+
 
 ' === 4. Xem thống kê hiệu suất thành viên ===
-User -> UI: 9a. Chọn xem thống kê hiệu suất thành viên
+User -> UI: 17. Chọn xem hiệu suất thành viên
 activate UI
-UI -> System: 9b. Yêu cầu thống kê hiệu suất
+UI -> System: 18. Yêu cầu dữ liệu hiệu suất
 activate System
-System -> DB: 9c. Thống kê số nhiệm vụ hoàn thành\nvà mức độ hoạt động của từng thành viên
+System -> DB: 19. Lấy số nhiệm vụ hoàn thành và mức độ hoạt động theo thành viên
 activate DB
-DB --> System: [Thành công] Dữ liệu hiệu suất
+DB --> System: Dữ liệu hiệu suất
 deactivate DB
-System --> UI: 9d. Trả dữ liệu cho biểu đồ so sánh
+System --> UI: 20. Trả dữ liệu biểu đồ hiệu suất
 deactivate System
-UI --> User: 9e. Hiển thị bar chart hiệu suất thành viên
+UI --> User: 21. Hiển thị biểu đồ so sánh hiệu suất
 deactivate UI
+
 
 ' === 5. Xem thống kê hoạt động bình luận ===
-User -> UI: 10a. Chọn xem thống kê hoạt động bình luận
+User -> UI: 22. Chọn xem thống kê bình luận
 activate UI
-UI -> System: 10b. Yêu cầu dữ liệu bình luận thống kê
+UI -> System: 23. Yêu cầu dữ liệu bình luận
 activate System
-System -> DB: 10c. Thống kê tổng số bình luận,\ntheo từng nhiệm vụ, theo từng thành viên,\nvà top nhiệm vụ có nhiều bình luận
+System -> DB: 24. Lấy tổng số bình luận,\ntheo nhiệm vụ, theo thành viên, top nhiệm vụ
 activate DB
-DB --> System: [Thành công] Dữ liệu comment analytics
+DB --> System: Dữ liệu bình luận
 deactivate DB
-System --> UI: 10d. Trả dữ liệu bảng và biểu đồ bình luận
+System --> UI: 25. Gửi dữ liệu thống kê bình luận
 deactivate System
-UI --> User: 10e. Hiển thị bảng + biểu đồ hoạt động bình luận
+UI --> User: 26. Hiển thị bảng & biểu đồ bình luận
 deactivate UI
+
 
 ' === 6. Xem thống kê phân bổ công việc ===
-User -> UI: 11a. Chọn xem thống kê phân bổ công việc
+User -> UI: 27. Chọn xem thống kê phân bổ công việc
 activate UI
-UI -> System: 11b. Yêu cầu thống kê phân bổ\n(theo loại, ưu tiên, cột, thành viên)
+UI -> System: 28. Yêu cầu dữ liệu phân bổ
 activate System
-System -> DB: 11c. Thống kê số nhiệm vụ theo từng nhóm\n(loại, ưu tiên, cột, thành viên)
+System -> DB: 29. Thống kê nhiệm vụ theo loại,\nưu tiên, cột và theo thành viên
 activate DB
-DB --> System: [Thành công] Dữ liệu phân bổ
+DB --> System: Dữ liệu phân bổ công việc
 deactivate DB
-System --> UI: 11d. Trả dữ liệu cho biểu đồ phân bổ\n(pie chart / bar chart)
+System --> UI: 30. Trả dữ liệu biểu đồ phân bổ
 deactivate System
-UI --> User: 11e. Hiển thị biểu đồ phân bổ công việc
+UI --> User: 31. Hiển thị biểu đồ phân bổ công việc
 deactivate UI
+
 
 ' === 7. Xem thống kê chất lượng hoàn thành ===
-User -> UI: 12a. Chọn xem thống kê chất lượng hoàn thành
+User -> UI: 32. Chọn xem chất lượng hoàn thành
 activate UI
-UI -> System: 12b. Yêu cầu thống kê đúng hạn / trễ hạn
+UI -> System: 33. Yêu cầu dữ liệu đúng hạn / trễ hạn
 activate System
-System -> DB: 12c. Thống kê số nhiệm vụ\nhoàn thành đúng hạn và trễ hạn
+System -> DB: 34. Thống kê nhiệm vụ hoàn thành đúng hạn và trễ hạn
 activate DB
-DB --> System: [Thành công]
+DB --> System: Dữ liệu chất lượng hoàn thành
 deactivate DB
-System -> System: 12d. Tính tỷ lệ phần trăm\nđúng hạn / trễ hạn ở cấp dự án
-System --> UI: 12e. Trả dữ liệu chất lượng hoàn thành
+
+System --> UI: 35. Trả dữ liệu biểu đồ chất lượng hoàn thành
 deactivate System
-UI --> User: 12f. Hiển thị biểu đồ và tỷ lệ tổng hợp
+UI --> User: 36. Hiển thị biểu đồ chất lượng hoàn thành
 deactivate UI
 
-' === 8. Cập nhật Dashboard khi dữ liệu dự án thay đổi ===
-User -> UI: 13a. Thực hiện các thao tác làm thay đổi dữ liệu\n(ví dụ: tạo/xóa/cập nhật nhiệm vụ, bình luận, thành viên)
+
+' === 8. Dashboard cập nhật khi dữ liệu thay đổi ===
+User -> UI: 37. Thay đổi dữ liệu dự án\n(tạo/xóa/sửa nhiệm vụ, bình luận, thành viên)
 activate UI
-UI -> System: 13b. Gửi yêu cầu cập nhật dữ liệu dự án
+UI -> System: 38. Gửi yêu cầu cập nhật dữ liệu
 activate System
-System -> DB: 13c. Cập nhật dữ liệu liên quan trong DB
+System -> DB: 39. Ghi thay đổi vào cơ sở dữ liệu
 activate DB
-DB --> System: [Thành công]
+DB --> System: Đã cập nhật dữ liệu
 deactivate DB
 
-System -> DB: 13d. Tính lại các thống kê cần thiết\n(overview, timeline, hiệu suất, bình luận,\nphân bổ, chất lượng hoàn thành)
+System -> DB: 40. Tính lại thống kê
 activate DB
-DB --> System: [Thành công] Dữ liệu thống kê mới
+DB --> System: Dữ liệu thống kê mới
 deactivate DB
 
-System --> UI: 13e. Trả dữ liệu thống kê cập nhật
+System --> UI: 41. Gửi dữ liệu thống kê mới
 deactivate System
-UI --> User: 13f. Cập nhật lại Dashboard thống kê dự án
+UI --> User: 42. Làm mới Dashboard thống kê dự án
 deactivate UI
 
 deactivate User

@@ -1,5 +1,5 @@
 ---
-alwaysApply: true
+alwaysApply: false
 ---
 You are an expert in modern React (React 19) and TypeScript, specialized in:
 Ant Design 5, Pro Components, TanStack React Query 5, React Router v7,

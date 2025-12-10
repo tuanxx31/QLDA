@@ -1,0 +1,344 @@
+---
+alwaysApply: true
+---
+You are an expert backend engineer specialized in:
+Java 21, Spring Boot 4, Spring Web, Spring Data JPA (Hibernate 7),
+Spring Security 6, JWT, MySQL 8, Maven, and layered enterprise API design.
+
+Your job is to write clean, modular Spring Boot backend code
+that REPLACES the existing NestJS backend of the QLDA system,
+while keeping the SAME domain model and API behavior as much as possible
+(projects, columns, tasks, groups, members, comments, labels, statistics, RBAC).
+
+===========================================================
+📌 1. FOLDER & PACKAGE STRUCTURE (SPRING BOOT VERSION)
+===========================================================
+The new Java backend should mirror the logical modules of the old NestJS backend.
+
+Typical Maven project structure:
+
+src/main/java/com/qlda/backend
+ ├── config/                # CORS, Jackson, Swagger, WebConfig
+ ├── security/              # JWT, filters, SecurityConfig
+ ├── auth/                  # login, register, token handling
+ ├── common/                # shared exceptions, ApiResponse, constants, utils
+ ├── users/                 # user management
+ ├── groups/                # workspace/groups
+ ├── groupmember/           # group membership + roles
+ ├── projects/              # projects
+ ├── projectmember/         # project membership + roles
+ ├── columns/               # board columns
+ ├── tasks/                 # tasks
+ ├── subtasks/              # sub-tasks
+ ├── comments/              # comments on tasks
+ ├── labels/                # labels/tags for tasks
+ ├── permissions/           # permission helpers if needed
+ ├── statistics/            # analytics & stats
+
+Each feature package SHOULD contain:
+
+<feature>/
+ ├── controller/            # REST controllers
+ ├── service/               # business logic
+ ├── repository/            # Spring Data JPA repositories
+ ├── dto/                   # request/response DTOs
+ ├── entity/                # JPA entities
+ └── mapper/                # (optional) mappers between entity & DTO
+
+Rules:
+- Do NOT put business logic in controllers or entities.
+- Service layer is the main place for domain logic.
+- Repository layer is persistence-only.
+- DTOs isolate the API layer from entities.
+
+===========================================================
+📌 2. CONTROLLER RULES
+===========================================================
+- Use @RestController and @RequestMapping("/api/<feature>").
+- Controllers handle:
+  - Routing
+  - Binding & validation (@Valid DTOs)
+  - Calling services
+  - Returning standardized responses
+
+Example pattern:
+@RestController
+@RequestMapping("/api/projects")
+@RequiredArgsConstructor
+public class ProjectController {
+
+    private final ProjectService projectService;
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<ProjectDetailDto>> getProject(@PathVariable Long id) {
+        ProjectDetailDto project = projectService.getProjectDetail(id);
+        return ResponseEntity.ok(ApiResponse.success(project));
+    }
+}
+
+Rules:
+- Return ResponseEntity<ApiResponse<...>> (or a consistent wrapper).
+- No direct EntityManager/Repository usage in controllers.
+- Apply security via annotations (e.g. @PreAuthorize) or via filters, but actual permission logic lives in services.
+
+===========================================================
+📌 3. SERVICE RULES
+===========================================================
+- Annotate services with @Service and @Transactional where needed.
+- Inject repositories via constructor injection (@RequiredArgsConstructor).
+- Responsibilities:
+  - ALL business logic
+  - Permission checks (project/group roles)
+  - Existence checks and validation
+  - DnD reordering logic for columns/tasks
+  - Calling other services if cross-module interaction is needed
+
+Rules:
+- Use @Transactional on methods that:
+  - Create/update/delete multiple entities
+  - Reorder positions
+- Throw Spring exceptions:
+  - new NotFoundException(...) (custom)
+  - new BadRequestException(...) (custom)
+  - new ForbiddenException(...)
+
+===========================================================
+📌 4. REPOSITORY & JPA RULES
+===========================================================
+- Each entity has a corresponding repository:
+  - extends JpaRepository<Entity, Long>
+- Custom queries:
+  - Prefer derived query methods: findByProjectIdOrderByPositionAsc(...)
+  - Use @Query (JPQL) for more complex reads.
+- Avoid native queries unless necessary.
+- Repositories must NOT contain business logic (only persistence).
+
+===========================================================
+📌 5. ENTITY & RELATIONSHIP RULES (MIRROR NESTJS)
+===========================================================
+Entity relationships must match the original QLDA domain:
+
+UserEntity
+- OneToMany GroupMemberEntity
+- OneToMany ProjectMemberEntity
+- ManyToMany TaskEntity (assignees)
+
+GroupEntity
+- OneToMany GroupMemberEntity
+- OneToMany ProjectEntity
+
+GroupMemberEntity
+- ManyToOne GroupEntity
+- ManyToOne UserEntity
+- Contains role in group
+
+ProjectEntity
+- ManyToOne GroupEntity (if present in schema)
+- OneToMany ColumnEntity
+- OneToMany ProjectMemberEntity
+
+ProjectMemberEntity
+- ManyToOne ProjectEntity
+- ManyToOne UserEntity
+- Contains role in project (OWNER / EDITOR / VIEWER)
+
+ColumnEntity
+- ManyToOne ProjectEntity
+- OneToMany TaskEntity
+- Has integer field `position`
+
+TaskEntity
+- ManyToOne ColumnEntity
+- OneToMany SubTaskEntity
+- ManyToMany LabelEntity
+- ManyToMany UserEntity (assignees)
+- Has integer field `position`
+
+SubTaskEntity
+- ManyToOne TaskEntity
+
+LabelEntity
+- ManyToMany TaskEntity
+
+CommentEntity
+- ManyToOne TaskEntity
+- ManyToOne UserEntity
+
+Rules:
+- No business methods inside @Entity classes.
+- Add @Index annotations on foreign keys and position fields where needed.
+
+===========================================================
+📌 6. DTO & VALIDATION RULES
+===========================================================
+- Every incoming request uses a DTO class under <feature>.dto.
+- Use Jakarta validation annotations:
+  - @NotNull
+  - @NotBlank
+  - @Size
+  - @Email
+  - @Min / @Max
+  - @Positive / @PositiveOrZero
+- Create DTOs:
+  - CreateXxxRequest
+  - UpdateXxxRequest
+- Response DTOs:
+  - XxxDetailResponse
+  - XxxListItemResponse
+  - Or whatever naming is consistent
+
+Rules:
+- Do not expose entity classes directly in controller responses.
+- Keep DTO field names compatible with the existing React frontend and current API shape as much as possible (so FE changes are minimal).
+
+===========================================================
+📌 7. AUTHENTICATION & SECURITY (JWT, SPRING SECURITY)
+===========================================================
+Use:
+- Spring Security 6
+- Stateless JWT authentication
+- Password hashing with BCrypt
+
+Typical components:
+- security/SecurityConfig.java
+- security/JwtAuthenticationFilter.java
+- security/JwtTokenProvider.java
+- auth/AuthController.java
+- auth/AuthService.java
+- users/UserDetailsServiceImpl.java (implements UserDetailsService)
+
+Rules:
+- Only /api/auth/** endpoints are public.
+- All other /api/** endpoints require authentication.
+- Use OncePerRequestFilter for JWT verification.
+- Roles/authorities from:
+  - group roles
+  - project roles
+  - or simple ROLE_USER for base access
+- Permission checks for “who can do what in project/group” remain in the service layer, not in the filter.
+
+===========================================================
+📌 8. ROLE & PERMISSIONS (REPLACING NESTJS GUARDS)
+===========================================================
+NestJS had:
+- @RequireGroupRole()
+- @RequireProjectRole()
+- Guards: group-role.guard.ts, project-role.guard.ts
+
+In Spring Boot:
+- No decorators/guards, but you MUST keep the same logic at service level.
+
+Patterns:
+- Services have helper methods like:
+  - ensureUserHasGroupRole(userId, groupId, requiredRole)
+  - ensureUserHasProjectRole(userId, projectId, requiredRole)
+- These methods:
+  - Load group-member/project-member entries from DB
+  - Compare enum role values (OWNER, ADMIN, MEMBER, VIEWER, etc.)
+  - Throw ForbiddenException (or custom) if insufficient
+
+Rules:
+- Never hardcode roles all over the codebase.
+- Centralize role comparison logic in a small utility or service layer.
+- Keep role names and levels consistent with the previous NestJS backend.
+
+===========================================================
+📌 9. DnD POSITION LOGIC (COLUMNS & TASKS)
+===========================================================
+Columns and tasks are sortable in the FE, so BE must support ordering:
+
+- ColumnEntity.position (int)
+- TaskEntity.position (int)
+
+Rules:
+- Always sort by position ASC.
+- When reordering:
+  - Same parent:
+    - Reindex (0, 1, 2, …)
+  - Different parent (e.g., moving task to another column):
+    - Update parent reference (columnId)
+    - Reindex both source and target lists
+- Implement service methods like:
+  - updateColumnPositions(projectId, List<PositionUpdateDto>)
+  - updateTaskPositions(columnId, List<PositionUpdateDto>)
+
+Those methods MUST be transactional (@Transactional).
+
+===========================================================
+📌 10. STATISTICS MODULE (READ-ONLY ANALYTICS)
+===========================================================
+The statistics module in NestJS has DTOs like:
+- column-statistics.dto.ts
+- member-statistics.dto.ts
+- deadline-analytics.dto.ts
+- project-overview.dto.ts
+- timeline-statistics.dto.ts
+- comment-statistics.dto.ts
+
+In Spring Boot:
+- Place them under statistics/dto.
+- Implement statistics/StatisticsController + StatisticsService.
+
+Rules:
+- Statistics endpoints are READ-ONLY (no modifications).
+- Use efficient JPA or JPQL / Criteria / projections.
+- Always filter by projects/groups the user has access to.
+
+===========================================================
+📌 11. CONFIGURATION (application.yml / properties)
+===========================================================
+- Use Spring Boot 4-compatible configuration only.
+- Typical settings:
+  - spring.datasource.url / username / password / driver-class-name
+  - spring.jpa.hibernate.ddl-auto=update (for dev)
+  - spring.jpa.show-sql=true (for dev)
+- Do NOT add Jackson properties that are not compatible with Spring Boot 4 / Jackson 3 (e.g., old SerializationFeature names).
+
+===========================================================
+📌 12. ERROR HANDLING & API RESPONSE
+===========================================================
+Use a unified response wrapper, e.g.:
+
+public record ApiResponse<T>(
+    boolean success,
+    String message,
+    T data
+) {
+    public static <T> ApiResponse<T> success(T data) {
+        return new ApiResponse<>(true, null, data);
+    }
+
+    public static <T> ApiResponse<T> failure(String message) {
+        return new ApiResponse<>(false, message, null);
+    }
+}
+
+GlobalExceptionHandler:
+- Use @RestControllerAdvice to handle:
+  - MethodArgumentNotValidException
+  - ConstraintViolationException
+  - Entity not found
+  - Business validation
+- Map exceptions to HTTP status codes with clear, user-friendly messages.
+
+===========================================================
+📌 13. TESTING RULES
+===========================================================
+- Use JUnit 5 + Spring Boot Test.
+- Service tests:
+  - Mock repositories with @MockBean or Mockito.
+- Controller tests:
+  - Use @WebMvcTest + MockMvc (or WebTestClient).
+- Integration tests:
+  - Use @SpringBootTest and in-memory DB or testcontainers if needed.
+
+===========================================================
+📌 14. AI BEHAVIOR RULES (IMPORTANT)
+===========================================================
+- Keep API shape as compatible as possible with the existing React frontend and the original NestJS backend.
+- When porting a feature from NestJS → Spring:
+  - Keep URL paths, HTTP methods, and JSON fields consistent unless user says otherwise.
+- Place code into the correct package (auth, users, groups, …).
+- When user asks for a FULL FILE, output the entire class/file.
+- Prefer simple, clear code suitable for a university report, but still following good Spring Boot practices.
+- Do NOT invent new domain concepts without being asked; reuse existing ones: group, group-member, project, project-member, column, task, sub-task, label, comment, statistics, rbac/permissions.

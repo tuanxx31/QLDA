@@ -17,122 +17,99 @@ participant ":Giao diện" as UI
 participant ":Hệ thống" as System
 participant ":Cơ sở dữ liệu" as DB
 
-' --- Người dùng hoạt động suốt quá trình ---
 activate User
 
-' === 1. Hiển thị danh sách bình luận và tổng số bình luận ===
+' === 1. Hiển thị danh sách bình luận ===
 User -> UI: 1. Mở chi tiết nhiệm vụ
 activate UI
-UI -> System: 2. Yêu cầu danh sách bình luận\nvà tổng số bình luận của nhiệm vụ
+UI -> System: 2. Yêu cầu danh sách bình luận
 activate System
-System -> DB: 3. Truy vấn các Comment theo TaskId\nvà tổng số bình luận
+System -> DB: 3. Lấy danh sách bình luận theo nhiệm vụ
 activate DB
-DB --> System: [Thành công] Danh sách Comment + tổng số
+DB --> System: Danh sách bình luận
 deactivate DB
-System --> UI: 4. Trả danh sách bình luận\nvà tổng số bình luận
+System --> UI: 4. Gửi danh sách bình luận
 deactivate System
-UI --> User: 5. Hiển thị danh sách bình luận\nvà số bình luận trên nhiệm vụ
+UI --> User: 5. Hiển thị bình luận
 deactivate UI
 
-' === 2. Thêm bình luận (có thể kèm file đính kèm và mention) ===
-User -> UI: 6a. Nhập nội dung bình luận\nvà chọn file đính kèm (nếu có)
+' === 2. Thêm bình luận mới ===
+User -> UI: 6. Nhập nội dung bình luận\n(kèm file hoặc gắn thẻ người dùng nếu có)
 activate UI
-UI -> System: 6b. Gửi yêu cầu tạo Comment mới\n(nội dung, TaskId, file, danh sách @username)
+UI -> System: 7. Gửi yêu cầu tạo bình luận mới
 activate System
-System -> DB: 6c. Lưu Comment mới
+System -> DB: 8. Lưu bình luận vào cơ sở dữ liệu
 activate DB
-DB --> System: [Thành công] CommentId
+DB --> System: Đã tạo bình luận
 deactivate DB
 
-System -> DB: 6d. Nếu có file đính kèm\nlưu thông tin file gắn với Comment
-activate DB
-DB --> System: [Thành công]
-deactivate DB
-
-System -> DB: 6e. Nếu có mention @username\nlưu danh sách mention cho Comment
-activate DB
-DB --> System: [Thành công]
-deactivate DB
-
-System -> DB: 6f. Cập nhật tổng số bình luận của Task\nvà số bình luận chưa đọc của các user liên quan
-activate DB
-DB --> System: [Thành công]
-deactivate DB
-
-System --> UI: 6g. Trả kết quả tạo Comment thành công\nkèm dữ liệu Comment mới
+System --> UI: 9. Trả bình luận mới
 deactivate System
-UI --> User: 6h. Hiển thị bình luận mới,\nfile đính kèm và highlight mention
+UI --> User: 10. Hiển thị bình luận mới\n(kèm file và gắn thẻ)
 deactivate UI
 
 ' === 3. Chỉnh sửa bình luận ===
-User -> UI: 7a. Chọn "Chỉnh sửa" một bình luận của mình
+User -> UI: 11. Chọn chỉnh sửa bình luận
 activate UI
-UI -> System: 7b. Gửi yêu cầu cập nhật nội dung Comment
+UI -> System: 12. Gửi yêu cầu cập nhật nội dung
 activate System
-System -> DB: 7c. Cập nhật nội dung Comment trong DB\nvà thời gian chỉnh sửa
+System -> DB: 13. Cập nhật nội dung bình luận
 activate DB
-DB --> System: [Thành công]
+DB --> System: Đã cập nhật bình luận
 deactivate DB
-System --> UI: 7d. Trả kết quả cập nhật bình luận
+System --> UI: 14. Trả bình luận đã chỉnh sửa
 deactivate System
-UI --> User: 7e. Hiển thị nội dung bình luận đã chỉnh sửa\n(kèm thông tin đã chỉnh sửa)
+UI --> User: 15. Hiển thị nội dung mới
 deactivate UI
 
 ' === 4. Xóa bình luận ===
-User -> UI: 8a. Chọn "Xóa bình luận"
+User -> UI: 16. Chọn xóa bình luận
 activate UI
-UI -> System: 8b. Gửi yêu cầu xóa Comment
+UI -> System: 17. Gửi yêu cầu xóa bình luận
 activate System
-System -> DB: 8c. Xóa Comment (và file đính kèm liên quan)
+System -> DB: 18. Xóa bình luận khỏi cơ sở dữ liệu
 activate DB
-DB --> System: [Thành công]
+DB --> System: Đã xóa bình luận
 deactivate DB
-
-System -> DB: 8d. Cập nhật lại tổng số bình luận\nvà số bình luận chưa đọc (nếu cần)
-activate DB
-DB --> System: [Thành công]
-deactivate DB
-
-System --> UI: 8e. Trả kết quả xóa bình luận
+System --> UI: 19. Trả kết quả xóa
 deactivate System
-UI --> User: 8f. Loại bỏ bình luận khỏi danh sách
+UI --> User: 20. Loại bỏ bình luận khỏi danh sách
 deactivate UI
 
-' === 5. Hiển thị số bình luận chưa đọc của người dùng ===
-User -> UI: 9a. Mở danh sách nhiệm vụ hoặc chi tiết nhiệm vụ
+' === 5. Hiển thị số bình luận chưa đọc ===
+User -> UI: 21. Mở danh sách nhiệm vụ
 activate UI
-UI -> System: 9b. Yêu cầu số bình luận chưa đọc\ncủa người dùng cho từng nhiệm vụ
+UI -> System: 22. Yêu cầu số bình luận chưa đọc
 activate System
-System -> DB: 9c. Truy vấn số Comment chưa đọc\ntheo UserId và TaskId
+System -> DB: 23. Truy vấn số bình luận chưa đọc của người dùng
 activate DB
-DB --> System: [Thành công] Thống kê số chưa đọc
+DB --> System: Số bình luận chưa đọc
 deactivate DB
-System --> UI: 9d. Trả dữ liệu số bình luận chưa đọc
+System --> UI: 24. Trả dữ liệu số chưa đọc
 deactivate System
-UI --> User: 9e. Hiển thị badge số bình luận chưa đọc\ntrên từng nhiệm vụ hoặc trong chi tiết nhiệm vụ
+UI --> User: 25. Hiển thị số lượng chưa đọc
 deactivate UI
 
-' === 6. Cập nhật trạng thái đã đọc khi người dùng xem bình luận ===
-User -> UI: 10a. Cuộn xem danh sách bình luận của nhiệm vụ
+' === 6. Cập nhật trạng thái đã đọc ===
+User -> UI: 26. Xem danh sách bình luận của nhiệm vụ
 activate UI
-UI -> System: 10b. Gửi yêu cầu đánh dấu đã đọc\ncác bình luận vừa xem
+UI -> System: 27. Gửi yêu cầu đánh dấu đã đọc
 activate System
-System -> DB: 10c. Cập nhật trạng thái đã đọc\ncho các Comment tương ứng
+System -> DB: 28. Cập nhật trạng thái đã đọc
 activate DB
-DB --> System: [Thành công]
+DB --> System: Đã cập nhật
 deactivate DB
-System --> UI: 10d. Trả kết quả cập nhật đã đọc
+System --> UI: 29. Trả kết quả cập nhật
 deactivate System
-UI --> User: 10e. Cập nhật lại số bình luận chưa đọc
+UI --> User: 30. Cập nhật lại số bình luận chưa đọc
 deactivate UI
 
 ' === 7. Cập nhật bình luận theo thời gian thực ===
-User -> UI: 11a. Đang mở màn hình chi tiết nhiệm vụ\nvới danh sách bình luận
+User -> UI: 31. Đang mở màn hình bình luận
 activate UI
-... Thao tác từ người dùng khác ...
-System -> UI: 11b. Đẩy sự kiện thời gian thực\n(thêm / sửa / xóa Comment)
+System -> UI: 32. Gửi thông báo thời gian thực\n(thêm / sửa / xóa bình luận)
 activate System
-UI --> User: 11c. Tự động cập nhật danh sách bình luận\nvà số bình luận chưa đọc
+UI --> User: 33. Tự động làm mới danh sách bình luận
 deactivate System
 deactivate UI
 
