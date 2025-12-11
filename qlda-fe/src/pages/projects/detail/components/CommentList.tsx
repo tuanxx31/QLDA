@@ -1,9 +1,9 @@
-import { Avatar, Space, Typography, Button, Popconfirm, Image, message, Input, Upload } from 'antd';
+import { Avatar, Space, Typography, Button, Popconfirm, Image, message, Upload } from 'antd';
 import { EditOutlined, DeleteOutlined, DownloadOutlined, CheckOutlined, CloseOutlined, PaperClipOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { Comment } from '@/types/comment.type';
 import { parseMentions } from '@/utils/mentionParser';
 import { commentService } from '@/services/comment.services';
@@ -12,6 +12,7 @@ import useAuth from '@/hooks/useAuth';
 import MentionTextarea from '@/components/MentionTextarea';
 import type { CreateCommentDto } from '@/types/comment.type';
 import { getAvatarUrl } from '@/utils/avatarUtils';
+import { getFileUrl } from '@/utils/fileUtils';
 
 dayjs.extend(relativeTime);
 dayjs.locale('vi');
@@ -55,7 +56,7 @@ function formatContentForSubmit(content: string, mentionIds: string[], mentions?
 
   let formattedContent = content;
 
-  
+  // Build user map for quick lookup
   const userMap = new Map<string, Comment['mentions'][0]>();
   if (mentions) {
     mentions.forEach((user) => {
@@ -63,17 +64,15 @@ function formatContentForSubmit(content: string, mentionIds: string[], mentions?
     });
   }
 
-  
+  // Convert @[name](id) format to @[id] if id is in mentionIds
   formattedContent = formattedContent.replace(/@\[([^\]]+)\]\(([^)]+)\)/g, (match, name, id) => {
-    
     if (mentionIds.includes(id)) {
       return `@[${id}]`;
     }
-    
     return `@${name}`;
   });
 
-  
+  // Keep existing @[userId] format if userId is in mentionIds
   formattedContent = formattedContent.replace(/@\[([a-f0-9-]{36})\]/gi, (match, userId) => {
     if (mentionIds.includes(userId)) {
       return `@[${userId}]`;
@@ -81,7 +80,7 @@ function formatContentForSubmit(content: string, mentionIds: string[], mentions?
     return match;
   });
 
-  
+  // Convert @username mentions to @[userId] format
   mentionIds.forEach((userId) => {
     const user = userMap.get(userId);
     if (!user) return;
@@ -135,21 +134,17 @@ export default function CommentList({ taskId, comments, onEdit, projectOwnerId, 
 
   const handleStartEdit = (comment: Comment) => {
     setEditingId(comment.id);
-    
-    const displayContent = parseContentForDisplay(comment.content || '', comment.mentions);
-    setEditingContent(displayContent);
+    setEditingContent(parseContentForDisplay(comment.content || '', comment.mentions));
     setEditingFileUrl(comment.fileUrl);
     setEditingComment(comment);
     
-    
+    // Extract mention IDs from mentions array or parse from content
     if (comment.mentions && comment.mentions.length > 0) {
       setEditingMentionIds(comment.mentions.map((u) => u.id));
     } else {
-      
       const mentionRegex = /@\[([a-f0-9-]{36})\]/gi;
       const matches = [...(comment.content || '').matchAll(mentionRegex)];
-      const ids = matches.map((match) => match[1]);
-      setEditingMentionIds(ids);
+      setEditingMentionIds(matches.map((match) => match[1]));
     }
   };
 
@@ -181,16 +176,16 @@ export default function CommentList({ taskId, comments, onEdit, projectOwnerId, 
     });
   };
 
-  const handleFileUpload = async (file: File) => {
-    const isValidType = /\.(jpg|jpeg|png|pdf|docx|xlsx)$/i.test(file.name);
-    const isValidSize = file.size <= 5 * 1024 * 1024;
+  const handleFileUpload = async (file: File): Promise<boolean> => {
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const ALLOWED_EXTENSIONS = /\.(jpg|jpeg|png|pdf|docx|xlsx)$/i;
 
-    if (!isValidType) {
+    if (!ALLOWED_EXTENSIONS.test(file.name)) {
       message.error('Chỉ chấp nhận file: jpg, png, pdf, docx, xlsx');
       return false;
     }
 
-    if (!isValidSize) {
+    if (file.size > MAX_FILE_SIZE) {
       message.error('File không được vượt quá 5MB');
       return false;
     }
@@ -217,13 +212,6 @@ export default function CommentList({ taskId, comments, onEdit, projectOwnerId, 
   const isDocumentFile = (url?: string) => {
     if (!url) return false;
     return /\.(pdf|docx|xlsx)$/i.test(url);
-  };
-
-  const getFileUrl = (fileUrl?: string) => {
-    if (!fileUrl) return '';
-    if (fileUrl.startsWith('http')) return fileUrl;
-    const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
-    return fileUrl.startsWith('/') ? `${API_BASE}${fileUrl}` : `${API_BASE}/${fileUrl}`;
   };
 
   if (comments.length === 0) {
