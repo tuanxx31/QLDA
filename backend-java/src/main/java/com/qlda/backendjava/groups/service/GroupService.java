@@ -162,26 +162,24 @@ public class GroupService {
         GroupEntity group = groupRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy nhóm"));
 
-        boolean isLeader = group.getLeader().getId().equals(userId);
-        List<GroupMemberEntity> allMembers = groupMemberRepository.findByGroupIdAndStatus(
-                id, GroupMemberEntity.Status.accepted);
-        boolean isMember = allMembers.stream()
-                .anyMatch(m -> m.getUser().getId().equals(userId));
+        // Get all members of the group (all statuses)
+        List<GroupMemberEntity> allMembers = groupMemberRepository.findByGroupIdWithUser(id);
 
-        List<GroupMemberEntity> pendingMembers = groupMemberRepository.findByGroupIdAndStatus(
-                id, GroupMemberEntity.Status.pending_invite);
-        pendingMembers.addAll(groupMemberRepository.findByGroupIdAndStatus(
-                id, GroupMemberEntity.Status.pending_approval));
-        boolean hasPendingRequest = pendingMembers.stream()
-                .anyMatch(m -> m.getUser().getId().equals(userId));
+        boolean isLeader = group.getLeader().getId().equals(userId);
+        boolean isMember = allMembers.stream()
+                .anyMatch(m -> m.getUser().getId().equals(userId) && 
+                              m.getStatus() == GroupMemberEntity.Status.accepted);
+        boolean hasPendingRequest = allMembers.stream()
+                .anyMatch(m -> m.getUser().getId().equals(userId) && 
+                              (m.getStatus() == GroupMemberEntity.Status.pending_invite || 
+                               m.getStatus() == GroupMemberEntity.Status.pending_approval));
 
         if (!isLeader && !isMember && !hasPendingRequest) {
             throw new ForbiddenException("Bạn không có quyền truy cập nhóm này");
         }
 
-        List<GroupMemberEntity> members = groupMemberRepository.findByGroupIdAndStatus(
-                id, GroupMemberEntity.Status.accepted);
-        List<Map<String, Object>> membersList = members.stream()
+        // Return all members with their statuses (accepted, pending_invite, pending_approval, rejected)
+        List<Map<String, Object>> membersList = allMembers.stream()
                 .map(m -> {
                     Map<String, Object> memberMap = new HashMap<>();
                     memberMap.put("id", m.getUser().getId());
