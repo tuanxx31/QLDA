@@ -38,16 +38,13 @@ public class TaskService {
     private final PermissionService permissionService;
 
     public TaskEntity findOne(String id) {
+        // Load với relations như NestJS: ['assignees', 'labels', 'subtasks', 'column', 'column.project']
         TaskEntity task = taskRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Task không tồn tại"));
 
-        // Load column để lấy project
-        ColumnEntity column = columnRepository.findById(task.getColumnId())
-                .orElse(null);
-
         // Filter assignees theo project members nếu có project
-        if (column != null && column.getProject() != null) {
-            String projectId = column.getProject().getId();
+        if (task.getColumn() != null && task.getColumn().getProject() != null) {
+            String projectId = task.getColumn().getProject().getId();
             List<com.qlda.backendjava.projectmember.entity.ProjectMemberEntity> projectMembers =
                     projectMemberRepository.findByProjectId(projectId);
             Set<String> projectMemberUserIds = projectMembers.stream()
@@ -65,17 +62,16 @@ public class TaskService {
     }
 
     public List<UserEntity> getAssignees(String id) {
+        // Load với relations như NestJS: ['assignees', 'column', 'column.project']
         TaskEntity task = taskRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Task không tồn tại"));
 
-        ColumnEntity column = columnRepository.findById(task.getColumnId())
-                .orElse(null);
-
-        if (column == null || column.getProject() == null) {
+        // Nếu không có project, trả về tất cả assignees
+        if (task.getColumn() == null || task.getColumn().getProject() == null) {
             return task.getAssignees() != null ? task.getAssignees() : List.of();
         }
 
-        String projectId = column.getProject().getId();
+        String projectId = task.getColumn().getProject().getId();
         List<com.qlda.backendjava.projectmember.entity.ProjectMemberEntity> projectMembers =
                 projectMemberRepository.findByProjectId(projectId);
         Set<String> projectMemberUserIds = projectMembers.stream()
@@ -91,6 +87,7 @@ public class TaskService {
         ColumnEntity column = columnRepository.findById(columnId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy cột."));
 
+        // Load với relations như NestJS: ['assignees', 'labels', 'subtasks'], order: position ASC
         List<TaskEntity> tasks = taskRepository.findByColumnIdOrderByPositionAsc(columnId);
 
         // Filter assignees theo project members nếu có project
@@ -155,19 +152,21 @@ public class TaskService {
             task.setLabels(labels);
         }
 
-        return taskRepository.save(task);
+        TaskEntity saved = taskRepository.save(task);
+        
+        // Load lại với relations như NestJS: ['assignees', 'labels', 'subtasks']
+        return taskRepository.findByIdWithRelations(saved.getId())
+                .orElse(saved);
     }
 
     @Transactional
     public TaskEntity update(String id, UpdateTaskDto dto, String userId) {
+        // Load với relations như NestJS: ['assignees', 'labels', 'subtasks', 'column', 'column.project']
         TaskEntity task = taskRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Task không tồn tại"));
 
-        ColumnEntity column = columnRepository.findById(task.getColumnId())
-                .orElse(null);
-
-        if (column != null && column.getProject() != null) {
-            if (!permissionService.canEditTask(column.getProject().getId(), userId)) {
+        if (task.getColumn() != null && task.getColumn().getProject() != null) {
+            if (!permissionService.canEditTask(task.getColumn().getProject().getId(), userId)) {
                 throw new ForbiddenException("Không có quyền cập nhật task.");
             }
         }
@@ -199,7 +198,11 @@ public class TaskService {
             task.setLabels(labels);
         }
 
-        return taskRepository.save(task);
+        TaskEntity saved = taskRepository.save(task);
+        
+        // Load lại với relations như NestJS: ['assignees', 'labels', 'subtasks']
+        return taskRepository.findByIdWithRelations(saved.getId())
+                .orElse(saved);
     }
 
     @Transactional
@@ -225,14 +228,12 @@ public class TaskService {
 
     @Transactional
     public TaskEntity assignUsers(String id, AssignUsersDto dto, String userId) {
+        // Load với relations như NestJS: ['assignees', 'labels', 'subtasks', 'column', 'column.project']
         TaskEntity task = taskRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Task không tồn tại"));
 
-        ColumnEntity column = columnRepository.findById(task.getColumnId())
-                .orElse(null);
-
-        if (column != null && column.getProject() != null) {
-            if (!permissionService.canEditTask(column.getProject().getId(), userId)) {
+        if (task.getColumn() != null && task.getColumn().getProject() != null) {
+            if (!permissionService.canEditTask(task.getColumn().getProject().getId(), userId)) {
                 throw new ForbiddenException("Không có quyền gán người làm task.");
             }
         }
@@ -250,19 +251,21 @@ public class TaskService {
         }
 
         task.setAssignees(merged);
-        return taskRepository.save(task);
+        TaskEntity saved = taskRepository.save(task);
+        
+        // Load lại với relations như NestJS: ['assignees', 'labels', 'subtasks']
+        return taskRepository.findByIdWithRelations(saved.getId())
+                .orElse(saved);
     }
 
     @Transactional
     public TaskEntity unassignUsers(String id, UnassignUsersDto dto, String userId) {
+        // Load với relations như NestJS: ['assignees', 'labels', 'subtasks', 'column', 'column.project']
         TaskEntity task = taskRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Task không tồn tại"));
 
-        ColumnEntity column = columnRepository.findById(task.getColumnId())
-                .orElse(null);
-
-        if (column != null && column.getProject() != null) {
-            if (!permissionService.canEditTask(column.getProject().getId(), userId)) {
+        if (task.getColumn() != null && task.getColumn().getProject() != null) {
+            if (!permissionService.canEditTask(task.getColumn().getProject().getId(), userId)) {
                 throw new ForbiddenException("Không có quyền hủy gán người làm task.");
             }
         }
@@ -273,19 +276,21 @@ public class TaskService {
                     .collect(Collectors.toList()));
         }
 
-        return taskRepository.save(task);
+        TaskEntity saved = taskRepository.save(task);
+        
+        // Load lại với relations như NestJS: ['assignees', 'labels', 'subtasks']
+        return taskRepository.findByIdWithRelations(saved.getId())
+                .orElse(saved);
     }
 
     @Transactional
     public TaskEntity assignLabels(String id, AssignLabelsDto dto, String userId) {
+        // Load với relations như NestJS: ['assignees', 'labels', 'subtasks', 'column', 'column.project']
         TaskEntity task = taskRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Task không tồn tại"));
 
-        ColumnEntity column = columnRepository.findById(task.getColumnId())
-                .orElse(null);
-
-        if (column != null && column.getProject() != null) {
-            if (!permissionService.canEditTask(column.getProject().getId(), userId)) {
+        if (task.getColumn() != null && task.getColumn().getProject() != null) {
+            if (!permissionService.canEditTask(task.getColumn().getProject().getId(), userId)) {
                 throw new ForbiddenException("Không có quyền gán nhãn task.");
             }
         }
@@ -303,19 +308,21 @@ public class TaskService {
         }
 
         task.setLabels(merged);
-        return taskRepository.save(task);
+        TaskEntity saved = taskRepository.save(task);
+        
+        // Load lại với relations như NestJS: ['assignees', 'labels', 'subtasks']
+        return taskRepository.findByIdWithRelations(saved.getId())
+                .orElse(saved);
     }
 
     @Transactional
     public TaskEntity unassignLabels(String id, AssignLabelsDto dto, String userId) {
+        // Load với relations như NestJS: ['assignees', 'labels', 'subtasks', 'column', 'column.project']
         TaskEntity task = taskRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Task không tồn tại"));
 
-        ColumnEntity column = columnRepository.findById(task.getColumnId())
-                .orElse(null);
-
-        if (column != null && column.getProject() != null) {
-            if (!permissionService.canEditTask(column.getProject().getId(), userId)) {
+        if (task.getColumn() != null && task.getColumn().getProject() != null) {
+            if (!permissionService.canEditTask(task.getColumn().getProject().getId(), userId)) {
                 throw new ForbiddenException("Không có quyền bỏ gán nhãn task.");
             }
         }
@@ -326,7 +333,11 @@ public class TaskService {
                     .collect(Collectors.toList()));
         }
 
-        return taskRepository.save(task);
+        TaskEntity saved = taskRepository.save(task);
+        
+        // Load lại với relations như NestJS: ['assignees', 'labels', 'subtasks']
+        return taskRepository.findByIdWithRelations(saved.getId())
+                .orElse(saved);
     }
 
     @Transactional

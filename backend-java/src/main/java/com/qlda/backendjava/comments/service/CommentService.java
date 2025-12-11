@@ -32,11 +32,15 @@ public class CommentService {
 
     @Transactional
     public CommentEntity create(String taskId, String userId, CreateCommentDto dto) {
-        TaskEntity task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new NotFoundException("Task không tồn tại"));
-
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User không tồn tại"));
+        // Validate task exists
+        if (!taskRepository.existsById(taskId)) {
+            throw new NotFoundException("Task không tồn tại");
+        }
+        
+        // Validate user exists
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("User không tồn tại");
+        }
 
         List<UserEntity> mentionUsers = List.of();
         if (dto.getMentionIds() != null && !dto.getMentionIds().isEmpty()) {
@@ -50,12 +54,16 @@ public class CommentService {
         comment.setFileUrl(dto.getFileUrl());
         comment.setMentions(mentionUsers);
 
-        return commentRepository.save(comment);
+        CommentEntity saved = commentRepository.save(comment);
+        
+        // Load lại với relations như NestJS: ['user', 'mentions']
+        return commentRepository.findByIdWithRelations(saved.getId())
+                .orElse(saved);
     }
 
     public Map<String, Object> findAll(String taskId, int page, int limit) {
         Pageable pageable = PageRequest.of(page - 1, limit);
-        Page<CommentEntity> commentPage = commentRepository.findByTaskIdOrderByCreatedAtDesc(taskId, pageable);
+        Page<CommentEntity> commentPage = commentRepository.findByTaskIdOrderByCreatedAtAsc(taskId, pageable);
 
         Map<String, Object> result = new HashMap<>();
         result.put("data", commentPage.getContent());
@@ -67,6 +75,7 @@ public class CommentService {
     }
 
     public CommentEntity findOne(String id) {
+        // Load với relations như NestJS: ['user', 'mentions', 'task']
         return commentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Comment không tồn tại"));
     }
@@ -91,7 +100,11 @@ public class CommentService {
             comment.setMentions(mentionUsers);
         }
 
-        return commentRepository.save(comment);
+        CommentEntity saved = commentRepository.save(comment);
+        
+        // Load lại với relations như NestJS: ['user', 'mentions']
+        return commentRepository.findByIdWithRelations(saved.getId())
+                .orElse(saved);
     }
 
     @Transactional
