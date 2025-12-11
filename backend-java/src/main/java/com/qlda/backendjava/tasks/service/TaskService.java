@@ -37,6 +37,28 @@ public class TaskService {
     private final ProjectMemberRepository projectMemberRepository;
     private final PermissionService permissionService;
 
+    /**
+     * Helper method để load task với tất cả relations cần thiết
+     * Tránh MultipleBagFetchException bằng cách fetch từng collection riêng biệt
+     */
+    private TaskEntity loadTaskWithAllRelations(String taskId) {
+        // Fetch task với subtasks (OneToMany - không gây MultipleBagFetchException)
+        TaskEntity task = taskRepository.findByIdWithRelations(taskId)
+                .orElseThrow(() -> new NotFoundException("Task không tồn tại"));
+        
+        // Fetch assignees riêng biệt
+        taskRepository.findByIdWithAssignees(taskId).ifPresent(taskWithAssignees -> {
+            task.setAssignees(taskWithAssignees.getAssignees());
+        });
+        
+        // Fetch labels riêng biệt
+        taskRepository.findByIdWithLabels(taskId).ifPresent(taskWithLabels -> {
+            task.setLabels(taskWithLabels.getLabels());
+        });
+        
+        return task;
+    }
+
     public TaskEntity findOne(String id) {
         // Load với relations như NestJS: ['assignees', 'labels', 'subtasks', 'column', 'column.project']
         TaskEntity task = taskRepository.findById(id)
@@ -89,6 +111,38 @@ public class TaskService {
 
         // Load với relations như NestJS: ['assignees', 'labels', 'subtasks'], order: position ASC
         List<TaskEntity> tasks = taskRepository.findByColumnIdOrderByPositionAsc(columnId);
+        
+        if (tasks.isEmpty()) {
+            return tasks;
+        }
+        
+        // Fetch assignees và labels riêng biệt để tránh MultipleBagFetchException
+        List<String> taskIds = tasks.stream().map(TaskEntity::getId).collect(Collectors.toList());
+        
+        // Load assignees
+        Map<String, TaskEntity> tasksWithAssignees = taskRepository.findByIdsWithAssignees(taskIds).stream()
+                .collect(Collectors.toMap(TaskEntity::getId, task -> task));
+        
+        // Load labels
+        Map<String, TaskEntity> tasksWithLabels = taskRepository.findByIdsWithLabels(taskIds).stream()
+                .collect(Collectors.toMap(TaskEntity::getId, task -> task));
+        
+        // Merge assignees và labels vào tasks
+        tasks.forEach(task -> {
+            TaskEntity taskWithAssignees = tasksWithAssignees.get(task.getId());
+            if (taskWithAssignees != null && taskWithAssignees.getAssignees() != null) {
+                task.setAssignees(taskWithAssignees.getAssignees());
+            } else {
+                task.setAssignees(new ArrayList<>());
+            }
+            
+            TaskEntity taskWithLabels = tasksWithLabels.get(task.getId());
+            if (taskWithLabels != null && taskWithLabels.getLabels() != null) {
+                task.setLabels(taskWithLabels.getLabels());
+            } else {
+                task.setLabels(new ArrayList<>());
+            }
+        });
 
         // Filter assignees theo project members nếu có project
         if (column.getProject() != null) {
@@ -155,8 +209,7 @@ public class TaskService {
         TaskEntity saved = taskRepository.save(task);
         
         // Load lại với relations như NestJS: ['assignees', 'labels', 'subtasks']
-        return taskRepository.findByIdWithRelations(saved.getId())
-                .orElse(saved);
+        return loadTaskWithAllRelations(saved.getId());
     }
 
     @Transactional
@@ -201,8 +254,7 @@ public class TaskService {
         TaskEntity saved = taskRepository.save(task);
         
         // Load lại với relations như NestJS: ['assignees', 'labels', 'subtasks']
-        return taskRepository.findByIdWithRelations(saved.getId())
-                .orElse(saved);
+        return loadTaskWithAllRelations(saved.getId());
     }
 
     @Transactional
@@ -254,8 +306,7 @@ public class TaskService {
         TaskEntity saved = taskRepository.save(task);
         
         // Load lại với relations như NestJS: ['assignees', 'labels', 'subtasks']
-        return taskRepository.findByIdWithRelations(saved.getId())
-                .orElse(saved);
+        return loadTaskWithAllRelations(saved.getId());
     }
 
     @Transactional
@@ -279,8 +330,7 @@ public class TaskService {
         TaskEntity saved = taskRepository.save(task);
         
         // Load lại với relations như NestJS: ['assignees', 'labels', 'subtasks']
-        return taskRepository.findByIdWithRelations(saved.getId())
-                .orElse(saved);
+        return loadTaskWithAllRelations(saved.getId());
     }
 
     @Transactional
@@ -311,8 +361,7 @@ public class TaskService {
         TaskEntity saved = taskRepository.save(task);
         
         // Load lại với relations như NestJS: ['assignees', 'labels', 'subtasks']
-        return taskRepository.findByIdWithRelations(saved.getId())
-                .orElse(saved);
+        return loadTaskWithAllRelations(saved.getId());
     }
 
     @Transactional
@@ -336,8 +385,7 @@ public class TaskService {
         TaskEntity saved = taskRepository.save(task);
         
         // Load lại với relations như NestJS: ['assignees', 'labels', 'subtasks']
-        return taskRepository.findByIdWithRelations(saved.getId())
-                .orElse(saved);
+        return loadTaskWithAllRelations(saved.getId());
     }
 
     @Transactional

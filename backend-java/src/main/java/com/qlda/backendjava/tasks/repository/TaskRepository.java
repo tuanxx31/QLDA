@@ -12,8 +12,13 @@ import java.util.Optional;
 
 @Repository
 public interface TaskRepository extends JpaRepository<TaskEntity, String> {
-    @EntityGraph(attributePaths = {"assignees", "labels", "subtasks"})
-    List<TaskEntity> findByColumnIdOrderByPositionAsc(String columnId);
+    // Fetch chỉ subtasks trong query chính để tránh MultipleBagFetchException
+    // Các collection khác sẽ được fetch riêng nếu cần
+    @Query("SELECT DISTINCT t FROM TaskEntity t " +
+           "LEFT JOIN FETCH t.subtasks " +
+           "WHERE t.columnId = :columnId " +
+           "ORDER BY t.position ASC")
+    List<TaskEntity> findByColumnIdOrderByPositionAsc(@Param("columnId") String columnId);
     
     @Query("SELECT MAX(t.position) FROM TaskEntity t WHERE t.columnId = :columnId")
     java.math.BigDecimal findMaxPositionByColumnId(@Param("columnId") String columnId);
@@ -21,9 +26,24 @@ public interface TaskRepository extends JpaRepository<TaskEntity, String> {
     @EntityGraph(attributePaths = {"assignees", "labels", "subtasks", "column", "column.project"})
     Optional<TaskEntity> findById(String id);
     
-    @EntityGraph(attributePaths = {"assignees", "labels", "subtasks"})
-    @Query("SELECT t FROM TaskEntity t WHERE t.id = :id")
+    // Fetch chỉ một collection trong query chính để tránh MultipleBagFetchException
+    // Sau đó fetch các collection khác bằng cách khác
+    @Query("SELECT DISTINCT t FROM TaskEntity t " +
+           "LEFT JOIN FETCH t.subtasks " +
+           "WHERE t.id = :id")
     Optional<TaskEntity> findByIdWithRelations(@Param("id") String id);
+    
+    // Fetch assignees riêng
+    @Query("SELECT DISTINCT t FROM TaskEntity t " +
+           "LEFT JOIN FETCH t.assignees " +
+           "WHERE t.id = :id")
+    Optional<TaskEntity> findByIdWithAssignees(@Param("id") String id);
+    
+    // Fetch labels riêng
+    @Query("SELECT DISTINCT t FROM TaskEntity t " +
+           "LEFT JOIN FETCH t.labels " +
+           "WHERE t.id = :id")
+    Optional<TaskEntity> findByIdWithLabels(@Param("id") String id);
     
     // Load assignees riêng để tránh MultipleBagFetchException
     @Query("SELECT DISTINCT t FROM TaskEntity t " +
