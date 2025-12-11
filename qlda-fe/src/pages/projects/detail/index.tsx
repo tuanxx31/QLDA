@@ -30,7 +30,7 @@ const ProjectDetailPage = () => {
     queryFn: async () => await projectService.getById(projectId!),
     enabled: !!projectId,
     retry: (failureCount, error) => {
-      // Không retry nếu là lỗi 403
+      
       if (isForbiddenError(error)) {
         return false;
       }

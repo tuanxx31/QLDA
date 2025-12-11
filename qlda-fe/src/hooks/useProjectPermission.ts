@@ -13,9 +13,6 @@ import {
   canViewProject,
 } from '@/utils/permissions';
 
-/**
- * Hook để lấy permission của user trong project
- */
 export function useProjectPermission(projectId: string | undefined) {
   const auth = useAuth();
   const userId = auth.authUser?.id;
@@ -43,12 +40,12 @@ export function useProjectPermission(projectId: string | undefined) {
       };
     }
 
-    // Owner luôn là leader
+    
     let role: ProjectRole | null = null;
     if (project.owner?.id === userId) {
       role = 'leader';
     } else {
-      // Tìm trong members
+      
       const member = project.members?.find((m) => m.user?.id === userId);
       role = member ? (member.role as ProjectRole) : null;
     }

@@ -50,7 +50,7 @@ export class ProjectMembersService {
     if (already)
       throw new BadRequestException('Người dùng đã nằm trong dự án.');
 
-    // Kiểm tra nếu đã có leader và đang cố thêm leader mới
+    
     const hasLeader = project.members.some((m) => m.role === 'leader');
     let role = dto.role || 'viewer';
     if (role === 'leader' && hasLeader) {
@@ -65,7 +65,7 @@ export class ProjectMembersService {
       role,
     });
 
-    // Cập nhật owner_id khi thêm member với role='leader'
+    
     if (role === 'leader') {
       project.owner = user;
       await this.projectRepo.save(project);
@@ -75,7 +75,7 @@ export class ProjectMembersService {
   }
 
   async getMembers(projectId: string, userId: string, membersIdExcludeTask: string[]) {
-    // Kiểm tra quyền truy cập project
+    
     const isMember = await this.permissionsService.isProjectMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
@@ -113,7 +113,7 @@ export class ProjectMembersService {
     if (already.length > 0)
       throw new BadRequestException('Người dùng đã nằm trong dự án.');
 
-    // Kiểm tra nếu đã có leader và đang cố thêm leader mới
+    
     const hasLeader = project.members.some((m) => m.role === 'leader');
     let role = dto.role || 'viewer';
     if (role === 'leader' && hasLeader) {
@@ -130,8 +130,8 @@ export class ProjectMembersService {
       }),
     );
 
-    // Cập nhật owner_id khi thêm members với role='leader'
-    // Nếu role='leader', lấy user đầu tiên làm owner (vì chỉ có 1 leader)
+    
+    
     if (role === 'leader' && users.length > 0) {
       project.owner = users[0];
       await this.projectRepo.save(project);
@@ -163,7 +163,7 @@ export class ProjectMembersService {
     });
     if (!member) throw new NotFoundException('Không tìm thấy thành viên.');
 
-    // Kiểm tra nếu đang cố set role 'leader' cho member khác khi đã có leader
+    
     if (dto.role === 'leader') {
       const existingLeader = project.members.find(
         (m) => m.role === 'leader' && m.id !== memberId,
@@ -173,7 +173,7 @@ export class ProjectMembersService {
           'Dự án đã có trưởng dự án. Mỗi dự án chỉ có thể có 1 trưởng dự án. Vui lòng sử dụng chức năng chuyển quyền để thay đổi trưởng dự án.',
         );
       }
-      // Cập nhật owner_id khi role được set thành leader
+      
       project.owner = member.user;
       await this.projectRepo.save(project);
     }
@@ -226,7 +226,7 @@ export class ProjectMembersService {
     currentLeader.role = 'editor';
     newLeader.role = 'leader';
 
-    // Cập nhật owner_id thành newLeader.user
+    
     project.owner = newLeader.user;
     await this.projectRepo.save(project);
 

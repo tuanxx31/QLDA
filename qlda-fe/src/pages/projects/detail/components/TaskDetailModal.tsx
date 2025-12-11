@@ -130,7 +130,7 @@ export default function TaskDetailModal({
     enabled: !!task?.id && open,
     staleTime: 30000,
     retry: (failureCount, error) => {
-      // Không retry nếu là lỗi 403
+      
       if (isForbiddenError(error)) {
         return false;
       }
@@ -147,7 +147,7 @@ export default function TaskDetailModal({
     enabled: !!taskData?.id && open,
     refetchInterval: 2500,
     retry: (failureCount, error) => {
-      // Không retry nếu là lỗi 403
+      
       if (isForbiddenError(error)) {
         return false;
       }
@@ -294,10 +294,10 @@ export default function TaskDetailModal({
     },
   });
 
-  // Ưu tiên assignees đã được filter từ backend
-  // 1. assignees từ query getAssignees() (đã filter)
-  // 2. fetchedTask.assignees (đã filter từ getById)
-  // 3. Chỉ fallback task?.assignees khi cả 2 trên chưa có
+  
+  
+  
+  
   const visibleAssignees = assignees.length
     ? assignees
     : fetchedTask?.assignees?.length

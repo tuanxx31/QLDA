@@ -21,15 +21,15 @@ public class TaskResponseDto {
     private String description;
     private LocalDateTime startDate;
     private LocalDateTime dueDate;
-    private String status; // "todo" | "done"
-    private String priority; // "low" | "medium" | "high"
+    private String status; 
+    private String priority; 
     private BigDecimal position;
     private Float progress;
     private LocalDateTime completedAt;
     private String createdBy;
     private String columnId;
     
-    // Nested objects
+    
     private ColumnResponseDto column;
     private List<UserResponseDto> assignees;
     private List<LabelResponseDto> labels;

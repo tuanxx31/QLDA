@@ -91,7 +91,7 @@ describe('StatisticsService', () => {
         {
           id: 'task-3',
           status: 'todo',
-          dueDate: new Date(Date.now() - 86400000), // yesterday
+          dueDate: new Date(Date.now() - 86400000), 
         },
       ];
       const mockQueryBuilder = {

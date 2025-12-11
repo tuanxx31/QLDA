@@ -31,7 +31,7 @@ export class ColumnsService {
     });
     if (!project) throw new NotFoundException('Không tìm thấy dự án.');
   
-    // Kiểm tra quyền sử dụng PermissionsService
+    
     const canEdit = await this.permissionsService.canEditColumn(projectId, userId);
     if (!canEdit) {
       throw new ForbiddenException('Không có quyền tạo cột.');
@@ -53,7 +53,7 @@ export class ColumnsService {
   
 
   async findAll(projectId: string, userId: string) {
-    // Kiểm tra quyền truy cập project
+    
     const isMember = await this.permissionsService.isProjectMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
@@ -75,7 +75,7 @@ export class ColumnsService {
       },
     });
 
-    // Filter assignees theo project members cho tất cả tasks
+    
     if (columns.length > 0) {
       const projectMembers = await this.projectMemberRepo.find({
         where: { project: { id: projectId } },
@@ -108,7 +108,7 @@ export class ColumnsService {
     });
     if (!column) throw new NotFoundException('Không tìm thấy cột.');
 
-    // Kiểm tra quyền nếu có userId
+    
     if (userId) {
       const canEdit = await this.permissionsService.canEditColumn(
         column.project.id,
@@ -130,7 +130,7 @@ export class ColumnsService {
     });
     if (!column) throw new NotFoundException('Không tìm thấy cột.');
 
-    // Kiểm tra quyền nếu có userId
+    
     if (userId) {
       const canEdit = await this.permissionsService.canEditColumn(
         column.project.id,

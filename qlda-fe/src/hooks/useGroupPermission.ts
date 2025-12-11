@@ -11,9 +11,6 @@ import {
   canViewGroup,
 } from '@/utils/permissions';
 
-/**
- * Hook để lấy permission của user trong group
- */
 export function useGroupPermission(groupId: string | undefined) {
   const auth = useAuth();
   const userId = auth.authUser?.id;
@@ -39,12 +36,12 @@ export function useGroupPermission(groupId: string | undefined) {
       };
     }
 
-    // Leader của group
+    
     let role: GroupRole | null = null;
     if (group.leader?.id === userId) {
       role = 'leader';
     } else {
-      // Tìm trong members với status accepted
+      
       const member = group.members?.find(
         (m) => m.user?.id === userId && m.status === 'accepted',
       );

@@ -12,7 +12,7 @@ import java.util.List;
 public interface SubTaskRepository extends JpaRepository<SubTaskEntity, String> {
     List<SubTaskEntity> findByTaskId(String taskId);
     
-    // Load subtasks cho nhiều tasks cùng lúc
+    
     @Query("SELECT st FROM SubTaskEntity st WHERE st.taskId IN :taskIds ORDER BY st.position ASC")
     List<SubTaskEntity> findByTaskIds(@Param("taskIds") List<String> taskIds);
 }

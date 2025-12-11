@@ -20,13 +20,13 @@ public class FileUploadService {
             throw new IllegalArgumentException("File không được để trống");
         }
 
-        // Tạo thư mục nếu chưa tồn tại
+        
         Path uploadPath = Paths.get(UPLOAD_DIR);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
 
-        // Tạo tên file unique
+        
         String originalFilename = file.getOriginalFilename();
         String extension = "";
         if (originalFilename != null && originalFilename.contains(".")) {
@@ -34,7 +34,7 @@ public class FileUploadService {
         }
         String uniqueFilename = prefix + "-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8) + extension;
 
-        // Lưu file
+        
         Path filePath = uploadPath.resolve(uniqueFilename);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 

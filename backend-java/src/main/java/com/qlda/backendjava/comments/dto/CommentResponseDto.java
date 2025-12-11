@@ -19,10 +19,10 @@ public class CommentResponseDto {
     private String taskId;
     private String fileUrl;
     
-    // Nested objects
+    
     private UserResponseDto user;
     private List<UserResponseDto> mentions;
-    private TaskResponseDto task; // Optional, chỉ khi cần
+    private TaskResponseDto task; 
     
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

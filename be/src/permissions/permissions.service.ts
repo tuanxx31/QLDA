@@ -26,9 +26,7 @@ export class PermissionsService {
     private readonly groupRepo: Repository<Group>,
   ) {}
 
-  /**
-   * Lấy role của user trong project
-   */
+  
   async getUserProjectRole(
     projectId: string,
     userId: string,
@@ -42,19 +40,17 @@ export class PermissionsService {
       throw new NotFoundException('Không tìm thấy dự án.');
     }
 
-    // Owner luôn là leader
+    
     if (project.owner.id === userId) {
       return 'leader';
     }
 
-    // Kiểm tra trong members
+    
     const member = project.members.find((m) => m.user.id === userId);
     return member ? (member.role as ProjectRole) : null;
   }
 
-  /**
-   * Lấy role của user trong group
-   */
+  
   async getUserGroupRole(
     groupId: string,
     userId: string,
@@ -68,21 +64,19 @@ export class PermissionsService {
       throw new NotFoundException('Không tìm thấy nhóm.');
     }
 
-    // Leader của group luôn là leader
+    
     if (group.leader.id === userId) {
       return 'leader';
     }
 
-    // Kiểm tra trong members với status accepted
+    
     const member = group.members.find(
       (m) => m.user.id === userId && m.status === 'accepted',
     );
     return member ? (member.role as GroupRole) : null;
   }
 
-  /**
-   * Kiểm tra user có role cụ thể trong project không
-   */
+  
   async checkProjectPermission(
     projectId: string,
     userId: string,
@@ -96,7 +90,7 @@ export class PermissionsService {
 
     const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
 
-    // Leader có tất cả quyền
+    
     if (userRole === 'leader') {
       return true;
     }
@@ -104,9 +98,7 @@ export class PermissionsService {
     return roles.includes(userRole);
   }
 
-  /**
-   * Kiểm tra user có role cụ thể trong group không
-   */
+  
   async checkGroupPermission(
     groupId: string,
     userId: string,
@@ -122,23 +114,17 @@ export class PermissionsService {
     return roles.includes(userRole);
   }
 
-  /**
-   * Kiểm tra user có thể edit project không
-   */
+  
   async canEditProject(projectId: string, userId: string): Promise<boolean> {
     return this.checkProjectPermission(projectId, userId, 'leader');
   }
 
-  /**
-   * Kiểm tra user có thể delete project không
-   */
+  
   async canDeleteProject(projectId: string, userId: string): Promise<boolean> {
     return this.checkProjectPermission(projectId, userId, 'leader');
   }
 
-  /**
-   * Kiểm tra user có thể manage members không
-   */
+  
   async canManageMembers(
     projectId: string,
     userId: string,
@@ -146,30 +132,22 @@ export class PermissionsService {
     return this.checkProjectPermission(projectId, userId, 'leader');
   }
 
-  /**
-   * Kiểm tra user có thể edit tasks không
-   */
+  
   async canEditTask(projectId: string, userId: string): Promise<boolean> {
     return this.checkProjectPermission(projectId, userId, ['leader', 'editor']);
   }
 
-  /**
-   * Kiểm tra user có thể delete tasks không
-   */
+  
   async canDeleteTask(projectId: string, userId: string): Promise<boolean> {
     return this.checkProjectPermission(projectId, userId, ['leader', 'editor']);
   }
 
-  /**
-   * Kiểm tra user có thể edit columns không
-   */
+  
   async canEditColumn(projectId: string, userId: string): Promise<boolean> {
     return this.checkProjectPermission(projectId, userId, ['leader', 'editor']);
   }
 
-  /**
-   * Kiểm tra user có thể update task status không (viewer chỉ được update nếu là assignee)
-   */
+  
   async canUpdateTaskStatus(
     projectId: string,
     userId: string,
@@ -181,12 +159,12 @@ export class PermissionsService {
       return false;
     }
 
-    // Leader và Editor luôn được phép
+    
     if (userRole === 'leader' || userRole === 'editor') {
       return true;
     }
 
-    // Viewer chỉ được update nếu là assignee
+    
     if (userRole === 'viewer') {
       return taskAssigneeIds?.includes(userId) ?? false;
     }
@@ -194,30 +172,22 @@ export class PermissionsService {
     return false;
   }
 
-  /**
-   * Kiểm tra user có thể edit group không
-   */
+  
   async canEditGroup(groupId: string, userId: string): Promise<boolean> {
     return this.checkGroupPermission(groupId, userId, 'leader');
   }
 
-  /**
-   * Kiểm tra user có thể delete group không
-   */
+  
   async canDeleteGroup(groupId: string, userId: string): Promise<boolean> {
     return this.checkGroupPermission(groupId, userId, 'leader');
   }
 
-  /**
-   * Kiểm tra user có thể invite members vào group không
-   */
+  
   async canInviteMembers(groupId: string, userId: string): Promise<boolean> {
     return this.checkGroupPermission(groupId, userId, 'leader');
   }
 
-  /**
-   * Kiểm tra user có thể manage group members không
-   */
+  
   async canManageGroupMembers(
     groupId: string,
     userId: string,
@@ -225,17 +195,13 @@ export class PermissionsService {
     return this.checkGroupPermission(groupId, userId, 'leader');
   }
 
-  /**
-   * Kiểm tra user có phải là member của project không (bất kỳ role nào)
-   */
+  
   async isProjectMember(projectId: string, userId: string): Promise<boolean> {
     const role = await this.getUserProjectRole(projectId, userId);
     return role !== null;
   }
 
-  /**
-   * Kiểm tra user có phải là member của group không (bất kỳ role nào)
-   */
+  
   async isGroupMember(groupId: string, userId: string): Promise<boolean> {
     const role = await this.getUserGroupRole(groupId, userId);
     return role !== null;

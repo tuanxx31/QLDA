@@ -10,9 +10,6 @@ interface PermissionWrapperProps {
   fallback?: ReactNode;
 }
 
-/**
- * Component wrapper để ẩn/hiện children dựa trên permission
- */
 export function PermissionWrapper({
   projectId,
   permission,

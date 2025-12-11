@@ -30,14 +30,14 @@ public class ProjectMemberService {
     private final UserRepository userRepository;
 
     public List<Map<String, Object>> getMembers(String projectId, List<String> excludeUserIds, String userId) {
-        // Kiểm tra quyền truy cập project
+        
         ProjectEntity project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy dự án."));
         
-        // Kiểm tra owner
+        
         boolean isOwner = project.getOwner().getId().equals(userId);
         
-        // Kiểm tra member
+        
         boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
         
         if (!isOwner && !isMember) {

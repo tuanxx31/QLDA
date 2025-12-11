@@ -23,7 +23,7 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   res => res,
   error => {
-    // Xử lý lỗi 401 - Unauthorized
+    
     if (
       error.response?.status === 401 &&
       window.location.pathname !== '/login' &&
@@ -33,8 +33,8 @@ api.interceptors.response.use(
       window.location.assign('/login');
     }
     
-    // Lỗi 403 sẽ được xử lý ở component level
-    // Không hiển thị message.error ở đây để tránh spam notification
+    
+    
     
     return Promise.reject(error);
   },

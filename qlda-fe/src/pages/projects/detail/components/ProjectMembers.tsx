@@ -21,7 +21,7 @@ const ProjectMembers = ({ projectId }: Props) => {
     onSuccess: () => {
       message.success('Đã xóa thành viên');
       qc.invalidateQueries({ queryKey: ['projectMembers', projectId] });
-      // Invalidate task assignees để filter lại assignees khi thành viên bị xóa
+      
       qc.invalidateQueries({ queryKey: ['taskAssignees'] });
       qc.invalidateQueries({ queryKey: ['task'] });
       qc.invalidateQueries({ queryKey: ['tasks'] });
@@ -46,7 +46,7 @@ const ProjectMembers = ({ projectId }: Props) => {
               isLeader={canManageMembers}
               onUpdate={() => {
                 qc.invalidateQueries({ queryKey: ['projectMembers', projectId] });
-                // Invalidate task assignees để filter lại assignees khi thành viên bị xóa
+                
                 qc.invalidateQueries({ queryKey: ['taskAssignees'] });
                 qc.invalidateQueries({ queryKey: ['task'] });
                 qc.invalidateQueries({ queryKey: ['tasks'] });

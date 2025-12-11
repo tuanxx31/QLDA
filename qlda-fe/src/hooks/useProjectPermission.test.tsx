@@ -1,12 +1,4 @@
-/**
- * Unit tests for useProjectPermission hook
- * 
- * Note: These tests require React Testing Library setup.
- * To run these tests, you need to install:
- * - @testing-library/react
- * - @testing-library/react-hooks (if using older version)
- * - @testing-library/jest-dom
- */
+
 
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -14,7 +6,6 @@ import { useProjectPermission } from './useProjectPermission';
 import { projectService } from '@/services/project.services';
 import useAuth from './useAuth';
 
-// Mock dependencies
 jest.mock('@/services/project.services');
 jest.mock('./useAuth');
 

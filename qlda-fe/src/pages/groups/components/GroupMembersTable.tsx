@@ -111,7 +111,7 @@ export const GroupMembersTable = ({ group, isLeader, onUpdate }: any) => {
                       return <Text type="secondary">—</Text>;
                     }
 
-                    // Actions for pending_approval (user requested to join)
+                    
                     if (member.status === 'pending_approval') {
                       return (
                         <Space>
@@ -139,7 +139,7 @@ export const GroupMembersTable = ({ group, isLeader, onUpdate }: any) => {
                       );
                     }
 
-                    // Actions for accepted members
+                    
                     return (
                       <Space>
                         <Popconfirm

@@ -34,14 +34,14 @@ export class ProjectRoleGuard implements CanActivate {
       throw new ForbiddenException('Không tìm thấy thông tin người dùng.');
     }
 
-    // Lấy projectId từ params (có thể là 'projectId' hoặc 'id')
+    
     const projectId = request.params.projectId || request.params.id;
 
     if (!projectId) {
       throw new NotFoundException('Không tìm thấy projectId trong request.');
     }
 
-    // Kiểm tra quyền
+    
     const hasPermission = await this.permissionsService.checkProjectPermission(
       projectId,
       userId,

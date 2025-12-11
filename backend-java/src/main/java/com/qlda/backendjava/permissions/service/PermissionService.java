@@ -80,7 +80,7 @@ public class PermissionService {
             return false;
         }
 
-        // Leader có tất cả quyền
+        
         if (userRole == ProjectRole.leader) {
             return true;
         }
@@ -130,12 +130,12 @@ public class PermissionService {
             return false;
         }
 
-        // Leader và Editor luôn được phép
+        
         if (userRole == ProjectRole.leader || userRole == ProjectRole.editor) {
             return true;
         }
 
-        // Viewer chỉ được update nếu là assignee
+        
         if (userRole == ProjectRole.viewer) {
             return taskAssigneeIds != null && taskAssigneeIds.contains(userId);
         }

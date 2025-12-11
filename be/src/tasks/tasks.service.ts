@@ -36,7 +36,7 @@ export class TaskService {
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
 
-    // Kiểm tra quyền truy cập project
+    
     if (task.column?.project?.id) {
       const isMember = await this.permissionsService.isProjectMember(
         task.column.project.id,
@@ -49,7 +49,7 @@ export class TaskService {
       throw new NotFoundException('Task không thuộc project nào.');
     }
 
-    // Filter assignees theo project members nếu có project
+    
     if (task.column?.project?.id) {
       const projectMembers = await this.projectMemberRepo.find({
         where: { project: { id: task.column.project.id } },
@@ -75,7 +75,7 @@ export class TaskService {
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
 
-    // Kiểm tra quyền truy cập project
+    
     if (task.column?.project?.id) {
       const isMember = await this.permissionsService.isProjectMember(
         task.column.project.id,
@@ -88,7 +88,7 @@ export class TaskService {
       throw new NotFoundException('Task không thuộc project nào.');
     }
 
-    // Kiểm tra quyền truy cập project nếu có userId và project
+    
     if (userId && task.column?.project?.id) {
       const isMember = await this.permissionsService.isProjectMember(
         task.column.project.id,
@@ -99,23 +99,23 @@ export class TaskService {
       }
     }
 
-    // Nếu không có project, trả về tất cả assignees
+    
     if (!task.column?.project?.id) {
       return task.assignees;
     }
 
-    // Lấy danh sách project members
+    
     const projectMembers = await this.projectMemberRepo.find({
       where: { project: { id: task.column.project.id } },
       relations: ['user'],
     });
 
-    // Tạo Set các userIds còn trong project
+    
     const projectMemberUserIds = new Set(
       projectMembers.map((pm) => pm.user.id),
     );
 
-    // Filter assignees chỉ giữ những người còn trong project members
+    
     const filteredAssignees = task.assignees.filter((assignee) =>
       projectMemberUserIds.has(assignee.id),
     );
@@ -133,7 +133,7 @@ export class TaskService {
       throw new NotFoundException('Cột không tồn tại');
     }
 
-    // Kiểm tra quyền truy cập project
+    
     if (column?.project?.id) {
       const isMember = await this.permissionsService.isProjectMember(
         column.project.id,
@@ -152,7 +152,7 @@ export class TaskService {
       order: { position: 'ASC' },
     });
 
-    // Filter assignees theo project members nếu có project
+    
     if (column?.project?.id) {
       const projectMembers = await this.projectMemberRepo.find({
         where: { project: { id: column.project.id } },
@@ -174,7 +174,7 @@ export class TaskService {
   }
 
   async create(dto: CreateTaskDto, creatorId: string) {
-    // Lấy column để kiểm tra projectId
+    
     const column = await this.columnRepo.findOne({
       where: { id: dto.columnId },
       relations: ['project'],
@@ -184,7 +184,7 @@ export class TaskService {
       throw new NotFoundException('Không tìm thấy cột.');
     }
 
-    // Kiểm tra quyền tạo task
+    
     const canEdit = await this.permissionsService.canEditTask(
       column.project.id,
       creatorId,
@@ -231,7 +231,7 @@ export class TaskService {
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
 
-    // Kiểm tra quyền nếu có userId
+    
     if (userId) {
       const canEdit = await this.permissionsService.canEditTask(
         task.column.project.id,
@@ -259,7 +259,7 @@ export class TaskService {
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
 
-    // Kiểm tra quyền nếu có userId
+    
     if (userId) {
       const canDelete = await this.permissionsService.canDeleteTask(
         task.column.project.id,
@@ -281,7 +281,7 @@ export class TaskService {
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
 
-    // Kiểm tra quyền nếu có userId
+    
     if (userId) {
       const canEdit = await this.permissionsService.canEditTask(
         task.column.project.id,
@@ -320,7 +320,7 @@ export class TaskService {
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
 
-    // Kiểm tra quyền nếu có userId
+    
     if (userId) {
       const canEdit = await this.permissionsService.canEditTask(
         task.column.project.id,
@@ -331,7 +331,7 @@ export class TaskService {
       }
     }
 
-    // Filter bỏ các assignees có id trong dto.userIds
+    
     task.assignees = task.assignees.filter(
       (assignee) => !dto.userIds.includes(assignee.id),
     );
@@ -351,7 +351,7 @@ export class TaskService {
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
 
-    // Kiểm tra quyền truy cập project nếu có userId và project
+    
     if (userId && task.column?.project?.id) {
       const isMember = await this.permissionsService.isProjectMember(
         task.column.project.id,
@@ -364,7 +364,7 @@ export class TaskService {
   
     if (newColumnId) {
       task.columnId = newColumnId;
-      // Kiểm tra quyền truy cập project của column mới nếu có userId
+      
       if (userId) {
         const newColumn = await this.columnRepo.findOne({
           where: { id: newColumnId },
@@ -444,7 +444,7 @@ export class TaskService {
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
 
-    // Kiểm tra quyền truy cập project nếu có userId và project
+    
     if (userId && task.column?.project?.id) {
       const isMember = await this.permissionsService.isProjectMember(
         task.column.project.id,
@@ -466,7 +466,7 @@ export class TaskService {
     });
     if (!sub) throw new NotFoundException('SubTask không tồn tại');
 
-    // Kiểm tra quyền truy cập project nếu có userId và project
+    
     if (userId && sub.task.column?.project?.id) {
       const isMember = await this.permissionsService.isProjectMember(
         sub.task.column.project.id,
@@ -499,7 +499,7 @@ export class TaskService {
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
 
-    // Kiểm tra quyền nếu có userId
+    
     if (userId) {
       const assigneeIds = task.assignees.map((a) => a.id);
       const canUpdate = await this.permissionsService.canUpdateTaskStatus(
@@ -532,7 +532,7 @@ export class TaskService {
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
 
-    // Kiểm tra quyền nếu có userId
+    
     if (userId) {
       const canEdit = await this.permissionsService.canEditTask(
         task.column.project.id,
@@ -571,7 +571,7 @@ export class TaskService {
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
 
-    // Kiểm tra quyền nếu có userId
+    
     if (userId) {
       const canEdit = await this.permissionsService.canEditTask(
         task.column.project.id,

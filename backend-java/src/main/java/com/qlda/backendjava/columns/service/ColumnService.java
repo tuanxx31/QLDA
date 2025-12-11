@@ -62,28 +62,28 @@ public class ColumnService {
 
     @Transactional(readOnly = true)
     public List<ColumnEntity> findAll(String projectId, String userId) {
-        // Kiểm tra quyền truy cập project
+        
         ProjectEntity project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy dự án."));
         
-        // Kiểm tra owner
+        
         boolean isOwner = project.getOwner().getId().equals(userId);
         
-        // Kiểm tra member
+        
         boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
         
         if (!isOwner && !isMember) {
             throw new ForbiddenException("Bạn không có quyền truy cập dự án này.");
         }
         
-        // Fetch columns với tasks (chỉ tasks, không fetch subtasks để tránh MultipleBagFetchException)
+        
         List<ColumnEntity> columns = columnRepository.findByProjectIdWithTasks(projectId);
         
         if (columns.isEmpty()) {
             return columns;
         }
         
-        // Collect tất cả task IDs
+        
         List<String> taskIds = columns.stream()
                 .flatMap(column -> column.getTasks() != null ? column.getTasks().stream() : java.util.stream.Stream.empty())
                 .map(TaskEntity::getId)
@@ -94,36 +94,36 @@ public class ColumnService {
             return columns;
         }
         
-        // Load subtasks cho tất cả tasks (query riêng)
+        
         List<SubTaskEntity> allSubtasks = subTaskRepository.findByTaskIds(taskIds);
         Map<String, List<SubTaskEntity>> subtasksMap = allSubtasks.stream()
                 .collect(Collectors.groupingBy(SubTaskEntity::getTaskId));
         
-        // Load assignees cho tất cả tasks (query riêng)
+        
         List<TaskEntity> tasksWithAssignees = taskRepository.findByIdsWithAssignees(taskIds);
         Map<String, TaskEntity> assigneesMap = tasksWithAssignees.stream()
                 .collect(Collectors.toMap(TaskEntity::getId, task -> task));
         
-        // Load labels cho tất cả tasks (query riêng)
+        
         List<TaskEntity> tasksWithLabels = taskRepository.findByIdsWithLabels(taskIds);
         Map<String, TaskEntity> labelsMap = tasksWithLabels.stream()
                 .collect(Collectors.toMap(TaskEntity::getId, task -> task));
         
-        // Gán subtasks, assignees và labels vào tasks
+        
         columns.forEach(column -> {
             if (column.getTasks() != null) {
                 column.getTasks().forEach(task -> {
-                    // Gán subtasks
+                    
                     List<SubTaskEntity> subtasks = subtasksMap.getOrDefault(task.getId(), List.of());
                     task.setSubtasks(new java.util.ArrayList<>(subtasks));
                     
-                    // Gán assignees
+                    
                     TaskEntity taskWithAssignees = assigneesMap.get(task.getId());
                     if (taskWithAssignees != null && taskWithAssignees.getAssignees() != null) {
                         task.setAssignees(new java.util.ArrayList<>(taskWithAssignees.getAssignees()));
                     }
                     
-                    // Gán labels
+                    
                     TaskEntity taskWithLabels = labelsMap.get(task.getId());
                     if (taskWithLabels != null && taskWithLabels.getLabels() != null) {
                         task.setLabels(new java.util.ArrayList<>(taskWithLabels.getLabels()));
@@ -132,7 +132,7 @@ public class ColumnService {
             }
         });
         
-        // Filter assignees theo project members (giống NestJS)
+        
         List<ProjectMemberEntity> projectMembers = projectMemberRepository.findByProjectIdWithUser(projectId);
         Set<String> projectMemberUserIds = projectMembers.stream()
                 .map(pm -> pm.getUser().getId())

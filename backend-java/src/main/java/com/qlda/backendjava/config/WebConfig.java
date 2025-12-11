@@ -24,7 +24,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .allowCredentials(true);
         
-        // CORS cho uploads
+        
         registry.addMapping("/uploads/**")
                 .allowedOrigins(allowedOrigins.split(","))
                 .allowedMethods("GET", "OPTIONS")
@@ -34,7 +34,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Serve files từ thư mục uploads
+        
         String uploadPath = Paths.get("uploads").toAbsolutePath().toString();
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:" + uploadPath + "/");

@@ -1,13 +1,10 @@
-/**
- * Unit tests for PermissionWrapper component
- */
+
 
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PermissionWrapper } from './PermissionWrapper';
 import { useProjectPermission } from '@/hooks/useProjectPermission';
 
-// Mock the hook
 jest.mock('@/hooks/useProjectPermission');
 
 const createWrapper = () => {

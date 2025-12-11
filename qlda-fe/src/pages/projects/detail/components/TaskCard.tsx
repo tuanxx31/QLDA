@@ -72,10 +72,10 @@ export default function TaskCard({ task }: Props) {
   });
 
   const canUpdateStatus = useMemo(() => {
-    // Leader và Editor luôn được phép
+    
     if (canEditTasks) return true;
 
-    // Viewer chỉ được update nếu là assignee
+    
     if (role === 'viewer') {
       const assigneeIds = task.assignees?.map((a) => a.id) || [];
       return assigneeIds.includes(authUser?.id || '');
@@ -343,24 +343,7 @@ export default function TaskCard({ task }: Props) {
           )}
 
           {}
-          {/* {subtasksProgress && (
-            <Tooltip title={`${subtasksProgress.completed}/${subtasksProgress.total} hoàn thành`}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  fontSize: 12,
-                  color: token.colorTextTertiary,
-                }}
-              >
-                <CheckSquareOutlined style={{ fontSize: 12 }} />
-                <span>
-                  {subtasksProgress.completed}/{subtasksProgress.total}
-                </span>
-              </div>
-            </Tooltip>
-          )} */}
+          {}
 
           {}
           <div style={{ flex: 1 }} />

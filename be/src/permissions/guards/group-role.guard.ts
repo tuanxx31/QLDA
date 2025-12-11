@@ -34,14 +34,14 @@ export class GroupRoleGuard implements CanActivate {
       throw new ForbiddenException('Không tìm thấy thông tin người dùng.');
     }
 
-    // Lấy groupId từ params
+    
     const groupId = request.params.groupId || request.params.id;
 
     if (!groupId) {
       throw new NotFoundException('Không tìm thấy groupId trong request.');
     }
 
-    // Kiểm tra quyền
+    
     const hasPermission = await this.permissionsService.checkGroupPermission(
       groupId,
       userId,

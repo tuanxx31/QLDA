@@ -1,8 +1,5 @@
 import { AxiosError } from 'axios';
 
-/**
- * Kiểm tra xem lỗi có phải là 403 Forbidden không
- */
 export function isForbiddenError(error: unknown): boolean {
   if (error instanceof Error && 'response' in error) {
     const axiosError = error as AxiosError;
@@ -11,9 +8,6 @@ export function isForbiddenError(error: unknown): boolean {
   return false;
 }
 
-/**
- * Kiểm tra xem lỗi có phải là 401 Unauthorized không
- */
 export function isUnauthorizedError(error: unknown): boolean {
   if (error instanceof Error && 'response' in error) {
     const axiosError = error as AxiosError;
@@ -22,9 +16,6 @@ export function isUnauthorizedError(error: unknown): boolean {
   return false;
 }
 
-/**
- * Kiểm tra xem lỗi có phải là 404 Not Found không
- */
 export function isNotFoundError(error: unknown): boolean {
   if (error instanceof Error && 'response' in error) {
     const axiosError = error as AxiosError;
@@ -33,9 +24,6 @@ export function isNotFoundError(error: unknown): boolean {
   return false;
 }
 
-/**
- * Lấy message lỗi từ response
- */
 export function getErrorMessage(error: unknown): string {
   if (error instanceof Error && 'response' in error) {
     const axiosError = error as AxiosError<{ message?: string }>;
@@ -51,9 +39,6 @@ export function getErrorMessage(error: unknown): string {
   return 'Đã xảy ra lỗi';
 }
 
-/**
- * Kiểm tra xem URL có phải là resource chính (project/group) không
- */
 export function isMainResource(url: string): boolean {
   const mainResourcePatterns = [
     /\/api\/projects\/[^/]+$/,
@@ -62,9 +47,6 @@ export function isMainResource(url: string): boolean {
   return mainResourcePatterns.some(pattern => pattern.test(url));
 }
 
-/**
- * Kiểm tra xem URL có phải là resource phụ không
- */
 export function isSubResource(url: string): boolean {
   const subResourcePatterns = [
     /\/api\/projects\/[^/]+\/columns/,

@@ -41,13 +41,13 @@ public class StatisticsService {
 
         long totalColumns = columnRepository.findByProjectId(projectId).size();
 
-        // Get all columns for this project
+        
         List<com.qlda.backendjava.columns.entity.ColumnEntity> columns = columnRepository.findByProjectId(projectId);
         List<String> columnIds = columns.stream()
                 .map(com.qlda.backendjava.columns.entity.ColumnEntity::getId)
                 .collect(Collectors.toList());
 
-        // Get all tasks for these columns
+        
         List<TaskEntity> tasks = new ArrayList<>();
         for (String columnId : columnIds) {
             tasks.addAll(taskRepository.findByColumnIdOrderByPositionAsc(columnId));
@@ -105,13 +105,13 @@ public class StatisticsService {
     public List<MemberStatisticsDto> getMemberStatistics(String projectId, String userId) {
         ensureUserIsProjectMember(projectId, userId);
 
-        // Get all columns for this project
+        
         List<com.qlda.backendjava.columns.entity.ColumnEntity> columns = columnRepository.findByProjectId(projectId);
         List<String> columnIds = columns.stream()
                 .map(com.qlda.backendjava.columns.entity.ColumnEntity::getId)
                 .collect(Collectors.toList());
 
-        // Get all tasks for these columns
+        
         List<TaskEntity> tasks = new ArrayList<>();
         for (String columnId : columnIds) {
             tasks.addAll(taskRepository.findByColumnIdOrderByPositionAsc(columnId));
@@ -162,13 +162,13 @@ public class StatisticsService {
                                                                LocalDateTime startDate, LocalDateTime endDate, String userId) {
         ensureUserIsProjectMember(projectId, userId);
 
-        // Get all columns for this project
+        
         List<com.qlda.backendjava.columns.entity.ColumnEntity> columns = columnRepository.findByProjectId(projectId);
         List<String> columnIds = columns.stream()
                 .map(com.qlda.backendjava.columns.entity.ColumnEntity::getId)
                 .collect(Collectors.toList());
 
-        // Get all tasks for these columns
+        
         List<TaskEntity> tasks = new ArrayList<>();
         for (String columnId : columnIds) {
             tasks.addAll(taskRepository.findByColumnIdOrderByPositionAsc(columnId));
@@ -184,7 +184,7 @@ public class StatisticsService {
             String createdKey = formatDateByPeriod(createdDate, period);
             String completedKey = completedDate != null ? formatDateByPeriod(completedDate, period) : null;
 
-            // Handle created tasks
+            
             if (!dateMap.containsKey(createdKey)) {
                 dateMap.put(createdKey, new TimelineStatisticsDto(
                         createdKey, 0, 0, 0, 0
@@ -193,7 +193,7 @@ public class StatisticsService {
             TimelineStatisticsDto createdStats = dateMap.get(createdKey);
             createdStats.setCreatedTasks(createdStats.getCreatedTasks() + 1);
 
-            // Handle completed tasks
+            
             if (completedKey != null && task.getStatus() == TaskEntity.Status.done) {
                 if (!dateMap.containsKey(completedKey)) {
                     dateMap.put(completedKey, new TimelineStatisticsDto(
@@ -203,7 +203,7 @@ public class StatisticsService {
                 TimelineStatisticsDto completedStats = dateMap.get(completedKey);
                 completedStats.setCompletedTasks(completedStats.getCompletedTasks() + 1);
 
-                // Check if completed on time or late
+                
                 if (dueDate != null && completedDate != null) {
                     if (!completedDate.isAfter(dueDate)) {
                         completedStats.setOnTimeTasks(completedStats.getOnTimeTasks() + 1);
@@ -221,16 +221,16 @@ public class StatisticsService {
 
     private String formatDateByPeriod(LocalDateTime date, String period) {
         if (period == null || period.equals("day")) {
-            return date.toLocalDate().toString(); // YYYY-MM-DD
+            return date.toLocalDate().toString(); 
         } else if (period.equals("week")) {
-            // Get the start of the week (Sunday)
+            
             LocalDateTime weekStart = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
-            return weekStart.toLocalDate().toString(); // YYYY-MM-DD
+            return weekStart.toLocalDate().toString(); 
         } else if (period.equals("month")) {
-            // Format as YYYY-MM
+            
             return String.format("%d-%02d", date.getYear(), date.getMonthValue());
         } else {
-            // Default to day
+            
             return date.toLocalDate().toString();
         }
     }
@@ -238,13 +238,13 @@ public class StatisticsService {
     public CommentStatisticsDto getCommentStatistics(String projectId, String filter, String userId) {
         ensureUserIsProjectMember(projectId, userId);
 
-        // Get all columns for this project
+        
         List<com.qlda.backendjava.columns.entity.ColumnEntity> columns = columnRepository.findByProjectId(projectId);
         List<String> columnIds = columns.stream()
                 .map(com.qlda.backendjava.columns.entity.ColumnEntity::getId)
                 .collect(Collectors.toList());
 
-        // Get all tasks for these columns
+        
         List<TaskEntity> tasks = new ArrayList<>();
         for (String columnId : columnIds) {
             tasks.addAll(taskRepository.findByColumnIdOrderByPositionAsc(columnId));
@@ -258,7 +258,7 @@ public class StatisticsService {
             return new CommentStatisticsDto(0, 0, List.of(), List.of());
         }
 
-        // Calculate start date based on filter
+        
         LocalDateTime startDate = null;
         if (filter != null && filter.equals("24h")) {
             startDate = LocalDateTime.now().minusDays(1);
@@ -266,12 +266,12 @@ public class StatisticsService {
             startDate = LocalDateTime.now().minusDays(7);
         }
 
-        // Get comments with filter
+        
         List<CommentEntity> comments = commentRepository.findByTaskIdsAndCreatedAtAfter(taskIds, startDate);
 
         int totalComments = comments.size();
 
-        // Calculate recent comments based on filter
+        
         int recentComments;
         if (filter != null && filter.equals("24h")) {
             LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
@@ -287,7 +287,7 @@ public class StatisticsService {
             recentComments = totalComments;
         }
 
-        // Group comments by task
+        
         Map<String, CommentByTaskDto> commentsByTaskMap = new HashMap<>();
         for (CommentEntity comment : comments) {
             if (comment.getTask() != null) {
@@ -304,7 +304,7 @@ public class StatisticsService {
             }
         }
 
-        // Group comments by member
+        
         Map<String, CommentByMemberDto> commentsByMemberMap = new HashMap<>();
         for (CommentEntity comment : comments) {
             if (comment.getUser() != null) {
@@ -328,7 +328,7 @@ public class StatisticsService {
             }
         }
 
-        // Sort and get top 10
+        
         List<CommentByTaskDto> commentsByTask = commentsByTaskMap.values().stream()
                 .sorted((a, b) -> b.getCommentCount().compareTo(a.getCommentCount()))
                 .limit(10)
@@ -350,13 +350,13 @@ public class StatisticsService {
     public DeadlineAnalyticsDto getDeadlineAnalytics(String projectId, String userId) {
         ensureUserIsProjectMember(projectId, userId);
 
-        // Get all columns for this project
+        
         List<com.qlda.backendjava.columns.entity.ColumnEntity> columns = columnRepository.findByProjectId(projectId);
         List<String> columnIds = columns.stream()
                 .map(com.qlda.backendjava.columns.entity.ColumnEntity::getId)
                 .collect(Collectors.toList());
 
-        // Get all tasks with dueDate for these columns
+        
         List<TaskEntity> tasks = new ArrayList<>();
         for (String columnId : columnIds) {
             tasks.addAll(taskRepository.findByColumnIdOrderByPositionAsc(columnId).stream()
@@ -414,20 +414,17 @@ public class StatisticsService {
         );
     }
 
-    /**
-     * Kiểm tra user có phải member của project không (owner hoặc project member)
-     * Throw ForbiddenException nếu không phải member
-     */
+    
     private void ensureUserIsProjectMember(String projectId, String userId) {
         ProjectEntity project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy dự án."));
         
-        // Kiểm tra owner
+        
         if (project.getOwner().getId().equals(userId)) {
             return;
         }
         
-        // Kiểm tra member
+        
         boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
         
         if (!isMember) {

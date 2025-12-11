@@ -12,8 +12,8 @@ import java.util.Optional;
 
 @Repository
 public interface TaskRepository extends JpaRepository<TaskEntity, String> {
-    // Fetch chỉ subtasks trong query chính để tránh MultipleBagFetchException
-    // Các collection khác sẽ được fetch riêng nếu cần
+    
+    
     @Query("SELECT DISTINCT t FROM TaskEntity t " +
            "LEFT JOIN FETCH t.subtasks " +
            "WHERE t.columnId = :columnId " +
@@ -26,32 +26,32 @@ public interface TaskRepository extends JpaRepository<TaskEntity, String> {
     @EntityGraph(attributePaths = {"assignees", "labels", "subtasks", "column", "column.project"})
     Optional<TaskEntity> findById(String id);
     
-    // Fetch chỉ một collection trong query chính để tránh MultipleBagFetchException
-    // Sau đó fetch các collection khác bằng cách khác
+    
+    
     @Query("SELECT DISTINCT t FROM TaskEntity t " +
            "LEFT JOIN FETCH t.subtasks " +
            "WHERE t.id = :id")
     Optional<TaskEntity> findByIdWithRelations(@Param("id") String id);
     
-    // Fetch assignees riêng
+    
     @Query("SELECT DISTINCT t FROM TaskEntity t " +
            "LEFT JOIN FETCH t.assignees " +
            "WHERE t.id = :id")
     Optional<TaskEntity> findByIdWithAssignees(@Param("id") String id);
     
-    // Fetch labels riêng
+    
     @Query("SELECT DISTINCT t FROM TaskEntity t " +
            "LEFT JOIN FETCH t.labels " +
            "WHERE t.id = :id")
     Optional<TaskEntity> findByIdWithLabels(@Param("id") String id);
     
-    // Load assignees riêng để tránh MultipleBagFetchException
+    
     @Query("SELECT DISTINCT t FROM TaskEntity t " +
            "LEFT JOIN FETCH t.assignees " +
            "WHERE t.id IN :taskIds")
     List<TaskEntity> findByIdsWithAssignees(@Param("taskIds") List<String> taskIds);
     
-    // Load labels riêng để tránh MultipleBagFetchException
+    
     @Query("SELECT DISTINCT t FROM TaskEntity t " +
            "LEFT JOIN FETCH t.labels " +
            "WHERE t.id IN :taskIds")

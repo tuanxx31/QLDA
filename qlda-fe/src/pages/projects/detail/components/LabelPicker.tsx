@@ -58,7 +58,7 @@ export default function LabelPicker({
         queryFn: () => labelService.getLabelsByProject(projectId as string),
         enabled: !!projectId && open,
         retry: (failureCount, error) => {
-            // Không retry nếu là lỗi 403
+            
             if (isForbiddenError(error)) {
                 return false;
             }

@@ -36,7 +36,7 @@ export class StatisticsService {
   ) {}
 
   async getProjectOverview(projectId: string, userId: string): Promise<ProjectOverviewDto> {
-    // Kiểm tra quyền truy cập project
+    
     const isMember = await this.permissionsService.isProjectMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
@@ -76,7 +76,7 @@ export class StatisticsService {
   }
 
   async getColumnStatistics(projectId: string, userId: string): Promise<ColumnStatisticsDto[]> {
-    // Kiểm tra quyền truy cập project
+    
     const isMember = await this.permissionsService.isProjectMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
@@ -118,7 +118,7 @@ export class StatisticsService {
   }
 
   async getMemberStatistics(projectId: string, userId: string): Promise<MemberStatisticsDto[]> {
-    // Kiểm tra quyền truy cập project
+    
     const isMember = await this.permissionsService.isProjectMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
@@ -200,7 +200,7 @@ export class StatisticsService {
     startDate?: Date,
     endDate?: Date,
   ): Promise<TimelineStatisticsDto[]> {
-    // Kiểm tra quyền truy cập project
+    
     const isMember = await this.permissionsService.isProjectMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
@@ -294,7 +294,7 @@ export class StatisticsService {
     userId: string,
     filter?: '24h' | '7d' | 'all',
   ): Promise<CommentStatisticsDto> {
-    // Kiểm tra quyền truy cập project
+    
     const isMember = await this.permissionsService.isProjectMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
@@ -418,7 +418,7 @@ export class StatisticsService {
   }
 
   async getDeadlineAnalytics(projectId: string, userId: string): Promise<DeadlineAnalyticsDto> {
-    // Kiểm tra quyền truy cập project
+    
     const isMember = await this.permissionsService.isProjectMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');

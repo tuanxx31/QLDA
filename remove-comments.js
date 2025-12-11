@@ -20,6 +20,8 @@ function getAllFiles(dirPath, arrayOfFiles = []) {
         !file.endsWith('.d.ts')
       ) {
         arrayOfFiles.push(filePath);
+      } else if (file.endsWith('.java')) {
+        arrayOfFiles.push(filePath);
       }
     }
   });
@@ -115,6 +117,7 @@ function main() {
   const rootDir = process.cwd();
   const beDir = path.join(rootDir, 'be', 'src');
   const feDir = path.join(rootDir, 'qlda-fe', 'src');
+  const javaDir = path.join(rootDir, 'backend-java', 'src');
 
   const allFiles = [];
 
@@ -126,6 +129,11 @@ function main() {
   if (fs.existsSync(feDir)) {
     const feFiles = getAllFiles(feDir);
     allFiles.push(...feFiles);
+  }
+
+  if (fs.existsSync(javaDir)) {
+    const javaFiles = getAllFiles(javaDir);
+    allFiles.push(...javaFiles);
   }
 
   console.log(`Tìm thấy ${allFiles.length} file để xử lý...\n`);

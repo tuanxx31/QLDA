@@ -81,11 +81,11 @@ public class ProjectService {
     }
 
     public List<ProjectEntity> findAllByGroup(String groupId, String userId) {
-        // 1. Kiểm tra group tồn tại
+        
         GroupEntity group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy nhóm."));
 
-        // 2. Kiểm tra user có phải member của group không
+        
         GroupMemberEntity groupMember = groupMemberRepository
                 .findByGroupIdAndUserId(groupId, userId)
                 .orElse(null);
@@ -94,15 +94,15 @@ public class ProjectService {
             throw new ForbiddenException("Bạn không phải thành viên của nhóm này.");
         }
 
-        // 3. Kiểm tra có phải leader không
+        
         boolean isLeader = groupMember.getRole() == GroupMemberEntity.Role.leader;
 
-        // 4. Query projects
+        
         if (isLeader) {
-            // Leader xem tất cả projects của group
+            
             return projectRepository.findByGroupId(groupId);
         } else {
-            // Member chỉ xem projects mà họ là member
+            
             return projectRepository.findByGroupIdAndUserId(groupId, userId);
         }
     }
@@ -201,13 +201,13 @@ public class ProjectService {
     public Map<String, Object> getProjectProgress(String id, String userId) {
         ensureUserIsProjectMember(id, userId);
         
-        // Get all columns for this project
+        
         List<ColumnEntity> columns = columnRepository.findByProjectId(id);
         List<String> columnIds = columns.stream()
                 .map(ColumnEntity::getId)
                 .collect(Collectors.toList());
         
-        // Get all tasks for these columns
+        
         List<TaskEntity> tasks = new ArrayList<>();
         for (String columnId : columnIds) {
             tasks.addAll(taskRepository.findByColumnIdOrderByPositionAsc(columnId));
@@ -259,20 +259,20 @@ public class ProjectService {
     public List<Map<String, Object>> getUserProgress(String id, String userId) {
         ensureUserIsProjectMember(id, userId);
         
-        // Get all columns for this project
+        
         List<ColumnEntity> columns = columnRepository.findByProjectId(id);
         List<String> columnIds = columns.stream()
                 .map(ColumnEntity::getId)
                 .collect(Collectors.toList());
         
-        // Get all tasks with assignees (already loaded via EntityGraph in findByColumnIdOrderByPositionAsc)
+        
         List<TaskEntity> tasks = new ArrayList<>();
         for (String columnId : columnIds) {
             List<TaskEntity> columnTasks = taskRepository.findByColumnIdOrderByPositionAsc(columnId);
             tasks.addAll(columnTasks);
         }
         
-        // Group by user
+        
         Map<String, Map<String, Object>> userStatsMap = new HashMap<>();
         
         for (TaskEntity task : tasks) {
@@ -300,7 +300,7 @@ public class ProjectService {
             }
         }
         
-        // Calculate progress and sort
+        
         return userStatsMap.values().stream()
                 .map(stats -> {
                     int total = (Integer) stats.get("totalTasks");
@@ -319,13 +319,13 @@ public class ProjectService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime threeDaysLater = now.plusDays(3);
         
-        // Get all columns for this project
+        
         List<ColumnEntity> columns = columnRepository.findByProjectId(id);
         List<String> columnIds = columns.stream()
                 .map(ColumnEntity::getId)
                 .collect(Collectors.toList());
         
-        // Get all tasks with due dates
+        
         List<TaskEntity> tasks = new ArrayList<>();
         for (String columnId : columnIds) {
             List<TaskEntity> columnTasks = taskRepository.findByColumnIdOrderByPositionAsc(columnId);
@@ -372,20 +372,17 @@ public class ProjectService {
         return result;
     }
 
-    /**
-     * Kiểm tra user có phải member của project không (owner hoặc project member)
-     * Throw ForbiddenException nếu không phải member
-     */
+    
     private void ensureUserIsProjectMember(String projectId, String userId) {
         ProjectEntity project = projectRepository.findByIdWithMembers(projectId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy dự án."));
         
-        // Kiểm tra owner
+        
         if (project.getOwner().getId().equals(userId)) {
             return;
         }
         
-        // Kiểm tra member
+        
         boolean isMember = project.getMembers().stream()
                 .anyMatch(m -> m.getUser().getId().equals(userId));
         

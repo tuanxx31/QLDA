@@ -16,7 +16,7 @@ public class GroupResponseDto {
     private String description;
     private String inviteCode;
     
-    // Nested objects
+    
     private UserResponseDto leader;
     
     private LocalDateTime createdAt;

@@ -207,7 +207,7 @@ export class GroupsService {
     });
     if (!group) throw new NotFoundException('Không tìm thấy nhóm');
 
-    // Kiểm tra quyền sử dụng PermissionsService
+    
     const canEdit = await this.permissionsService.canEditGroup(id, userId);
     if (!canEdit) {
       throw new ForbiddenException('Chỉ trưởng nhóm mới được cập nhật');
@@ -223,7 +223,7 @@ export class GroupsService {
     });
     if (!group) throw new NotFoundException('Không tìm thấy nhóm');
 
-    // Kiểm tra quyền sử dụng PermissionsService
+    
     const canDelete = await this.permissionsService.canDeleteGroup(id, userId);
     if (!canDelete) {
       throw new ForbiddenException('Chỉ trưởng nhóm mới có quyền xóa');
@@ -263,7 +263,7 @@ export class GroupsService {
     });
     if (!group) throw new NotFoundException('Không tìm thấy nhóm');
 
-    // Kiểm tra quyền sử dụng PermissionsService
+    
     const canInvite = await this.permissionsService.canInviteMembers(
       groupId,
       leaderId,

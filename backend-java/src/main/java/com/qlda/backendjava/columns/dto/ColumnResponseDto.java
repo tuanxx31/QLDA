@@ -16,8 +16,8 @@ public class ColumnResponseDto {
     private String name;
     private Integer order;
     
-    // Nested objects
-    private ProjectResponseDto project; // Optional, chỉ khi cần
-    private List<TaskResponseDto> tasks; // Optional, chỉ khi cần
+    
+    private ProjectResponseDto project; 
+    private List<TaskResponseDto> tasks; 
 }
 

@@ -18,7 +18,7 @@ public class UserResponseDto {
     private String studentCode;
     private String department;
     private LocalDate dateOfBirth;
-    private String gender; // "male" | "female" | "other"
+    private String gender; 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

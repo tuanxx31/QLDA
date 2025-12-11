@@ -56,7 +56,7 @@ function formatContentForSubmit(content: string, mentionIds: string[], mentions?
 
   let formattedContent = content;
 
-  // Build user map for quick lookup
+  
   const userMap = new Map<string, Comment['mentions'][0]>();
   if (mentions) {
     mentions.forEach((user) => {
@@ -64,7 +64,7 @@ function formatContentForSubmit(content: string, mentionIds: string[], mentions?
     });
   }
 
-  // Convert @[name](id) format to @[id] if id is in mentionIds
+  
   formattedContent = formattedContent.replace(/@\[([^\]]+)\]\(([^)]+)\)/g, (match, name, id) => {
     if (mentionIds.includes(id)) {
       return `@[${id}]`;
@@ -72,7 +72,7 @@ function formatContentForSubmit(content: string, mentionIds: string[], mentions?
     return `@${name}`;
   });
 
-  // Keep existing @[userId] format if userId is in mentionIds
+  
   formattedContent = formattedContent.replace(/@\[([a-f0-9-]{36})\]/gi, (match, userId) => {
     if (mentionIds.includes(userId)) {
       return `@[${userId}]`;
@@ -80,7 +80,7 @@ function formatContentForSubmit(content: string, mentionIds: string[], mentions?
     return match;
   });
 
-  // Convert @username mentions to @[userId] format
+  
   mentionIds.forEach((userId) => {
     const user = userMap.get(userId);
     if (!user) return;
@@ -138,7 +138,7 @@ export default function CommentList({ taskId, comments, onEdit, projectOwnerId, 
     setEditingFileUrl(comment.fileUrl);
     setEditingComment(comment);
     
-    // Extract mention IDs from mentions array or parse from content
+    
     if (comment.mentions && comment.mentions.length > 0) {
       setEditingMentionIds(comment.mentions.map((u) => u.id));
     } else {
@@ -177,7 +177,7 @@ export default function CommentList({ taskId, comments, onEdit, projectOwnerId, 
   };
 
   const handleFileUpload = async (file: File): Promise<boolean> => {
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; 
     const ALLOWED_EXTENSIONS = /\.(jpg|jpeg|png|pdf|docx|xlsx)$/i;
 
     if (!ALLOWED_EXTENSIONS.test(file.name)) {

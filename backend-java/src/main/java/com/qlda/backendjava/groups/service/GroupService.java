@@ -162,7 +162,7 @@ public class GroupService {
         GroupEntity group = groupRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy nhóm"));
 
-        // Get all members of the group (all statuses)
+        
         List<GroupMemberEntity> allMembers = groupMemberRepository.findByGroupIdWithUser(id);
 
         boolean isLeader = group.getLeader().getId().equals(userId);
@@ -178,7 +178,7 @@ public class GroupService {
             throw new ForbiddenException("Bạn không có quyền truy cập nhóm này");
         }
 
-        // Return all members with their statuses (accepted, pending_invite, pending_approval, rejected)
+        
         List<Map<String, Object>> membersList = allMembers.stream()
                 .map(m -> {
                     Map<String, Object> memberMap = new HashMap<>();

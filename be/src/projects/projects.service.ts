@@ -70,7 +70,7 @@ export class ProjectsService {
   }
 
   async getProjectProgress(projectId: string, userId: string) {
-    // Kiểm tra quyền truy cập project
+    
     const isMember = await this.permissionsService.isProjectMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
@@ -101,7 +101,7 @@ export class ProjectsService {
   }
 
   async getColumnProgress(projectId: string, userId: string) {
-    // Kiểm tra quyền truy cập project
+    
     const isMember = await this.permissionsService.isProjectMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
@@ -142,7 +142,7 @@ export class ProjectsService {
   }
 
   async getUserProgress(projectId: string, userId: string) {
-    // Kiểm tra quyền truy cập project
+    
     const isMember = await this.permissionsService.isProjectMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
@@ -215,7 +215,7 @@ export class ProjectsService {
   }
 
   async getDeadlineSummary(projectId: string, userId: string) {
-    // Kiểm tra quyền truy cập project
+    
     const isMember = await this.permissionsService.isProjectMember(projectId, userId);
     if (!isMember) {
       throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
@@ -321,7 +321,7 @@ export class ProjectsService {
   }
 
   async findOne(id: string, userId: string) {
-    // Kiểm tra quyền truy cập project
+    
     const isMember = await this.permissionsService.isProjectMember(id, userId);
     if (!isMember) {
       throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');

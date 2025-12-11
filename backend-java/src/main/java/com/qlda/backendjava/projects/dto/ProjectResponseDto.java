@@ -20,9 +20,9 @@ public class ProjectResponseDto {
     private LocalDate deadline;
     private String status;
     
-    // Nested objects
+    
     private UserResponseDto owner;
-    private GroupResponseDto group; // Optional
+    private GroupResponseDto group; 
     
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

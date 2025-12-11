@@ -35,7 +35,7 @@ export class CommentsService {
       throw new NotFoundException('Task không tồn tại');
     }
 
-    // Kiểm tra quyền truy cập project nếu có project
+    
     if (task.column?.project?.id) {
       const isMember = await this.permissionsService.isProjectMember(
         task.column.project.id,
@@ -80,7 +80,7 @@ export class CommentsService {
   }
 
   async findAll(taskId: string, userId: string, page: number = 1, limit: number = 20) {
-    // Lấy task để kiểm tra project
+    
     const task = await this.taskRepo.findOne({
       where: { id: taskId },
       relations: ['column', 'column.project'],
@@ -90,7 +90,7 @@ export class CommentsService {
       throw new NotFoundException('Task không tồn tại');
     }
 
-    // Kiểm tra quyền truy cập project nếu có project
+    
     if (task.column?.project?.id) {
       const isMember = await this.permissionsService.isProjectMember(
         task.column.project.id,
@@ -130,7 +130,7 @@ export class CommentsService {
       throw new NotFoundException('Comment không tồn tại');
     }
 
-    // Kiểm tra quyền truy cập project
+    
     if (comment.task?.column?.project?.id) {
       const isMember = await this.permissionsService.isProjectMember(
         comment.task.column.project.id,
@@ -156,7 +156,7 @@ export class CommentsService {
       throw new NotFoundException('Comment không tồn tại');
     }
 
-    // Kiểm tra quyền truy cập project nếu có project
+    
     if (comment.task?.column?.project?.id) {
       const isMember = await this.permissionsService.isProjectMember(
         comment.task.column.project.id,
@@ -213,7 +213,7 @@ export class CommentsService {
       throw new NotFoundException('Comment không tồn tại');
     }
 
-    // Kiểm tra quyền truy cập project nếu có project
+    
     if (comment.task?.column?.project?.id) {
       const isMember = await this.permissionsService.isProjectMember(
         comment.task.column.project.id,

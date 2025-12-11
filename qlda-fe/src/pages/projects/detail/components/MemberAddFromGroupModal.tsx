@@ -104,7 +104,7 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
     onSuccess: () => {
       message.success('Đã thêm thành viên vào dự án');
       queryClient.invalidateQueries({ queryKey: ['projectMembers', projectId] });
-      // Invalidate task assignees để assignees cũ tự động hiển thị lại khi thành viên được thêm lại
+      
       queryClient.invalidateQueries({ queryKey: ['taskAssignees'] });
       queryClient.invalidateQueries({ queryKey: ['task'] });
       queryClient.invalidateQueries({ queryKey: ['tasks'] });

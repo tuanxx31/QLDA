@@ -1,6 +1,4 @@
-/**
- * Unit tests for useGroupPermission hook
- */
+
 
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -8,7 +6,6 @@ import { useGroupPermission } from './useGroupPermission';
 import { groupService } from '@/services/group.services';
 import useAuth from './useAuth';
 
-// Mock dependencies
 jest.mock('@/services/group.services');
 jest.mock('./useAuth');
 

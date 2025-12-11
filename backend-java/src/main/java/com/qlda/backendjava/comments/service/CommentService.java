@@ -41,12 +41,12 @@ public class CommentService {
     public CommentEntity create(String taskId, String userId, CreateCommentDto dto) {
         ensureUserCanAccessTask(taskId, userId);
         
-        // Validate task exists
+        
         if (!taskRepository.existsById(taskId)) {
             throw new NotFoundException("Task không tồn tại");
         }
         
-        // Validate user exists
+        
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("User không tồn tại");
         }
@@ -65,7 +65,7 @@ public class CommentService {
 
         CommentEntity saved = commentRepository.save(comment);
         
-        // Load lại với relations như NestJS: ['user', 'mentions']
+        
         return commentRepository.findByIdWithRelations(saved.getId())
                 .orElse(saved);
     }
@@ -85,7 +85,7 @@ public class CommentService {
     }
 
     public CommentEntity findOne(String id) {
-        // Load với relations như NestJS: ['user', 'mentions', 'task']
+        
         return commentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Comment không tồn tại"));
     }
@@ -114,7 +114,7 @@ public class CommentService {
 
         CommentEntity saved = commentRepository.save(comment);
         
-        // Load lại với relations như NestJS: ['user', 'mentions']
+        
         return commentRepository.findByIdWithRelations(saved.getId())
                 .orElse(saved);
     }
@@ -146,9 +146,7 @@ public class CommentService {
         return response;
     }
 
-    /**
-     * Helper method để lấy projectId từ task và kiểm tra quyền truy cập
-     */
+    
     private void ensureUserCanAccessTask(String taskId, String userId) {
         TaskEntity task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new NotFoundException("Task không tồn tại"));
@@ -168,12 +166,12 @@ public class CommentService {
         ProjectEntity project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy dự án."));
         
-        // Kiểm tra owner
+        
         if (project.getOwner().getId().equals(userId)) {
             return;
         }
         
-        // Kiểm tra member
+        
         boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
         
         if (!isMember) {
