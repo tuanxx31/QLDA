@@ -23,5 +23,10 @@ public interface GroupMemberRepository extends JpaRepository<GroupMemberEntity, 
     List<GroupMemberEntity> findByUserId(@Param("userId") String userId);
     
     boolean existsByGroupIdAndUserId(String groupId, String userId);
+    
+    @Query("SELECT gm FROM GroupMemberEntity gm " +
+           "LEFT JOIN FETCH gm.user " +
+           "WHERE gm.group.id = :groupId")
+    List<GroupMemberEntity> findByGroupIdWithUser(@Param("groupId") String groupId);
 }
 
