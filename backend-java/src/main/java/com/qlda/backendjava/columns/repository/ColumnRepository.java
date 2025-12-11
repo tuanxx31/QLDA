@@ -14,5 +14,12 @@ public interface ColumnRepository extends JpaRepository<ColumnEntity, String> {
     List<ColumnEntity> findByProjectIdOrderByOrderAsc(@Param("projectId") String projectId);
     
     List<ColumnEntity> findByProjectId(String projectId);
+    
+    // Chỉ fetch tasks, không fetch subtasks để tránh MultipleBagFetchException
+    @Query("SELECT DISTINCT c FROM ColumnEntity c " +
+           "LEFT JOIN FETCH c.tasks t " +
+           "WHERE c.project.id = :projectId " +
+           "ORDER BY c.order ASC, t.position ASC")
+    List<ColumnEntity> findByProjectIdWithTasks(@Param("projectId") String projectId);
 }
 

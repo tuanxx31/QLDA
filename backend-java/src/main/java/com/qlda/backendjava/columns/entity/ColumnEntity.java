@@ -3,11 +3,15 @@ package com.qlda.backendjava.columns.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.qlda.backendjava.projects.entity.ProjectEntity;
+import com.qlda.backendjava.tasks.entity.TaskEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "`columns`")
@@ -33,5 +37,10 @@ public class ColumnEntity {
     @JoinColumn(name = "project_id", nullable = false)
     @JsonIgnore
     private ProjectEntity project;
+
+    @OneToMany(mappedBy = "column", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OrderBy("position ASC")
+    @JsonIgnoreProperties({"column"})
+    private List<TaskEntity> tasks = new ArrayList<>();
 }
 

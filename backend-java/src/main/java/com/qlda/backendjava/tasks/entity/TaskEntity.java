@@ -12,6 +12,8 @@ import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tasks")
@@ -87,6 +89,11 @@ public class TaskEntity {
             inverseJoinColumns = @JoinColumn(name = "label_id")
     )
     private java.util.List<com.qlda.backendjava.labels.entity.LabelEntity> labels = new java.util.ArrayList<>();
+
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OrderBy("position ASC")
+    @JsonIgnoreProperties({"task"})
+    private List<com.qlda.backendjava.subtasks.entity.SubTaskEntity> subtasks = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

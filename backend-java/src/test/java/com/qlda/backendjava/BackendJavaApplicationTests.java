@@ -1,4 +1,4 @@
-package com.qlda.backendjavajava;
+package com.qlda.backendjava;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

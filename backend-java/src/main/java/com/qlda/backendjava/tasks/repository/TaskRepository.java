@@ -14,5 +14,17 @@ public interface TaskRepository extends JpaRepository<TaskEntity, String> {
     
     @Query("SELECT MAX(t.position) FROM TaskEntity t WHERE t.columnId = :columnId")
     java.math.BigDecimal findMaxPositionByColumnId(@Param("columnId") String columnId);
+    
+    // Load assignees riêng để tránh MultipleBagFetchException
+    @Query("SELECT DISTINCT t FROM TaskEntity t " +
+           "LEFT JOIN FETCH t.assignees " +
+           "WHERE t.id IN :taskIds")
+    List<TaskEntity> findByIdsWithAssignees(@Param("taskIds") List<String> taskIds);
+    
+    // Load labels riêng để tránh MultipleBagFetchException
+    @Query("SELECT DISTINCT t FROM TaskEntity t " +
+           "LEFT JOIN FETCH t.labels " +
+           "WHERE t.id IN :taskIds")
+    List<TaskEntity> findByIdsWithLabels(@Param("taskIds") List<String> taskIds);
 }
 
