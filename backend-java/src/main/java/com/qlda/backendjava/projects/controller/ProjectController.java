@@ -56,32 +56,47 @@ public class ProjectController {
 
     @Operation(summary = "Lấy thông tin dự án", description = "Lấy thông tin chi tiết của một dự án theo ID")
     @GetMapping("/{id}")
-    public ResponseEntity<ProjectEntity> findOne(@PathVariable String id) {
-        ProjectEntity project = projectService.findOne(id);
+    public ResponseEntity<ProjectEntity> findOne(
+            @PathVariable String id,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        ProjectEntity project = projectService.findOne(id, userId);
         return ResponseEntity.ok(project);
     }
 
     @GetMapping("/{id}/progress")
-    public ResponseEntity<Map<String, Object>> getProjectProgress(@PathVariable String id) {
-        Map<String, Object> progress = projectService.getProjectProgress(id);
+    public ResponseEntity<Map<String, Object>> getProjectProgress(
+            @PathVariable String id,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        Map<String, Object> progress = projectService.getProjectProgress(id, userId);
         return ResponseEntity.ok(progress);
     }
 
     @GetMapping("/{id}/progress/columns")
-    public ResponseEntity<List<Map<String, Object>>> getColumnProgress(@PathVariable String id) {
-        List<Map<String, Object>> progress = projectService.getColumnProgress(id);
+    public ResponseEntity<List<Map<String, Object>>> getColumnProgress(
+            @PathVariable String id,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        List<Map<String, Object>> progress = projectService.getColumnProgress(id, userId);
         return ResponseEntity.ok(progress);
     }
 
     @GetMapping("/{id}/progress/users")
-    public ResponseEntity<List<Map<String, Object>>> getUserProgress(@PathVariable String id) {
-        List<Map<String, Object>> progress = projectService.getUserProgress(id);
+    public ResponseEntity<List<Map<String, Object>>> getUserProgress(
+            @PathVariable String id,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        List<Map<String, Object>> progress = projectService.getUserProgress(id, userId);
         return ResponseEntity.ok(progress);
     }
 
     @GetMapping("/{id}/progress/deadline-summary")
-    public ResponseEntity<Map<String, Object>> getDeadlineSummary(@PathVariable String id) {
-        Map<String, Object> summary = projectService.getDeadlineSummary(id);
+    public ResponseEntity<Map<String, Object>> getDeadlineSummary(
+            @PathVariable String id,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        Map<String, Object> summary = projectService.getDeadlineSummary(id, userId);
         return ResponseEntity.ok(summary);
     }
 

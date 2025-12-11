@@ -27,14 +27,20 @@ public class TaskController {
     private final TaskService taskService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<TaskEntity> findOne(@PathVariable String id) {
-        TaskEntity task = taskService.findOne(id);
+    public ResponseEntity<TaskEntity> findOne(
+            @PathVariable String id,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        TaskEntity task = taskService.findOne(id, userId);
         return ResponseEntity.ok(task);
     }
 
     @GetMapping("/{id}/assignees")
-    public ResponseEntity<List<com.qlda.backendjava.users.entity.UserEntity>> getAssignees(@PathVariable String id) {
-        List<com.qlda.backendjava.users.entity.UserEntity> assignees = taskService.getAssignees(id);
+    public ResponseEntity<List<com.qlda.backendjava.users.entity.UserEntity>> getAssignees(
+            @PathVariable String id,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        List<com.qlda.backendjava.users.entity.UserEntity> assignees = taskService.getAssignees(id, userId);
         return ResponseEntity.ok(assignees);
     }
 
@@ -50,8 +56,11 @@ public class TaskController {
     }
 
     @GetMapping("/column/{columnId}")
-    public ResponseEntity<List<TaskEntity>> findByColumn(@PathVariable String columnId) {
-        List<TaskEntity> tasks = taskService.findByColumn(columnId);
+    public ResponseEntity<List<TaskEntity>> findByColumn(
+            @PathVariable String columnId,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        List<TaskEntity> tasks = taskService.findByColumn(columnId, userId);
         return ResponseEntity.ok(tasks);
     }
 
@@ -126,28 +135,34 @@ public class TaskController {
     @PatchMapping("/{id}/position")
     public ResponseEntity<Map<String, Object>> updatePosition(
             @PathVariable String id,
-            @RequestBody Map<String, String> body) {
+            @RequestBody Map<String, String> body,
+            Authentication authentication) {
+        String userId = authentication.getName();
         String prevTaskId = body.get("prevTaskId");
         String nextTaskId = body.get("nextTaskId");
         String columnId = body.get("columnId");
-        Map<String, Object> result = taskService.updatePosition(id, prevTaskId, nextTaskId, columnId);
+        Map<String, Object> result = taskService.updatePosition(id, prevTaskId, nextTaskId, columnId, userId);
         return ResponseEntity.ok(result);
     }
 
     @PostMapping("/{id}/subtasks")
     public ResponseEntity<SubTaskEntity> addSubTask(
             @PathVariable String id,
-            @RequestBody Map<String, String> body) {
+            @RequestBody Map<String, String> body,
+            Authentication authentication) {
+        String userId = authentication.getName();
         String title = body.get("title");
-        SubTaskEntity subTask = taskService.addSubTask(id, title);
+        SubTaskEntity subTask = taskService.addSubTask(id, title, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(subTask);
     }
 
     @PatchMapping("/subtasks/{id}")
     public ResponseEntity<TaskEntity> updateSubTask(
             @PathVariable String id,
-            @RequestBody Map<String, Object> update) {
-        TaskEntity task = taskService.updateSubTask(id, update);
+            @RequestBody Map<String, Object> update,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        TaskEntity task = taskService.updateSubTask(id, update, userId);
         return ResponseEntity.ok(task);
     }
 }

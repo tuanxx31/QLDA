@@ -43,8 +43,9 @@ export class ColumnsController {
   @ApiOperation({ summary: 'Lấy tất cả cột của dự án' })
   @ApiResponse({ status: 200, description: 'Cột đã được lấy thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  findAll(@Param('projectId') projectId: string) {
-    return this.columnsService.findAll(projectId);
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
+  findAll(@Param('projectId') projectId: string, @CurrentUser('sub') userId: string) {
+    return this.columnsService.findAll(projectId, userId);
   }
 
   @Patch(':id')

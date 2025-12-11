@@ -18,5 +18,12 @@ public interface ProjectRepository extends JpaRepository<ProjectEntity, String> 
     @EntityGraph(attributePaths = {"group", "owner", "members", "members.user"})
     @Query("SELECT p FROM ProjectEntity p WHERE p.id = :id")
     Optional<ProjectEntity> findByIdWithMembers(@Param("id") String id);
+    
+    @Query("SELECT DISTINCT p FROM ProjectEntity p " +
+           "INNER JOIN p.members pm " +
+           "WHERE p.group.id = :groupId AND pm.user.id = :userId " +
+           "ORDER BY p.createdAt DESC")
+    List<ProjectEntity> findByGroupIdAndUserId(@Param("groupId") String groupId, 
+                                                @Param("userId") String userId);
 }
 

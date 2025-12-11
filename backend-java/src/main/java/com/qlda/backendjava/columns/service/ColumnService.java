@@ -61,7 +61,21 @@ public class ColumnService {
     }
 
     @Transactional(readOnly = true)
-    public List<ColumnEntity> findAll(String projectId) {
+    public List<ColumnEntity> findAll(String projectId, String userId) {
+        // Kiểm tra quyền truy cập project
+        ProjectEntity project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy dự án."));
+        
+        // Kiểm tra owner
+        boolean isOwner = project.getOwner().getId().equals(userId);
+        
+        // Kiểm tra member
+        boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
+        
+        if (!isOwner && !isMember) {
+            throw new ForbiddenException("Bạn không có quyền truy cập dự án này.");
+        }
+        
         // Fetch columns với tasks (chỉ tasks, không fetch subtasks để tránh MultipleBagFetchException)
         List<ColumnEntity> columns = columnRepository.findByProjectIdWithTasks(projectId);
         

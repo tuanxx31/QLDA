@@ -29,12 +29,25 @@ export class TaskService {
     private permissionsService: PermissionsService,
   ) {}
 
-  async findOne(id: string) {
+  async findOne(id: string, userId: string) {
     const task = await this.taskRepo.findOne({
       where: { id },
       relations: ['assignees', 'labels', 'subtasks', 'column', 'column.project'],
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
+
+    // Kiểm tra quyền truy cập project
+    if (task.column?.project?.id) {
+      const isMember = await this.permissionsService.isProjectMember(
+        task.column.project.id,
+        userId,
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+      }
+    } else {
+      throw new NotFoundException('Task không thuộc project nào.');
+    }
 
     // Filter assignees theo project members nếu có project
     if (task.column?.project?.id) {
@@ -55,12 +68,36 @@ export class TaskService {
     return task;
   }
 
-  async getAssignees(id: string) {
+  async getAssignees(id: string, userId: string) {
     const task = await this.taskRepo.findOne({
       where: { id },
       relations: ['assignees', 'column', 'column.project'],
     });
     if (!task) throw new NotFoundException('Task không tồn tại');
+
+    // Kiểm tra quyền truy cập project
+    if (task.column?.project?.id) {
+      const isMember = await this.permissionsService.isProjectMember(
+        task.column.project.id,
+        userId,
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+      }
+    } else {
+      throw new NotFoundException('Task không thuộc project nào.');
+    }
+
+    // Kiểm tra quyền truy cập project nếu có userId và project
+    if (userId && task.column?.project?.id) {
+      const isMember = await this.permissionsService.isProjectMember(
+        task.column.project.id,
+        userId,
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+      }
+    }
 
     // Nếu không có project, trả về tất cả assignees
     if (!task.column?.project?.id) {
@@ -86,11 +123,28 @@ export class TaskService {
     return filteredAssignees;
   }
 
-  async findByColumn(columnId: string) {
+  async findByColumn(columnId: string, userId: string) {
     const column = await this.columnRepo.findOne({
       where: { id: columnId },
       relations: ['project'],
     });
+
+    if (!column) {
+      throw new NotFoundException('Cột không tồn tại');
+    }
+
+    // Kiểm tra quyền truy cập project
+    if (column?.project?.id) {
+      const isMember = await this.permissionsService.isProjectMember(
+        column.project.id,
+        userId,
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+      }
+    } else {
+      throw new NotFoundException('Cột không thuộc project nào.');
+    }
 
     const tasks = await this.taskRepo.find({
       where: { columnId },
@@ -290,11 +344,43 @@ export class TaskService {
     });
   }
 
-  async updatePosition(taskId, prevTaskId?, nextTaskId?, newColumnId?) {
-    const task = await this.taskRepo.findOne({ where: { id: taskId } });
+  async updatePosition(taskId, userId?, prevTaskId?, nextTaskId?, newColumnId?) {
+    const task = await this.taskRepo.findOne({
+      where: { id: taskId },
+      relations: ['column', 'column.project'],
+    });
     if (!task) throw new NotFoundException('Task không tồn tại');
+
+    // Kiểm tra quyền truy cập project nếu có userId và project
+    if (userId && task.column?.project?.id) {
+      const isMember = await this.permissionsService.isProjectMember(
+        task.column.project.id,
+        userId,
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+      }
+    }
   
-    if (newColumnId) task.columnId = newColumnId;
+    if (newColumnId) {
+      task.columnId = newColumnId;
+      // Kiểm tra quyền truy cập project của column mới nếu có userId
+      if (userId) {
+        const newColumn = await this.columnRepo.findOne({
+          where: { id: newColumnId },
+          relations: ['project'],
+        });
+        if (newColumn?.project?.id) {
+          const isMember = await this.permissionsService.isProjectMember(
+            newColumn.project.id,
+            userId,
+          );
+          if (!isMember) {
+            throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+          }
+        }
+      }
+    }
   
     const prev = prevTaskId
       ? await this.taskRepo.findOne({ where: { id: prevTaskId } })
@@ -351,20 +437,45 @@ export class TaskService {
   
   
 
-  async addSubTask(taskId: string, title: string) {
-    const task = await this.taskRepo.findOne({ where: { id: taskId } });
+  async addSubTask(taskId: string, title: string, userId?: string) {
+    const task = await this.taskRepo.findOne({
+      where: { id: taskId },
+      relations: ['column', 'column.project'],
+    });
     if (!task) throw new NotFoundException('Task không tồn tại');
+
+    // Kiểm tra quyền truy cập project nếu có userId và project
+    if (userId && task.column?.project?.id) {
+      const isMember = await this.permissionsService.isProjectMember(
+        task.column.project.id,
+        userId,
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+      }
+    }
 
     const sub = this.subRepo.create({ title, task });
     return this.subRepo.save(sub);
   }
 
-  async updateSubTask(id: string, update: Partial<SubTask>) {
+  async updateSubTask(id: string, update: Partial<SubTask>, userId?: string) {
     const sub = await this.subRepo.findOne({
       where: { id },
-      relations: ['task', 'task.subtasks', 'task.assignees', 'task.labels'],
+      relations: ['task', 'task.subtasks', 'task.assignees', 'task.labels', 'task.column', 'task.column.project'],
     });
     if (!sub) throw new NotFoundException('SubTask không tồn tại');
+
+    // Kiểm tra quyền truy cập project nếu có userId và project
+    if (userId && sub.task.column?.project?.id) {
+      const isMember = await this.permissionsService.isProjectMember(
+        sub.task.column.project.id,
+        userId,
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+      }
+    }
 
     Object.assign(sub, update);
     await this.subRepo.save(sub);

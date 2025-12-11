@@ -32,8 +32,10 @@ public class CommentController {
     public ResponseEntity<Map<String, Object>> findAll(
             @PathVariable String taskId,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int limit) {
-        Map<String, Object> result = commentService.findAll(taskId, page, limit);
+            @RequestParam(defaultValue = "20") int limit,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        Map<String, Object> result = commentService.findAll(taskId, page, limit, userId);
         return ResponseEntity.ok(result);
     }
 

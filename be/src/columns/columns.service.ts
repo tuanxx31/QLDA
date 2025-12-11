@@ -52,7 +52,13 @@ export class ColumnsService {
   }
   
 
-  async findAll(projectId: string) {
+  async findAll(projectId: string, userId: string) {
+    // Kiểm tra quyền truy cập project
+    const isMember = await this.permissionsService.isProjectMember(projectId, userId);
+    if (!isMember) {
+      throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+    }
+
     const columns = await this.columnRepo.find({
       where: { project: { id: projectId } },
       relations: [

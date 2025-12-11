@@ -40,15 +40,17 @@ export class ProjectMembersController {
     description: 'Danh sách thành viên được lấy thành công',
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
-  async getMembers(@Param('projectId') projectId: string, @Query('taskId') taskId?: string) {
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
+  async getMembers(@Param('projectId') projectId: string, @Query('taskId') taskId?: string, @Request() req: any) {
+    const userId = req.user.sub as string;
 
     let membersIdExcludeTask: string[] = [];
     if (taskId) {
-      const taskAssignees = await this.taskService.getAssignees(taskId);
+      const taskAssignees = await this.taskService.getAssignees(taskId, userId);
       membersIdExcludeTask = taskAssignees.map((assignee) => assignee.id);
     }
 
-    return await this.projectMembersService.getMembers(projectId, membersIdExcludeTask);
+    return await this.projectMembersService.getMembers(projectId, userId, membersIdExcludeTask);
   }
 
   @Post(':projectId')

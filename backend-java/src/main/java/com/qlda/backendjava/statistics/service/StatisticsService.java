@@ -1,9 +1,12 @@
 package com.qlda.backendjava.statistics.service;
 
+import com.qlda.backendjava.common.exception.ForbiddenException;
 import com.qlda.backendjava.common.exception.NotFoundException;
 import com.qlda.backendjava.columns.repository.ColumnRepository;
 import com.qlda.backendjava.comments.entity.CommentEntity;
 import com.qlda.backendjava.comments.repository.CommentRepository;
+import com.qlda.backendjava.projectmember.entity.ProjectMemberEntity;
+import com.qlda.backendjava.projectmember.repository.ProjectMemberRepository;
 import com.qlda.backendjava.projects.entity.ProjectEntity;
 import com.qlda.backendjava.projects.repository.ProjectRepository;
 import com.qlda.backendjava.statistics.dto.*;
@@ -28,8 +31,11 @@ public class StatisticsService {
     private final TaskRepository taskRepository;
     private final ColumnRepository columnRepository;
     private final CommentRepository commentRepository;
+    private final ProjectMemberRepository projectMemberRepository;
 
-    public ProjectOverviewDto getProjectOverview(String projectId) {
+    public ProjectOverviewDto getProjectOverview(String projectId, String userId) {
+        ensureUserIsProjectMember(projectId, userId);
+        
         ProjectEntity project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy dự án."));
 
@@ -69,9 +75,8 @@ public class StatisticsService {
         );
     }
 
-    public List<ColumnStatisticsDto> getColumnStatistics(String projectId) {
-        projectRepository.findById(projectId)
-                .orElseThrow(() -> new NotFoundException("Không tìm thấy dự án."));
+    public List<ColumnStatisticsDto> getColumnStatistics(String projectId, String userId) {
+        ensureUserIsProjectMember(projectId, userId);
 
         List<com.qlda.backendjava.columns.entity.ColumnEntity> columns = columnRepository.findByProjectId(projectId);
 
@@ -97,9 +102,8 @@ public class StatisticsService {
                 .collect(Collectors.toList());
     }
 
-    public List<MemberStatisticsDto> getMemberStatistics(String projectId) {
-        projectRepository.findById(projectId)
-                .orElseThrow(() -> new NotFoundException("Không tìm thấy dự án."));
+    public List<MemberStatisticsDto> getMemberStatistics(String projectId, String userId) {
+        ensureUserIsProjectMember(projectId, userId);
 
         // Get all columns for this project
         List<com.qlda.backendjava.columns.entity.ColumnEntity> columns = columnRepository.findByProjectId(projectId);
@@ -155,9 +159,8 @@ public class StatisticsService {
     }
 
     public List<TimelineStatisticsDto> getTimelineStatistics(String projectId, String period, 
-                                                               LocalDateTime startDate, LocalDateTime endDate) {
-        projectRepository.findById(projectId)
-                .orElseThrow(() -> new NotFoundException("Không tìm thấy dự án."));
+                                                               LocalDateTime startDate, LocalDateTime endDate, String userId) {
+        ensureUserIsProjectMember(projectId, userId);
 
         // Get all columns for this project
         List<com.qlda.backendjava.columns.entity.ColumnEntity> columns = columnRepository.findByProjectId(projectId);
@@ -232,9 +235,8 @@ public class StatisticsService {
         }
     }
 
-    public CommentStatisticsDto getCommentStatistics(String projectId, String filter) {
-        projectRepository.findById(projectId)
-                .orElseThrow(() -> new NotFoundException("Không tìm thấy dự án."));
+    public CommentStatisticsDto getCommentStatistics(String projectId, String filter, String userId) {
+        ensureUserIsProjectMember(projectId, userId);
 
         // Get all columns for this project
         List<com.qlda.backendjava.columns.entity.ColumnEntity> columns = columnRepository.findByProjectId(projectId);
@@ -306,22 +308,22 @@ public class StatisticsService {
         Map<String, CommentByMemberDto> commentsByMemberMap = new HashMap<>();
         for (CommentEntity comment : comments) {
             if (comment.getUser() != null) {
-                String userId = comment.getUser().getId();
-                if (!commentsByMemberMap.containsKey(userId)) {
+                String commentUserId = comment.getUser().getId();
+                if (!commentsByMemberMap.containsKey(commentUserId)) {
                     String userName = comment.getUser().getName() != null 
                             ? comment.getUser().getName() 
                             : comment.getUser().getEmail();
                     String avatar = comment.getUser().getAvatar() != null 
                             ? comment.getUser().getAvatar() 
                             : "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-                    commentsByMemberMap.put(userId, new CommentByMemberDto(
-                            userId,
+                    commentsByMemberMap.put(commentUserId, new CommentByMemberDto(
+                            commentUserId,
                             userName,
                             avatar,
                             0
                     ));
                 }
-                CommentByMemberDto memberDto = commentsByMemberMap.get(userId);
+                CommentByMemberDto memberDto = commentsByMemberMap.get(commentUserId);
                 memberDto.setCommentCount(memberDto.getCommentCount() + 1);
             }
         }
@@ -345,9 +347,8 @@ public class StatisticsService {
         );
     }
 
-    public DeadlineAnalyticsDto getDeadlineAnalytics(String projectId) {
-        projectRepository.findById(projectId)
-                .orElseThrow(() -> new NotFoundException("Không tìm thấy dự án."));
+    public DeadlineAnalyticsDto getDeadlineAnalytics(String projectId, String userId) {
+        ensureUserIsProjectMember(projectId, userId);
 
         // Get all columns for this project
         List<com.qlda.backendjava.columns.entity.ColumnEntity> columns = columnRepository.findByProjectId(projectId);
@@ -411,6 +412,27 @@ public class StatisticsService {
                 completedOnTimeList,
                 completedLateList
         );
+    }
+
+    /**
+     * Kiểm tra user có phải member của project không (owner hoặc project member)
+     * Throw ForbiddenException nếu không phải member
+     */
+    private void ensureUserIsProjectMember(String projectId, String userId) {
+        ProjectEntity project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy dự án."));
+        
+        // Kiểm tra owner
+        if (project.getOwner().getId().equals(userId)) {
+            return;
+        }
+        
+        // Kiểm tra member
+        boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
+        
+        if (!isMember) {
+            throw new ForbiddenException("Bạn không có quyền truy cập dự án này.");
+        }
     }
 }
 

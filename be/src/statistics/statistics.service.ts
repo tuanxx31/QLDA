@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, LessThan, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import { Project } from 'src/projects/entities/project.entity';
@@ -12,6 +12,7 @@ import { MemberStatisticsDto } from './dto/member-statistics.dto';
 import { TimelineStatisticsDto } from './dto/timeline-statistics.dto';
 import { CommentStatisticsDto, CommentByTaskDto, CommentByMemberDto } from './dto/comment-statistics.dto';
 import { DeadlineAnalyticsDto, TaskDeadlineDto } from './dto/deadline-analytics.dto';
+import { PermissionsService } from 'src/permissions/permissions.service';
 
 @Injectable()
 export class StatisticsService {
@@ -30,9 +31,17 @@ export class StatisticsService {
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+
+    private readonly permissionsService: PermissionsService,
   ) {}
 
-  async getProjectOverview(projectId: string): Promise<ProjectOverviewDto> {
+  async getProjectOverview(projectId: string, userId: string): Promise<ProjectOverviewDto> {
+    // Kiểm tra quyền truy cập project
+    const isMember = await this.permissionsService.isProjectMember(projectId, userId);
+    if (!isMember) {
+      throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+    }
+
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
     if (!project) {
       throw new NotFoundException('Không tìm thấy dự án.');
@@ -66,7 +75,13 @@ export class StatisticsService {
     };
   }
 
-  async getColumnStatistics(projectId: string): Promise<ColumnStatisticsDto[]> {
+  async getColumnStatistics(projectId: string, userId: string): Promise<ColumnStatisticsDto[]> {
+    // Kiểm tra quyền truy cập project
+    const isMember = await this.permissionsService.isProjectMember(projectId, userId);
+    if (!isMember) {
+      throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+    }
+
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
     if (!project) {
       throw new NotFoundException('Không tìm thấy dự án.');
@@ -102,7 +117,13 @@ export class StatisticsService {
     return result;
   }
 
-  async getMemberStatistics(projectId: string): Promise<MemberStatisticsDto[]> {
+  async getMemberStatistics(projectId: string, userId: string): Promise<MemberStatisticsDto[]> {
+    // Kiểm tra quyền truy cập project
+    const isMember = await this.permissionsService.isProjectMember(projectId, userId);
+    if (!isMember) {
+      throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+    }
+
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
     if (!project) {
       throw new NotFoundException('Không tìm thấy dự án.');
@@ -174,10 +195,17 @@ export class StatisticsService {
 
   async getTimelineStatistics(
     projectId: string,
+    userId: string,
     period: 'day' | 'week' | 'month' = 'day',
     startDate?: Date,
     endDate?: Date,
   ): Promise<TimelineStatisticsDto[]> {
+    // Kiểm tra quyền truy cập project
+    const isMember = await this.permissionsService.isProjectMember(projectId, userId);
+    if (!isMember) {
+      throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+    }
+
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
     if (!project) {
       throw new NotFoundException('Không tìm thấy dự án.');
@@ -263,8 +291,15 @@ export class StatisticsService {
 
   async getCommentStatistics(
     projectId: string,
+    userId: string,
     filter?: '24h' | '7d' | 'all',
   ): Promise<CommentStatisticsDto> {
+    // Kiểm tra quyền truy cập project
+    const isMember = await this.permissionsService.isProjectMember(projectId, userId);
+    if (!isMember) {
+      throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+    }
+
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
     if (!project) {
       throw new NotFoundException('Không tìm thấy dự án.');
@@ -382,7 +417,13 @@ export class StatisticsService {
     };
   }
 
-  async getDeadlineAnalytics(projectId: string): Promise<DeadlineAnalyticsDto> {
+  async getDeadlineAnalytics(projectId: string, userId: string): Promise<DeadlineAnalyticsDto> {
+    // Kiểm tra quyền truy cập project
+    const isMember = await this.permissionsService.isProjectMember(projectId, userId);
+    if (!isMember) {
+      throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+    }
+
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
     if (!project) {
       throw new NotFoundException('Không tìm thấy dự án.');

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -23,20 +24,29 @@ public class StatisticsController {
     private final StatisticsService statisticsService;
 
     @GetMapping("/overview")
-    public ResponseEntity<ProjectOverviewDto> getProjectOverview(@PathVariable String projectId) {
-        ProjectOverviewDto overview = statisticsService.getProjectOverview(projectId);
+    public ResponseEntity<ProjectOverviewDto> getProjectOverview(
+            @PathVariable String projectId,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        ProjectOverviewDto overview = statisticsService.getProjectOverview(projectId, userId);
         return ResponseEntity.ok(overview);
     }
 
     @GetMapping("/columns")
-    public ResponseEntity<List<ColumnStatisticsDto>> getColumnStatistics(@PathVariable String projectId) {
-        List<ColumnStatisticsDto> statistics = statisticsService.getColumnStatistics(projectId);
+    public ResponseEntity<List<ColumnStatisticsDto>> getColumnStatistics(
+            @PathVariable String projectId,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        List<ColumnStatisticsDto> statistics = statisticsService.getColumnStatistics(projectId, userId);
         return ResponseEntity.ok(statistics);
     }
 
     @GetMapping("/members")
-    public ResponseEntity<List<MemberStatisticsDto>> getMemberStatistics(@PathVariable String projectId) {
-        List<MemberStatisticsDto> statistics = statisticsService.getMemberStatistics(projectId);
+    public ResponseEntity<List<MemberStatisticsDto>> getMemberStatistics(
+            @PathVariable String projectId,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        List<MemberStatisticsDto> statistics = statisticsService.getMemberStatistics(projectId, userId);
         return ResponseEntity.ok(statistics);
     }
 
@@ -45,23 +55,30 @@ public class StatisticsController {
             @PathVariable String projectId,
             @RequestParam(required = false, defaultValue = "day") String period,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            Authentication authentication) {
+        String userId = authentication.getName();
         List<TimelineStatisticsDto> statistics = statisticsService.getTimelineStatistics(
-                projectId, period, startDate, endDate);
+                projectId, period, startDate, endDate, userId);
         return ResponseEntity.ok(statistics);
     }
 
     @GetMapping("/comments")
     public ResponseEntity<CommentStatisticsDto> getCommentStatistics(
             @PathVariable String projectId,
-            @RequestParam(required = false, defaultValue = "all") String filter) {
-        CommentStatisticsDto statistics = statisticsService.getCommentStatistics(projectId, filter);
+            @RequestParam(required = false, defaultValue = "all") String filter,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        CommentStatisticsDto statistics = statisticsService.getCommentStatistics(projectId, filter, userId);
         return ResponseEntity.ok(statistics);
     }
 
     @GetMapping("/deadlines")
-    public ResponseEntity<DeadlineAnalyticsDto> getDeadlineAnalytics(@PathVariable String projectId) {
-        DeadlineAnalyticsDto analytics = statisticsService.getDeadlineAnalytics(projectId);
+    public ResponseEntity<DeadlineAnalyticsDto> getDeadlineAnalytics(
+            @PathVariable String projectId,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        DeadlineAnalyticsDto analytics = statisticsService.getDeadlineAnalytics(projectId, userId);
         return ResponseEntity.ok(analytics);
     }
 }

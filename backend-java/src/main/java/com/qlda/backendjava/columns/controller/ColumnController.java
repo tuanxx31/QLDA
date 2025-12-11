@@ -37,8 +37,11 @@ public class ColumnController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ColumnEntity>> findAll(@PathVariable String projectId) {
-        List<ColumnEntity> columns = columnService.findAll(projectId);
+    public ResponseEntity<List<ColumnEntity>> findAll(
+            @PathVariable String projectId,
+            Authentication authentication) {
+        String userId = authentication.getName();
+        List<ColumnEntity> columns = columnService.findAll(projectId, userId);
         return ResponseEntity.ok(columns);
     }
 

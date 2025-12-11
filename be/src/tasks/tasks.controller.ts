@@ -28,8 +28,13 @@ export class TaskController {
   @ApiOperation({ summary: 'Lấy thông tin task theo ID' })
   @ApiResponse({ status: 200, description: 'Task đã được lấy thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  findOne(@Param('id') id: string) {
-    return this.taskService.findOne(id);
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
+  findOne(@Param('id') id: string, @Req() req) {
+    const userId = req.user?.sub as string;
+    if (!userId) {
+      throw new ForbiddenException('Không xác định được người dùng');
+    }
+    return this.taskService.findOne(id, userId);
   }
 
   @Get(':id/assignees')
@@ -37,8 +42,13 @@ export class TaskController {
   @ApiOperation({ summary: 'Lấy danh sách assignees của task' })
   @ApiResponse({ status: 200, description: 'Danh sách assignees đã được lấy thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  getAssignees(@Param('id') id: string) {
-    return this.taskService.getAssignees(id);
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
+  getAssignees(@Param('id') id: string, @Req() req) {
+    const userId = req.user?.sub as string;
+    if (!userId) {
+      throw new ForbiddenException('Không xác định được người dùng');
+    }
+    return this.taskService.getAssignees(id, userId);
   }
 
   @Patch(':id/status')
@@ -56,8 +66,13 @@ export class TaskController {
   @ApiOperation({ summary: 'Lấy danh sách task theo cột' })
   @ApiResponse({ status: 200, description: 'Danh sách task đã được lấy thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  findByColumn(@Param('columnId') columnId: string) {
-    return this.taskService.findByColumn(columnId);
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
+  findByColumn(@Param('columnId') columnId: string, @Req() req) {
+    const userId = req.user?.sub as string;
+    if (!userId) {
+      throw new ForbiddenException('Không xác định được người dùng');
+    }
+    return this.taskService.findByColumn(columnId, userId);
   }
 
   @Post()
@@ -141,8 +156,10 @@ export class TaskController {
   @ApiOperation({ summary: 'Cập nhật vị trí task' })
   @ApiResponse({ status: 200, description: 'Task đã được cập nhật vị trí thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  updatePosition(@Param('id') id: string, @Body() body: { prevTaskId?: string; nextTaskId?: string; columnId?: string }) {
-    return this.taskService.updatePosition(id, body.prevTaskId, body.nextTaskId, body.columnId);
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
+  updatePosition(@Param('id') id: string, @Body() body: { prevTaskId?: string; nextTaskId?: string; columnId?: string }, @Req() req) {
+    const userId = req.user?.sub ?? null;
+    return this.taskService.updatePosition(id, userId, body.prevTaskId, body.nextTaskId, body.columnId);
   }
 
   @Post(':id/subtasks')
@@ -150,8 +167,10 @@ export class TaskController {
   @ApiOperation({ summary: 'Thêm subtask' })
   @ApiResponse({ status: 201, description: 'Subtask đã được thêm thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  addSubTask(@Param('id') taskId: string, @Body('title') title: string) {
-    return this.taskService.addSubTask(taskId, title);
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
+  addSubTask(@Param('id') taskId: string, @Body('title') title: string, @Req() req) {
+    const userId = req.user?.sub ?? null;
+    return this.taskService.addSubTask(taskId, title, userId);
   }
 
   @Patch('subtasks/:id')
@@ -159,7 +178,9 @@ export class TaskController {
   @ApiOperation({ summary: 'Cập nhật subtask' })
   @ApiResponse({ status: 200, description: 'Subtask đã được cập nhật thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  updateSubTask(@Param('id') id: string, @Body() update: { title?: string; completed?: boolean }) {
-    return this.taskService.updateSubTask(id, update);
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
+  updateSubTask(@Param('id') id: string, @Body() update: { title?: string; completed?: boolean }, @Req() req) {
+    const userId = req.user?.sub ?? null;
+    return this.taskService.updateSubTask(id, update, userId);
   }
 }

@@ -49,14 +49,17 @@ export class CommentsController {
   @ApiOperation({ summary: 'Lấy danh sách bình luận của task' })
   @ApiResponse({ status: 200, description: 'Danh sách bình luận đã được lấy thành công' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
   findAll(
     @Param('taskId') taskId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Req() req: any,
   ) {
+    const userId = req.user?.sub ?? null;
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 20;
-    return this.commentsService.findAll(taskId, pageNum, limitNum);
+    return this.commentsService.findAll(taskId, userId, pageNum, limitNum);
   }
 
   @Post()

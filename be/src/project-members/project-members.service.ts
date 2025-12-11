@@ -11,6 +11,7 @@ import { User } from 'src/users/entities/user.entity';
 import { Project } from 'src/projects/entities/project.entity';
 import { CreateProjectMemberDto } from './dto/create-project-member.dto';
 import { UpdateProjectMemberDto } from './dto/update-project-member.dto';
+import { PermissionsService } from 'src/permissions/permissions.service';
 
 @Injectable()
 export class ProjectMembersService {
@@ -23,6 +24,8 @@ export class ProjectMembersService {
 
     @InjectRepository(Project)
     private readonly projectRepo: Repository<Project>,
+
+    private readonly permissionsService: PermissionsService,
   ) {}
 
   async addMember(
@@ -71,7 +74,13 @@ export class ProjectMembersService {
     return this.projectMemberRepo.save(newMember);
   }
 
-  async getMembers(projectId: string, membersIdExcludeTask: string[]) {
+  async getMembers(projectId: string, userId: string, membersIdExcludeTask: string[]) {
+    // Kiểm tra quyền truy cập project
+    const isMember = await this.permissionsService.isProjectMember(projectId, userId);
+    if (!isMember) {
+      throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+    }
+
     const members = await this.projectMemberRepo.find({
       where: { project: { id: projectId }, user: { id: Not(In(membersIdExcludeTask)) } },
       relations: ['user', 'project'],

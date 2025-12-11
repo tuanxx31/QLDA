@@ -11,6 +11,7 @@ import { Task } from 'src/tasks/entities/task.entity';
 import { User } from 'src/users/entities/user.entity';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { PermissionsService } from 'src/permissions/permissions.service';
 
 @Injectable()
 export class CommentsService {
@@ -21,6 +22,7 @@ export class CommentsService {
     private taskRepo: Repository<Task>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
+    private readonly permissionsService: PermissionsService,
   ) {}
 
   async create(taskId: string, userId: string, dto: CreateCommentDto) {
@@ -31,6 +33,17 @@ export class CommentsService {
 
     if (!task) {
       throw new NotFoundException('Task không tồn tại');
+    }
+
+    // Kiểm tra quyền truy cập project nếu có project
+    if (task.column?.project?.id) {
+      const isMember = await this.permissionsService.isProjectMember(
+        task.column.project.id,
+        userId,
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+      }
     }
 
     const user = await this.userRepo.findOne({ where: { id: userId } });
@@ -66,7 +79,28 @@ export class CommentsService {
     });
   }
 
-  async findAll(taskId: string, page: number = 1, limit: number = 20) {
+  async findAll(taskId: string, userId: string, page: number = 1, limit: number = 20) {
+    // Lấy task để kiểm tra project
+    const task = await this.taskRepo.findOne({
+      where: { id: taskId },
+      relations: ['column', 'column.project'],
+    });
+
+    if (!task) {
+      throw new NotFoundException('Task không tồn tại');
+    }
+
+    // Kiểm tra quyền truy cập project nếu có project
+    if (task.column?.project?.id) {
+      const isMember = await this.permissionsService.isProjectMember(
+        task.column.project.id,
+        userId,
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+      }
+    }
+
     const skip = (page - 1) * limit;
 
     const [comments, total] = await this.commentRepo.findAndCount({
@@ -86,14 +120,27 @@ export class CommentsService {
     };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, userId: string) {
     const comment = await this.commentRepo.findOne({
       where: { id },
-      relations: ['user', 'mentions', 'task'],
+      relations: ['user', 'mentions', 'task', 'task.column', 'task.column.project'],
     });
 
     if (!comment) {
       throw new NotFoundException('Comment không tồn tại');
+    }
+
+    // Kiểm tra quyền truy cập project
+    if (comment.task?.column?.project?.id) {
+      const isMember = await this.permissionsService.isProjectMember(
+        comment.task.column.project.id,
+        userId,
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+      }
+    } else {
+      throw new NotFoundException('Comment không thuộc project nào.');
     }
 
     return comment;
@@ -102,11 +149,22 @@ export class CommentsService {
   async update(id: string, userId: string, dto: UpdateCommentDto) {
     const comment = await this.commentRepo.findOne({
       where: { id },
-      relations: ['user'],
+      relations: ['user', 'task', 'task.column', 'task.column.project'],
     });
 
     if (!comment) {
       throw new NotFoundException('Comment không tồn tại');
+    }
+
+    // Kiểm tra quyền truy cập project nếu có project
+    if (comment.task?.column?.project?.id) {
+      const isMember = await this.permissionsService.isProjectMember(
+        comment.task.column.project.id,
+        userId,
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+      }
     }
 
     if (comment.userId !== userId) {
@@ -153,6 +211,17 @@ export class CommentsService {
 
     if (!comment) {
       throw new NotFoundException('Comment không tồn tại');
+    }
+
+    // Kiểm tra quyền truy cập project nếu có project
+    if (comment.task?.column?.project?.id) {
+      const isMember = await this.permissionsService.isProjectMember(
+        comment.task.column.project.id,
+        userId,
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+      }
     }
 
     const projectOwnerId = (comment.task as any)?.column?.project?.owner?.id || null;

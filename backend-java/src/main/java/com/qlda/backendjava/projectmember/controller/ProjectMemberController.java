@@ -33,15 +33,17 @@ public class ProjectMemberController {
     @GetMapping("/{projectId}")
     public ResponseEntity<List<Map<String, Object>>> getMembers(
             @PathVariable String projectId,
-            @RequestParam(required = false) String taskId) {
+            @RequestParam(required = false) String taskId,
+            Authentication authentication) {
+        String userId = authentication.getName();
         List<String> excludeUserIds = List.of();
         if (taskId != null && !taskId.isEmpty()) {
-            List<UserEntity> assignees = taskService.getAssignees(taskId);
+            List<UserEntity> assignees = taskService.getAssignees(taskId, userId);
             excludeUserIds = assignees.stream()
                     .map(UserEntity::getId)
                     .collect(Collectors.toList());
         }
-        List<Map<String, Object>> members = projectMemberService.getMembers(projectId, excludeUserIds);
+        List<Map<String, Object>> members = projectMemberService.getMembers(projectId, excludeUserIds, userId);
         return ResponseEntity.ok(members);
     }
 

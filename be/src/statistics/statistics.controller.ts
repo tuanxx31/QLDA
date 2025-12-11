@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards, Request } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -30,8 +30,9 @@ export class StatisticsController {
     type: ProjectOverviewDto,
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
-  async getProjectOverview(@Param('projectId') projectId: string): Promise<ProjectOverviewDto> {
-    return this.statisticsService.getProjectOverview(projectId);
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
+  async getProjectOverview(@Param('projectId') projectId: string, @Request() req: any): Promise<ProjectOverviewDto> {
+    return this.statisticsService.getProjectOverview(projectId, req.user.sub as string);
   }
 
   @Get('columns')
@@ -43,10 +44,12 @@ export class StatisticsController {
     type: [ColumnStatisticsDto],
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
   async getColumnStatistics(
     @Param('projectId') projectId: string,
+    @Request() req: any,
   ): Promise<ColumnStatisticsDto[]> {
-    return this.statisticsService.getColumnStatistics(projectId);
+    return this.statisticsService.getColumnStatistics(projectId, req.user.sub as string);
   }
 
   @Get('members')
@@ -58,10 +61,12 @@ export class StatisticsController {
     type: [MemberStatisticsDto],
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
   async getMemberStatistics(
     @Param('projectId') projectId: string,
+    @Request() req: any,
   ): Promise<MemberStatisticsDto[]> {
-    return this.statisticsService.getMemberStatistics(projectId);
+    return this.statisticsService.getMemberStatistics(projectId, req.user.sub as string);
   }
 
   @Get('timeline')
@@ -91,15 +96,17 @@ export class StatisticsController {
     type: [TimelineStatisticsDto],
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
   async getTimelineStatistics(
     @Param('projectId') projectId: string,
+    @Request() req: any,
     @Query('period') period?: 'day' | 'week' | 'month',
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ): Promise<TimelineStatisticsDto[]> {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
-    return this.statisticsService.getTimelineStatistics(projectId, period || 'day', start, end);
+    return this.statisticsService.getTimelineStatistics(projectId, req.user.sub as string, period || 'day', start, end);
   }
 
   @Get('comments')
@@ -117,11 +124,13 @@ export class StatisticsController {
     type: CommentStatisticsDto,
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
   async getCommentStatistics(
     @Param('projectId') projectId: string,
+    @Request() req: any,
     @Query('filter') filter?: '24h' | '7d' | 'all',
   ): Promise<CommentStatisticsDto> {
-    return this.statisticsService.getCommentStatistics(projectId, filter);
+    return this.statisticsService.getCommentStatistics(projectId, req.user.sub as string, filter);
   }
 
   @Get('deadlines')
@@ -133,10 +142,12 @@ export class StatisticsController {
     type: DeadlineAnalyticsDto,
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
   async getDeadlineAnalytics(
     @Param('projectId') projectId: string,
+    @Request() req: any,
   ): Promise<DeadlineAnalyticsDto> {
-    return this.statisticsService.getDeadlineAnalytics(projectId);
+    return this.statisticsService.getDeadlineAnalytics(projectId, req.user.sub as string);
   }
 }
 

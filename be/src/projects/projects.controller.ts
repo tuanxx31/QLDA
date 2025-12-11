@@ -81,8 +81,9 @@ export class ProjectsController {
     description: 'Thông tin dự án được lấy thành công',
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
-  async findOne(@Param('id') id: string) {
-    return await this.projectsService.findOne(id);
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
+  async findOne(@Param('id') id: string, @Request() req: any) {
+    return await this.projectsService.findOne(id, req.user.sub as string);
   }
 
   @Get(':id/progress')
@@ -95,8 +96,9 @@ export class ProjectsController {
     type: ProjectProgressDto,
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
-  async getProjectProgress(@Param('id') id: string) {
-    return await this.projectsService.getProjectProgress(id);
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
+  async getProjectProgress(@Param('id') id: string, @Request() req: any) {
+    return await this.projectsService.getProjectProgress(id, req.user.sub as string);
   }
 
   @Get(':id/progress/columns')
@@ -109,8 +111,9 @@ export class ProjectsController {
     type: [ColumnProgressDto],
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
-  async getColumnProgress(@Param('id') id: string) {
-    return await this.projectsService.getColumnProgress(id);
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
+  async getColumnProgress(@Param('id') id: string, @Request() req: any) {
+    return await this.projectsService.getColumnProgress(id, req.user.sub as string);
   }
 
   @Get(':id/progress/users')
@@ -123,8 +126,9 @@ export class ProjectsController {
     type: [UserProgressDto],
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
-  async getUserProgress(@Param('id') id: string) {
-    return await this.projectsService.getUserProgress(id);
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
+  async getUserProgress(@Param('id') id: string, @Request() req: any) {
+    return await this.projectsService.getUserProgress(id, req.user.sub as string);
   }
 
   @Get(':id/progress/deadline-summary')
@@ -137,8 +141,9 @@ export class ProjectsController {
     type: DeadlineSummaryDto,
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
-  async getDeadlineSummary(@Param('id') id: string) {
-    return await this.projectsService.getDeadlineSummary(id);
+  @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
+  async getDeadlineSummary(@Param('id') id: string, @Request() req: any) {
+    return await this.projectsService.getDeadlineSummary(id, req.user.sub as string);
   }
 
   @Patch(':id')

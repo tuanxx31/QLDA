@@ -6,7 +6,11 @@ import com.qlda.backendjava.comments.dto.CreateCommentDto;
 import com.qlda.backendjava.comments.dto.UpdateCommentDto;
 import com.qlda.backendjava.comments.entity.CommentEntity;
 import com.qlda.backendjava.comments.repository.CommentRepository;
+import com.qlda.backendjava.columns.entity.ColumnEntity;
+import com.qlda.backendjava.columns.repository.ColumnRepository;
+import com.qlda.backendjava.projectmember.repository.ProjectMemberRepository;
 import com.qlda.backendjava.projects.entity.ProjectEntity;
+import com.qlda.backendjava.projects.repository.ProjectRepository;
 import com.qlda.backendjava.tasks.entity.TaskEntity;
 import com.qlda.backendjava.tasks.repository.TaskRepository;
 import com.qlda.backendjava.users.entity.UserEntity;
@@ -29,9 +33,14 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
+    private final ProjectMemberRepository projectMemberRepository;
+    private final ColumnRepository columnRepository;
 
     @Transactional
     public CommentEntity create(String taskId, String userId, CreateCommentDto dto) {
+        ensureUserCanAccessTask(taskId, userId);
+        
         // Validate task exists
         if (!taskRepository.existsById(taskId)) {
             throw new NotFoundException("Task không tồn tại");
@@ -61,7 +70,8 @@ public class CommentService {
                 .orElse(saved);
     }
 
-    public Map<String, Object> findAll(String taskId, int page, int limit) {
+    public Map<String, Object> findAll(String taskId, int page, int limit, String userId) {
+        ensureUserCanAccessTask(taskId, userId);
         Pageable pageable = PageRequest.of(page - 1, limit);
         Page<CommentEntity> commentPage = commentRepository.findByTaskIdOrderByCreatedAtAsc(taskId, pageable);
 
@@ -84,6 +94,8 @@ public class CommentService {
     public CommentEntity update(String commentId, String userId, UpdateCommentDto dto) {
         CommentEntity comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Comment không tồn tại"));
+        
+        ensureUserCanAccessTask(comment.getTaskId(), userId);
 
         if (!comment.getUserId().equals(userId)) {
             throw new ForbiddenException("Chỉ người tạo mới có thể chỉnh sửa");
@@ -111,6 +123,8 @@ public class CommentService {
     public Map<String, String> remove(String commentId, String userId) {
         CommentEntity comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Comment không tồn tại"));
+        
+        ensureUserCanAccessTask(comment.getTaskId(), userId);
 
         TaskEntity task = taskRepository.findById(comment.getTaskId())
                 .orElse(null);
@@ -130,6 +144,41 @@ public class CommentService {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Đã xóa comment thành công");
         return response;
+    }
+
+    /**
+     * Helper method để lấy projectId từ task và kiểm tra quyền truy cập
+     */
+    private void ensureUserCanAccessTask(String taskId, String userId) {
+        TaskEntity task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new NotFoundException("Task không tồn tại"));
+        
+        if (task.getColumnId() == null) {
+            throw new NotFoundException("Task không thuộc cột nào.");
+        }
+        
+        ColumnEntity column = columnRepository.findById(task.getColumnId())
+                .orElseThrow(() -> new NotFoundException("Cột không tồn tại"));
+        
+        if (column.getProject() == null) {
+            throw new NotFoundException("Cột không thuộc project nào.");
+        }
+        
+        String projectId = column.getProject().getId();
+        ProjectEntity project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy dự án."));
+        
+        // Kiểm tra owner
+        if (project.getOwner().getId().equals(userId)) {
+            return;
+        }
+        
+        // Kiểm tra member
+        boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
+        
+        if (!isMember) {
+            throw new ForbiddenException("Bạn không có quyền truy cập dự án này.");
+        }
     }
 }
 

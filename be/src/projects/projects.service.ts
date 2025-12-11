@@ -13,6 +13,7 @@ import { Group } from 'src/groups/entities/group.entity';
 import { ProjectMember } from 'src/project-members/entities/project-member.entity';
 import { Task } from 'src/tasks/entities/task.entity';
 import { ColumnEntity } from 'src/columns/entities/column.entity';
+import { PermissionsService } from 'src/permissions/permissions.service';
 
 @Injectable()
 export class ProjectsService {
@@ -34,6 +35,8 @@ export class ProjectsService {
 
     @InjectRepository(ColumnEntity)
     private readonly columnRepo: Repository<ColumnEntity>,
+
+    private readonly permissionsService: PermissionsService,
   ) {}
 
   
@@ -66,8 +69,13 @@ export class ProjectsService {
     return saved;
   }
 
-  async getProjectProgress(projectId: string) {
-    
+  async getProjectProgress(projectId: string, userId: string) {
+    // Kiểm tra quyền truy cập project
+    const isMember = await this.permissionsService.isProjectMember(projectId, userId);
+    if (!isMember) {
+      throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+    }
+
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
     if (!project) {
       throw new NotFoundException('Không tìm thấy dự án.');
@@ -92,8 +100,13 @@ export class ProjectsService {
     };
   }
 
-  async getColumnProgress(projectId: string) {
-    
+  async getColumnProgress(projectId: string, userId: string) {
+    // Kiểm tra quyền truy cập project
+    const isMember = await this.permissionsService.isProjectMember(projectId, userId);
+    if (!isMember) {
+      throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+    }
+
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
     if (!project) {
       throw new NotFoundException('Không tìm thấy dự án.');
@@ -128,8 +141,13 @@ export class ProjectsService {
     return result;
   }
 
-  async getUserProgress(projectId: string) {
-    
+  async getUserProgress(projectId: string, userId: string) {
+    // Kiểm tra quyền truy cập project
+    const isMember = await this.permissionsService.isProjectMember(projectId, userId);
+    if (!isMember) {
+      throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+    }
+
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
     if (!project) {
       throw new NotFoundException('Không tìm thấy dự án.');
@@ -196,8 +214,13 @@ export class ProjectsService {
     return result.sort((a, b) => b.totalTasks - a.totalTasks);
   }
 
-  async getDeadlineSummary(projectId: string) {
-    
+  async getDeadlineSummary(projectId: string, userId: string) {
+    // Kiểm tra quyền truy cập project
+    const isMember = await this.permissionsService.isProjectMember(projectId, userId);
+    if (!isMember) {
+      throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+    }
+
     const project = await this.projectRepo.findOne({ where: { id: projectId } });
     if (!project) {
       throw new NotFoundException('Không tìm thấy dự án.');
@@ -297,7 +320,13 @@ export class ProjectsService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, userId: string) {
+    // Kiểm tra quyền truy cập project
+    const isMember = await this.permissionsService.isProjectMember(id, userId);
+    if (!isMember) {
+      throw new ForbiddenException('Bạn không có quyền truy cập dự án này.');
+    }
+
     const project = await this.projectRepo.findOne({
       where: { id },
       relations: ['group', 'owner', 'members', 'members.user'],
