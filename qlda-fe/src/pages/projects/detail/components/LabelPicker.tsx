@@ -64,6 +64,7 @@ export default function LabelPicker({
         onSuccess: (updatedTask) => {
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
             queryClient.invalidateQueries({ queryKey: ["columns"] });
+            queryClient.invalidateQueries({ queryKey: ["task", taskId] });
             
             if (updatedTask?.labels) {
                 const newSelectedIds = updatedTask.labels.map((lb: any) => lb.id);
@@ -85,6 +86,7 @@ export default function LabelPicker({
         onSuccess: (updatedTask) => {
             queryClient.invalidateQueries({ queryKey: ["tasks"] });
             queryClient.invalidateQueries({ queryKey: ["columns"] });
+            queryClient.invalidateQueries({ queryKey: ["task", taskId] });
             
             if (updatedTask?.labels) {
                 const newSelectedIds = updatedTask.labels.map((lb: any) => lb.id);
