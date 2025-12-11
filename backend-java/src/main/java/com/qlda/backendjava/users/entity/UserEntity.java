@@ -31,6 +31,7 @@ public class UserEntity {
     private String email;
 
     @Column(name = "password", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private String password;
 
     @Column(name = "date_of_birth", nullable = true)

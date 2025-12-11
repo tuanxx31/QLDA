@@ -1,8 +1,8 @@
 package com.qlda.backendjava.projects.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.qlda.backendjava.groups.entity.GroupEntity;
+import com.qlda.backendjava.projectmember.entity.ProjectMemberEntity;
 import com.qlda.backendjava.users.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,6 +12,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "projects")
@@ -45,13 +46,14 @@ public class ProjectEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
-    @JsonIgnore
     private UserEntity owner;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = true)
-    @JsonIgnore
     private GroupEntity group;
+
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<ProjectMemberEntity> members;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

@@ -34,7 +34,7 @@ public class ProjectMemberService {
         if (excludeUserIds != null && !excludeUserIds.isEmpty()) {
             members = projectMemberRepository.findByProjectIdExcludingUsers(projectId, excludeUserIds);
         } else {
-            members = projectMemberRepository.findByProjectId(projectId);
+            members = projectMemberRepository.findByProjectIdWithUser(projectId);
         }
 
         return members.stream()

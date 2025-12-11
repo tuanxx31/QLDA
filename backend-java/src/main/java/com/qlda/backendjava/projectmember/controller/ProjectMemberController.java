@@ -5,7 +5,8 @@ import com.qlda.backendjava.projectmember.dto.CreateProjectMemberDto;
 import com.qlda.backendjava.projectmember.dto.UpdateProjectMemberDto;
 import com.qlda.backendjava.projectmember.entity.ProjectMemberEntity;
 import com.qlda.backendjava.projectmember.service.ProjectMemberService;
-import io.swagger.v3.oas.annotations.Operation;
+import com.qlda.backendjava.tasks.service.TaskService;
+import com.qlda.backendjava.users.entity.UserEntity;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Tag(name = "Project Members", description = "API quản lý thành viên dự án")
 @RestController
@@ -26,13 +28,19 @@ import java.util.Map;
 public class ProjectMemberController {
 
     private final ProjectMemberService projectMemberService;
+    private final TaskService taskService;
 
     @GetMapping("/{projectId}")
     public ResponseEntity<List<Map<String, Object>>> getMembers(
             @PathVariable String projectId,
             @RequestParam(required = false) String taskId) {
-        // TODO: Get excludeUserIds from taskId if provided
         List<String> excludeUserIds = List.of();
+        if (taskId != null && !taskId.isEmpty()) {
+            List<UserEntity> assignees = taskService.getAssignees(taskId);
+            excludeUserIds = assignees.stream()
+                    .map(UserEntity::getId)
+                    .collect(Collectors.toList());
+        }
         List<Map<String, Object>> members = projectMemberService.getMembers(projectId, excludeUserIds);
         return ResponseEntity.ok(members);
     }

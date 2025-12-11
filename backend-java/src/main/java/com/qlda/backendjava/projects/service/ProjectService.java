@@ -85,7 +85,7 @@ public class ProjectService {
     }
 
     public ProjectEntity findOne(String id) {
-        return projectRepository.findById(id)
+        return projectRepository.findByIdWithMembers(id)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy dự án."));
     }
 

@@ -16,13 +16,13 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMemberEnti
     @Query("SELECT pm FROM ProjectMemberEntity pm WHERE pm.project.id = :projectId")
     List<ProjectMemberEntity> findByProjectId(@Param("projectId") String projectId);
     
-    @Query("SELECT pm FROM ProjectMemberEntity pm LEFT JOIN FETCH pm.user WHERE pm.project.id = :projectId")
+    @Query("SELECT pm FROM ProjectMemberEntity pm LEFT JOIN FETCH pm.user WHERE pm.project.id = :projectId ORDER BY pm.joinedAt ASC")
     List<ProjectMemberEntity> findByProjectIdWithUser(@Param("projectId") String projectId);
     
     @Query("SELECT pm FROM ProjectMemberEntity pm WHERE pm.user.id = :userId")
     List<ProjectMemberEntity> findByUserId(@Param("userId") String userId);
     
-    @Query("SELECT pm FROM ProjectMemberEntity pm WHERE pm.project.id = :projectId AND pm.user.id NOT IN :excludeUserIds")
+    @Query("SELECT pm FROM ProjectMemberEntity pm LEFT JOIN FETCH pm.user WHERE pm.project.id = :projectId AND pm.user.id NOT IN :excludeUserIds ORDER BY pm.joinedAt ASC")
     List<ProjectMemberEntity> findByProjectIdExcludingUsers(@Param("projectId") String projectId, @Param("excludeUserIds") List<String> excludeUserIds);
     
     boolean existsByProjectIdAndUserId(String projectId, String userId);
