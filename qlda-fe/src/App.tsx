@@ -13,6 +13,7 @@ import ProjectPage from '@/pages/projects';
 import ProjectDetailPage from '@/pages/projects/detail';
 import ProjectBoardPage from '@/pages/projects/detail/ProjectBoardPage';
 import StatisticsPage from '@/pages/projects/detail/StatisticsPage';
+import ForbiddenPage from '@/pages/errors/ForbiddenPage';
 import '@ant-design/v5-patch-for-react-19';
 import './styles/app.css';
 import dayjs from 'dayjs';
@@ -38,6 +39,8 @@ export default function App() {
           <Route path="dashboard" element={<Dashboard />} />
 
           <Route path="settings" element={<SettingsPage />} />
+
+          <Route path="forbidden" element={<ForbiddenPage />} />
 
           <Route path="groups">
             <Route index element={<GroupsPage />} />

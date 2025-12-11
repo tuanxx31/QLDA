@@ -3,7 +3,7 @@ import { Button, Tabs, Tooltip, message, Card } from 'antd';
 import { CopyOutlined, UserAddOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { groupService } from '@/services/group.services';
 import useAuth from '@/hooks/useAuth';
 import { useGroupPermission } from '@/hooks/useGroupPermission';
@@ -14,6 +14,7 @@ import { AddMemberModal } from '@/pages/groups/components/AddMemberModal';
 import GroupProjectTable from './components/GroupProjectTable';
 import { GroupEditModal } from './components/GroupEditModal';
 import { usePageContentHeight } from '@/hooks/usePageContentHeight';
+import { isForbiddenError } from '@/utils/errorHandler';
 
 const GroupDetailPage = () => {
   const navigate = useNavigate();
@@ -24,11 +25,24 @@ const GroupDetailPage = () => {
   const [openEditGroup, setOpenEditGroup] = useState(false);
   const [openAddMember, setOpenAddMember] = useState(false);
   const { minHeight } = usePageContentHeight();
-  const { data: group, isLoading, isError } = useQuery({
+  const { data: group, isLoading, isError, error } = useQuery({
     queryKey: ['groupDetail', groupId],
     queryFn: () => groupService.getDetail(groupId!),
     enabled: !!groupId,
+    retry: (failureCount, error) => {
+      // Không retry nếu là lỗi 403
+      if (isForbiddenError(error)) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
+
+  useEffect(() => {
+    if (isError && isForbiddenError(error)) {
+      navigate(`/forbidden?message=Bạn không có quyền truy cập nhóm này&from=group`);
+    }
+  }, [isError, error, navigate]);
 
   const { canEdit, canDelete, canInvite, canManageMembers } = useGroupPermission(groupId);
 

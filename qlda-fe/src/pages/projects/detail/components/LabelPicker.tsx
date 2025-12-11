@@ -14,6 +14,7 @@ import { labelService } from "@/services/label.services";
 import { taskService } from "@/services/task.services";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
+import { isForbiddenError } from "@/utils/errorHandler";
 
 interface Label {
     id: string;
@@ -52,10 +53,17 @@ export default function LabelPicker({
     }, [selectedIds]);
 
     
-    const { data: projectLabels = [], isLoading: labelsLoading } = useQuery({
+    const { data: projectLabels = [], isLoading: labelsLoading, isError: labelsError, error: labelsErrorData } = useQuery({
         queryKey: ["labels", projectId],
         queryFn: () => labelService.getLabelsByProject(projectId as string),
         enabled: !!projectId && open,
+        retry: (failureCount, error) => {
+            // Không retry nếu là lỗi 403
+            if (isForbiddenError(error)) {
+                return false;
+            }
+            return failureCount < 3;
+        },
     });
 
     
@@ -204,6 +212,10 @@ export default function LabelPicker({
             >
                 {labelsLoading ? (
                     <div style={{ textAlign: "center", padding: 16 }}>Đang tải...</div>
+                ) : labelsError && isForbiddenError(labelsErrorData) ? (
+                    <div style={{ textAlign: "center", padding: 16, color: "#999" }}>
+                        Không có quyền xem nhãn
+                    </div>
                 ) : projectLabels.length === 0 ? (
                     <div style={{ textAlign: "center", padding: 16, color: "#999" }}>
                         Chưa có nhãn nào

@@ -33,10 +33,8 @@ api.interceptors.response.use(
       window.location.assign('/login');
     }
     
-    // Xử lý lỗi 403 - Forbidden
-    if (error.response?.status === 403) {
-      message.error('Bạn không có quyền truy cập trang này');
-    }
+    // Lỗi 403 sẽ được xử lý ở component level
+    // Không hiển thị message.error ở đây để tránh spam notification
     
     return Promise.reject(error);
   },

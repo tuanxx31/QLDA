@@ -4,7 +4,7 @@ import { ArrowLeftOutlined, UserAddOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { projectService } from '@/services/project.services';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProjectInfoCard from './components/ProjectInfoCard';
 import ProjectMembers from './components/ProjectMembers';
 import MemberAddModal from './components/MemberAddModal';
@@ -12,6 +12,7 @@ import MemberAddFromGroupModal from './components/MemberAddFromGroupModal';
 import useAuth from '@/hooks/useAuth';
 import { usePageContentHeight } from '@/hooks/usePageContentHeight';
 import { useProjectPermission } from '@/hooks/useProjectPermission';
+import { isForbiddenError } from '@/utils/errorHandler';
 
 const { Title } = Typography;
 
@@ -24,11 +25,24 @@ const ProjectDetailPage = () => {
   const [openAddMember, setOpenAddMember] = useState(false);
   const [openAddFromGroup, setOpenAddFromGroup] = useState(false);
 
-  const { data: project, isLoading } = useQuery({
+  const { data: project, isLoading, isError, error } = useQuery({
     queryKey: ['project', projectId],
     queryFn: async () => await projectService.getById(projectId!),
     enabled: !!projectId,
+    retry: (failureCount, error) => {
+      // Không retry nếu là lỗi 403
+      if (isForbiddenError(error)) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
+
+  useEffect(() => {
+    if (isError && isForbiddenError(error)) {
+      navigate(`/forbidden?message=Bạn không có quyền truy cập dự án này&from=project`);
+    }
+  }, [isError, error, navigate]);
 
   const { canManageMembers: canManageProjectMembers } = useProjectPermission(projectId);
 

@@ -40,6 +40,7 @@ import { projectService } from "@/services/project.services";
 import { markTaskAsRead } from "@/utils/commentBadgeUtils";
 import useAuth from "@/hooks/useAuth";
 import { useProjectPermission } from "@/hooks/useProjectPermission";
+import { isForbiddenError } from "@/utils/errorHandler";
 
 const { Title, Text } = Typography;
 type TaskLabel = NonNullable<Task["labels"]>[number];
@@ -128,15 +129,30 @@ export default function TaskDetailModal({
     queryFn: () => taskService.getAssignees(task!.id),
     enabled: !!task?.id && open,
     staleTime: 30000,
+    retry: (failureCount, error) => {
+      // Không retry nếu là lỗi 403
+      if (isForbiddenError(error)) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
 
   const {
     data: commentsData,
+    isError: commentsError,
   } = useQuery({
     queryKey: ["comments", taskData?.id],
     queryFn: () => commentService.getComments(taskData!.id, 1, 50),
     enabled: !!taskData?.id && open,
     refetchInterval: 2500,
+    retry: (failureCount, error) => {
+      // Không retry nếu là lỗi 403
+      if (isForbiddenError(error)) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
 
   
@@ -617,9 +633,14 @@ export default function TaskDetailModal({
                 </Tooltip>
               </Space>
 
-              {assigneesError && (
+              {assigneesError && !isForbiddenError(assigneesError) && (
                 <div style={{ color: "red", marginTop: 6, fontSize: 12 }}>
-                  Không thể tải danh sách
+                  Không thể tải danh sách thành viên
+                </div>
+              )}
+              {assigneesError && isForbiddenError(assigneesError) && (
+                <div style={{ color: "#999", marginTop: 6, fontSize: 12 }}>
+                  Không có quyền xem danh sách thành viên
                 </div>
               )}
             </div>
@@ -679,20 +700,26 @@ export default function TaskDetailModal({
             </Title>
 
             <div style={{ flex: 1, overflowY: "auto", marginBottom: 12 }}>
-              <CommentList
-                taskId={taskData.id}
-                comments={commentsData?.data || []}
-                projectOwnerId={project?.owner?.id}
-                projectId={projectId!}
-                onEdit={(comment) => {
-                  setEditingComment({
-                    id: comment.id,
-                    content: comment.content,
-                    fileUrl: comment.fileUrl,
-                    mentions: comment.mentions,
-                  });
-                }}
-              />
+              {commentsError && isForbiddenError(commentsError) ? (
+                <div style={{ color: "#999", textAlign: "center", padding: "20px 0" }}>
+                  Không có quyền xem bình luận
+                </div>
+              ) : (
+                <CommentList
+                  taskId={taskData.id}
+                  comments={commentsData?.data || []}
+                  projectOwnerId={project?.owner?.id}
+                  projectId={projectId!}
+                  onEdit={(comment) => {
+                    setEditingComment({
+                      id: comment.id,
+                      content: comment.content,
+                      fileUrl: comment.fileUrl,
+                      mentions: comment.mentions,
+                    });
+                  }}
+                />
+              )}
             </div>
 
             <CommentInput

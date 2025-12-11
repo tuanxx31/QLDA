@@ -39,6 +39,7 @@ import { invalidateStatisticsQueries } from '@/utils/invalidateStatistics';
 import { usePageContentHeight } from '@/hooks/usePageContentHeight';
 import { useProjectPermission } from '@/hooks/useProjectPermission';
 import { getProjectRoleLabel, getProjectRoleColor, getProjectRoleDescription } from '@/utils/roleUtils';
+import { isForbiddenError } from '@/utils/errorHandler';
 
 const { Title } = Typography;
 
@@ -49,10 +50,17 @@ export default function ProjectBoardPage() {
   const { minHeight } = usePageContentHeight();
   const { role, canEditColumns, canEditTasks } = useProjectPermission(projectId);
   
-  const { data: project } = useQuery({
+  const { data: project, isError: isProjectError, error: projectError } = useQuery({
     queryKey: ['project', projectId],
     queryFn: async () => await projectService.getById(projectId!),
     enabled: !!projectId,
+    retry: (failureCount, error) => {
+      // Không retry nếu là lỗi 403
+      if (isForbiddenError(error)) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
 
   const [columns, setColumns] = useState<Column[]>([]);
@@ -71,11 +79,30 @@ export default function ProjectBoardPage() {
     }),
   );
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError: isColumnsError, error: columnsError } = useQuery({
     queryKey: ['columns', projectId],
     queryFn: () => columnService.getColumns(projectId!),
     enabled: !!projectId,
+    retry: (failureCount, error) => {
+      // Không retry nếu là lỗi 403
+      if (isForbiddenError(error)) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
+
+  useEffect(() => {
+    if (isProjectError && isForbiddenError(projectError)) {
+      navigate(`/forbidden?message=Bạn không có quyền truy cập bảng công việc này&from=project`);
+    }
+  }, [isProjectError, projectError, navigate]);
+
+  useEffect(() => {
+    if (isColumnsError && isForbiddenError(columnsError)) {
+      navigate(`/forbidden?message=Bạn không có quyền truy cập bảng công việc này&from=project`);
+    }
+  }, [isColumnsError, columnsError, navigate]);
 
   useEffect(() => {
     if (data?.data) {
