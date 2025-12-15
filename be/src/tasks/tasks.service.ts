@@ -174,6 +174,7 @@ export class TaskService {
   }
 
   async create(dto: CreateTaskDto, creatorId: string) {
+    console.log(dto);
     
     const column = await this.columnRepo.findOne({
       where: { id: dto.columnId },
@@ -205,6 +206,7 @@ export class TaskService {
 
     const task = this.taskRepo.create({
       ...taskData,
+      columnId: column.id,
       position: nextPosition,
       createdBy: creatorId,
       assignees: assigneeIds
