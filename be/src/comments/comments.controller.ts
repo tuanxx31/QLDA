@@ -52,9 +52,9 @@ export class CommentsController {
   @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
   findAll(
     @Param('taskId') taskId: string,
+    @Req() req: any,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
-    @Req() req: any,
   ) {
     const userId = req.user?.sub ?? null;
     const pageNum = page ? parseInt(page, 10) : 1;

@@ -41,7 +41,7 @@ export class ProjectMembersController {
   })
   @ApiResponse({ status: 404, description: 'Không tìm thấy dự án' })
   @ApiResponse({ status: 403, description: 'Không có quyền truy cập dự án' })
-  async getMembers(@Param('projectId') projectId: string, @Query('taskId') taskId?: string, @Request() req: any) {
+  async getMembers(@Param('projectId') projectId: string, @Request() req: any, @Query('taskId') taskId?: string) {
     const userId = req.user.sub as string;
 
     let membersIdExcludeTask: string[] = [];
