@@ -79,26 +79,42 @@ const ProjectTable = ({ data = [], loading }: Props) => {
         {
           title: 'Ngày bắt đầu',
           dataIndex: 'startDate',
-          render: value =>
-            value ? (
-              <Text type="secondary">{new Date(value as string).toLocaleDateString('vi-VN')}</Text>
-            ) : (
-              <Text type="secondary">—</Text>
-            ),
+          render: (value) => {
+            if (!value || value == null || value == undefined) {
+              return <Text type="secondary">—</Text>;
+            }
+            try {
+              return (
+                <Text type="secondary">
+                  {new Date(value as string).toLocaleDateString('vi-VN')}
+                </Text>
+              );
+            } catch {
+              return <Text type="secondary">—</Text>;
+            }
+          },
         },
         {
           title: 'Hạn chót',
           dataIndex: 'deadline',
-          render: value =>
-            value ? (
-              <Text type="secondary">{new Date(value as string).toLocaleDateString('vi-VN')}</Text>
-            ) : (
-              <Text type="secondary">—</Text>
-            ),
+          render: (value) => {
+            if (!value || value === null || value === undefined) {
+              return <Text type="secondary">—</Text>;
+            }
+            try {
+              return (
+                <Text type="secondary">
+                  {new Date(value as string).toLocaleDateString('vi-VN')}
+                </Text>
+              );
+            } catch {
+              return <Text type="secondary">—</Text>;
+            }
+          },
         },
         {
           title: 'Trưởng dự án',
-          dataIndex: ['manager', 'name'],
+          dataIndex: ['owner', 'name'],
           render: name => name || '—',
         },
         {

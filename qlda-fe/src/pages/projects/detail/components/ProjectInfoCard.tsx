@@ -15,14 +15,24 @@ interface Props {
 const ProjectInfoCard = ({ project, onUpdate }: Props) => {
   const [open, setOpen] = useState(false);
   const auth = useAuth();
-  const formatDate = (date?: string | null) =>
-    date
-      ? new Date(date).toLocaleDateString('vi-VN', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-        })
-      : '—';
+  const formatDate = (date?: string | null) => {
+    if (!date || date === null || date === undefined || date === '') {
+      return '—';
+    }
+    try {
+      const dateObj = new Date(date);
+      if (isNaN(dateObj.getTime())) {
+        return '—';
+      }
+      return dateObj.toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+    } catch {
+      return '—';
+    }
+  };
 
   const getStatusColor = (s: string) =>
     s === 'done' ? 'green' : s === 'doing' ? 'blue' : 'default';
