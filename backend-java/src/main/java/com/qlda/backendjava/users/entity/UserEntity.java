@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class UserEntity {
+public class  UserEntity {
 
     @Id
     @GeneratedValue(generator = "uuid2")
