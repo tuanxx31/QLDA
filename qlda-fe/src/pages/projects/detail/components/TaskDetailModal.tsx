@@ -494,7 +494,13 @@ export default function TaskDetailModal({
               >
                 Nhãn
               </Button>
-
+              <Button
+                size="small"
+                icon={<TagsOutlined />}
+                onClick={() => setLabelOpen(true)}
+              >
+                Mức độ ưu tiên
+              </Button>
               <Button
                 size="small"
                 icon={<ClockCircleOutlined />}
