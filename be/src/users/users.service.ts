@@ -28,6 +28,9 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
+    if (!user.password) {
+      throw new BadRequestException('Tài khoản này đăng nhập bằng Google, không thể đổi mật khẩu');
+    }
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordValid) {
       throw new BadRequestException('Mật khẩu không đúng');
@@ -71,6 +74,19 @@ export class UsersService {
       return null;
     }
     return user;
+  }
+
+  async findOneByGoogleId(googleId: string) {
+    const user = await this.userRepository.findOne({ where: { googleId } });
+    if (!user) {
+      return null;
+    }
+    return user;
+  }
+
+  async updateGoogleInfo(id: string, data: Partial<User>) {
+    await this.userRepository.update(id, data);
+    return this.userRepository.findOneBy({ id });
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {

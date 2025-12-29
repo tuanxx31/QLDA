@@ -4,6 +4,7 @@ import AppLayout from '@/layouts/AppLayout';
 import Login from '@/pages/auth/Login';
 import Register from '@/pages/auth/Register';
 import ForgotPassword from '@/pages/auth/ForgotPassword';
+import GoogleCallback from '@/pages/auth/GoogleCallback';
 import Dashboard from '@/pages/dashboard';
 import PrivateOutlet from '@/components/PrivateRoute';
 import SettingsPage from '@/pages/settings';
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/auth/google/callback" element={<GoogleCallback />} />
       </Route>
 
       <Route element={<PrivateOutlet />}>

@@ -29,6 +29,7 @@ import { taskService } from "@/services/task.services";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import LabelPicker from "./LabelPicker";
 import DueDateModal from "./DateComponet";
+import PriorityPicker from "./PriorityPicker";
 import { useParams } from "react-router-dom";
 import { invalidateProgressQueries } from "@/utils/invalidateProgress";
 import { invalidateStatisticsQueries } from "@/utils/invalidateStatistics";
@@ -78,6 +79,7 @@ export default function TaskDetailModal({
   const [labelOpen, setLabelOpen] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [dueDateOpen, setDueDateOpen] = useState(false);
+  const [priorityOpen, setPriorityOpen] = useState(false);
 
   const [editingComment, setEditingComment] = useState<{ id: string; content: string; fileUrl?: string; mentions?: User[] } | null>(null);
 
@@ -497,7 +499,7 @@ export default function TaskDetailModal({
               <Button
                 size="small"
                 icon={<TagsOutlined />}
-                onClick={() => setLabelOpen(true)}
+                onClick={() => setPriorityOpen(true)}
               >
                 Mức độ ưu tiên
               </Button>
@@ -577,6 +579,30 @@ export default function TaskDetailModal({
                 </div>
               </div>
             ) : null}
+
+            {}
+            {taskData.priority && (
+              <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+                <Text strong style={{ fontSize: 13, color: "#666" }}>
+                  Mức độ ưu tiên:
+                </Text>
+                <Tag
+                  color={
+                    taskData.priority === 'low' ? 'default' :
+                    taskData.priority === 'medium' ? 'orange' : 'red'
+                  }
+                  style={{
+                    cursor: canEditTasks ? 'pointer' : 'default',
+                    minWidth: 70,
+                    textAlign: 'center',
+                  }}
+                  onClick={canEditTasks ? () => setPriorityOpen(true) : undefined}
+                >
+                  {taskData.priority === 'low' ? 'Thấp' :
+                   taskData.priority === 'medium' ? 'Trung bình' : 'Cao'}
+                </Tag>
+              </div>
+            )}
 
             {}
             <div style={{ marginBottom: 16 }}>
@@ -764,6 +790,17 @@ export default function TaskDetailModal({
           queryClient.invalidateQueries({ queryKey: ["task", taskData.id] });
           queryClient.invalidateQueries({ queryKey: ["tasks"] });
           queryClient.invalidateQueries({ queryKey: ["columns"] });
+        }}
+      />
+
+      {}
+      <PriorityPicker
+        task={taskData}
+        open={priorityOpen}
+        onClose={() => setPriorityOpen(false)}
+        onSave={(updated) => {
+          setTaskData(updated);
+          onEdit?.(updated);
         }}
       />
     </>
