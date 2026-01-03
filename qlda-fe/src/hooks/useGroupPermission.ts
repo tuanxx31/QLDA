@@ -43,7 +43,7 @@ export function useGroupPermission(groupId: string | undefined) {
     } else {
       
       const member = group.members?.find(
-        (m) => m.user?.id === userId && m.status === 'accepted',
+        (m) => m.id === userId && m.status === 'accepted',
       );
       role = member ? (member.role as GroupRole) : null;
     }

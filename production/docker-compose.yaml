@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  qlda-be:
+    image: registry.gitlab.com/tuanxx31/qlda/qlda-be:latest
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3100
+
+      - DATABASE_HOST=db-mysql
+      - DATABASE_PORT=3306
+      - DATABASE_USERNAME=root
+      - DATABASE_PASSWORD=Tuan3132004@
+      - DATABASE_NAME=qlda
+      - DATABASE_TYPE=mysql
+
+      - JWT_SECRET=b90b207145af29a93f0194d6dc6e7336
+      - TZ=Asia/Ho_Chi_Minh
+    expose:
+      - "3100"
+    networks:
+      shared-network:
+        aliases:
+          - qlda-be
+
+
+
+  qlda-fe:
+    image: registry.gitlab.com/tuanxx31/qlda/qlda-fe:latest
+    restart: unless-stopped
+    environment:
+      - PORT=8081
+      - VITE_API_BASE=https://qlda-api.sclould.com
+      - TZ=Asia/Ho_Chi_Minh
+    expose:
+      - "8081"
+    networks:
+      shared-network:
+        aliases:
+          - qlda-fe
+
+networks:
+  shared-network:
+    external: true

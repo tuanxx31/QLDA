@@ -104,7 +104,7 @@ export default function CommentInput({ taskId, projectId: propProjectId, editing
   
   const { data: projectMembers = [] } = useQuery({
     queryKey: ['projectMembers', projectId],
-    queryFn: () => projectMemberService.getProjectMebers(projectId),
+    queryFn: () => projectMemberService.getProjectMebers(projectId!),
     enabled: !!projectId,
   });
 
@@ -246,6 +246,10 @@ export default function CommentInput({ taskId, projectId: propProjectId, editing
   };
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
+
+  if (!projectId) {
+    return null;
+  }
 
   return (
     <div>

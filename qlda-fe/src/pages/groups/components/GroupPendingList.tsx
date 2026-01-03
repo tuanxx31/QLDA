@@ -6,7 +6,7 @@ import { Button, Space, Typography, message, Skeleton } from 'antd';
 import { CheckCircleOutlined, CloseOutlined, TeamOutlined } from '@ant-design/icons';
 const { Text, Title } = Typography;
 
-export const GroupPendingList = ({ onUpdate }: { onUpdate: () => void }) => {
+export const GroupPendingList = () => {
   const queryClient = useQueryClient();
 
   const { data: pendingInvites, isLoading } = useQuery({
@@ -20,7 +20,7 @@ export const GroupPendingList = ({ onUpdate }: { onUpdate: () => void }) => {
       message.success('Đã tham gia nhóm!');
       queryClient.invalidateQueries({ queryKey: ['pendingInvites'] });
       queryClient.invalidateQueries({ queryKey: ['pendingInvites'] });
-      onUpdate();
+      queryClient.invalidateQueries({ queryKey: ['myGroups'] });
     },
     onError: () => message.error('Không thể chấp nhận lời mời'),
   });
@@ -48,7 +48,7 @@ export const GroupPendingList = ({ onUpdate }: { onUpdate: () => void }) => {
       metas={{
         title: {
           dataIndex: 'groupName',
-          render: (text, invite) => (
+          render: (_text, invite) => (
             <Space>
               <TeamOutlined style={{ color: '#1677ff' }} />
 

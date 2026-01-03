@@ -25,11 +25,7 @@ export default defineConfig([
     },
     rules: {
       // 🚫 Tắt rule mặc định để dùng plugin tốt hơn
-      'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
-
-      // 🧹 Xóa import không dùng
-      'unused-imports/no-unused-imports': 'error',
 
       // ⚠️ Cảnh báo biến không dùng (nhưng bỏ qua biến có tiền tố "_")
       'unused-imports/no-unused-vars': [
@@ -44,7 +40,7 @@ export default defineConfig([
 
       // ⚙️ Quy tắc khác
       '@typescript-eslint/no-explicit-any': 'off',
-      "no-unused-imports": "warn",
+      "unused-imports/no-unused-imports": "warn",
     },
   },
 ]);

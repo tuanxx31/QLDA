@@ -5,7 +5,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { groupService } from '@/services/group.services';
-import useAuth from '@/hooks/useAuth';
 import { useGroupPermission } from '@/hooks/useGroupPermission';
 import { GroupInfoCard } from '@/pages/groups/components/GroupInfoCard';
 import { GroupMembersTable } from '@/pages/groups/components/GroupMembersTable';
@@ -19,8 +18,6 @@ import { isForbiddenError } from '@/utils/errorHandler';
 const GroupDetailPage = () => {
   const navigate = useNavigate();
   const { groupId } = useParams<{ groupId: string }>();
-  const auth = useAuth();
-  const currentUser = auth.authUser;
   const queryClient = useQueryClient();
   const [openEditGroup, setOpenEditGroup] = useState(false);
   const [openAddMember, setOpenAddMember] = useState(false);

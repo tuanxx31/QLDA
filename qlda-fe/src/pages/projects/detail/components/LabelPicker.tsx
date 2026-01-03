@@ -128,10 +128,7 @@ export default function LabelPicker({
             
             if (data?.id) {
                 assignLabelsMutation.mutate([data.id]);
-            } else if (data?.isExist && data?.id) {
-                
-                assignLabelsMutation.mutate([data.id]);
-            }
+            } 
         },
         onError: () => {
             message.error("Không thể tạo nhãn");

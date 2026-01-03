@@ -78,7 +78,7 @@ export default function AppLayout() {
           src: getAvatarUrl(user?.avatar),
           size: 'small',
           title: user?.name,
-          render: (props, dom) => (
+          render: (_props, _dom) => (
             <Dropdown menu={{ items: menuItems }} placement="bottomRight">
               <div style={{ cursor: 'pointer' }}>
                 <Space>

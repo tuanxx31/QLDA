@@ -9,7 +9,6 @@ import ProjectInfoCard from './components/ProjectInfoCard';
 import ProjectMembers from './components/ProjectMembers';
 import MemberAddModal from './components/MemberAddModal';
 import MemberAddFromGroupModal from './components/MemberAddFromGroupModal';
-import useAuth from '@/hooks/useAuth';
 import { usePageContentHeight } from '@/hooks/usePageContentHeight';
 import { useProjectPermission } from '@/hooks/useProjectPermission';
 import { isForbiddenError } from '@/utils/errorHandler';
@@ -19,7 +18,6 @@ const { Title } = Typography;
 const ProjectDetailPage = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const auth = useAuth();
   const qc = useQueryClient();
   const { minHeight } = usePageContentHeight();
   const [openAddMember, setOpenAddMember] = useState(false);

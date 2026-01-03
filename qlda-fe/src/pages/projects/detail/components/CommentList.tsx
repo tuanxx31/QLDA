@@ -5,6 +5,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
 import { useState } from 'react';
 import type { Comment } from '@/types/comment.type';
+import type { User } from '@/types/user.type';
 import { parseMentions } from '@/utils/mentionParser';
 import { commentService } from '@/services/comment.services';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -31,7 +32,7 @@ function parseContentForDisplay(content: string, mentions?: Comment['mentions'])
   if (!content) return content;
   
   
-  const mentionsMap = new Map<string, Comment['mentions'][0]>();
+  const mentionsMap = new Map<string, User>();
   if (mentions && mentions.length > 0) {
     mentions.forEach((user) => {
       mentionsMap.set(user.id, user);
@@ -57,7 +58,7 @@ function formatContentForSubmit(content: string, mentionIds: string[], mentions?
   let formattedContent = content;
 
   
-  const userMap = new Map<string, Comment['mentions'][0]>();
+  const userMap = new Map<string, User>();
   if (mentions) {
     mentions.forEach((user) => {
       userMap.set(user.id, user);
@@ -65,7 +66,7 @@ function formatContentForSubmit(content: string, mentionIds: string[], mentions?
   }
 
   
-  formattedContent = formattedContent.replace(/@\[([^\]]+)\]\(([^)]+)\)/g, (match, name, id) => {
+  formattedContent = formattedContent.replace(/@\[([^\]]+)\]\(([^)]+)\)/g, (_match, name, id) => {
     if (mentionIds.includes(id)) {
       return `@[${id}]`;
     }
@@ -94,7 +95,7 @@ function formatContentForSubmit(content: string, mentionIds: string[], mentions?
   return formattedContent;
 }
 
-export default function CommentList({ taskId, comments, onEdit, projectOwnerId, projectId }: Props) {
+export default function CommentList({ taskId, comments, projectOwnerId, projectId }: Props) {
   const queryClient = useQueryClient();
   const { authUser } = useAuth();
   const [editingId, setEditingId] = useState<string | null>(null);

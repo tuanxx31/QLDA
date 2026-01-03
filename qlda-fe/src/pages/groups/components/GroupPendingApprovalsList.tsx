@@ -6,7 +6,7 @@ import { Space, Typography, Skeleton, Badge } from 'antd';
 import { ClockCircleOutlined, TeamOutlined } from '@ant-design/icons';
 const { Text, Title } = Typography;
 
-export const GroupPendingApprovalsList = ({ onUpdate }: { onUpdate?: () => void }) => {
+export const GroupPendingApprovalsList = () => {
   const { data: pendingApprovals, isLoading } = useQuery({
     queryKey: ['pendingApprovals'],
     queryFn: groupService.findPendingApprovals,
@@ -27,7 +27,7 @@ export const GroupPendingApprovalsList = ({ onUpdate }: { onUpdate?: () => void 
       metas={{
         title: {
           dataIndex: 'groupName',
-          render: (text, approval) => (
+          render: (_text, approval) => (
             <Space>
               <TeamOutlined style={{ color: '#faad14' }} />
               <Text strong>Nhóm: {approval.groupName}</Text>

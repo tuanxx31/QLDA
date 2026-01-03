@@ -34,7 +34,7 @@ const MemberAddFromGroupModal = ({ open, onClose, projectId, groupId, onSuccess 
   const [pageSize, setPageSize] = useState(8);
   const [selectedRole, setSelectedRole] = useState<'viewer' | 'editor' | 'leader'>('viewer');
 
-  const modalWidth = useResponsiveModalWidth({
+  useResponsiveModalWidth({
     xs: 320,
     sm: 480,
     md: 640,

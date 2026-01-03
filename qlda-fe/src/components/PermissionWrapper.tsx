@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useProjectPermission } from '@/hooks/useProjectPermission';
 import type { ProjectRole } from '@/types/permission.type';
 import { hasProjectPermission } from '@/utils/permissions';

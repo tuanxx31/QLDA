@@ -1,11 +1,10 @@
-import { Card, Progress, Statistic, Row, Col, Table, Tag, Space, Typography, Empty } from 'antd';
+import { Card, Progress, Statistic, Row, Col, Table, Tag, Space, Empty } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { projectService } from '@/services/project.services';
-import type { ProjectProgress, ColumnProgress, UserProgress, DeadlineSummary } from '@/types/project.type';
+import type { UserProgress } from '@/types/project.type';
 import { CheckCircleOutlined, ClockCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { getAvatarUrl } from '@/utils/avatarUtils';
 
-const { Title } = Typography;
 
 interface Props {
   projectId: string;
@@ -38,13 +37,6 @@ export default function ProgressDashboard({ projectId }: Props) {
 
   const isLoading = loadingProgress || loadingColumns || loadingUsers || loadingDeadline;
 
-  
-  const pieData = projectProgress
-    ? [
-        { type: 'Hoàn thành', value: projectProgress.doneTasks, color: '#52c41a' },
-        { type: 'Chưa hoàn thành', value: projectProgress.todoTasks, color: '#faad14' },
-      ]
-    : [];
 
   
   const userColumns = [
@@ -150,7 +142,7 @@ export default function ProgressDashboard({ projectId }: Props) {
               <Progress
                 type="circle"
                 percent={projectProgress ? Math.round((projectProgress.doneTasks / projectProgress.totalTasks) * 100) : 0}
-                format={(percent) => `${projectProgress?.doneTasks || 0} task`}
+                format={() => `${projectProgress?.doneTasks || 0} task`}
                 strokeColor="#52c41a"
               />
               <div style={{ marginTop: 8 }}>Đã hoàn thành</div>
@@ -161,7 +153,7 @@ export default function ProgressDashboard({ projectId }: Props) {
               <Progress
                 type="circle"
                 percent={projectProgress ? Math.round((projectProgress.todoTasks / projectProgress.totalTasks) * 100) : 0}
-                format={(percent) => `${projectProgress?.todoTasks || 0} task`}
+                format={() => `${projectProgress?.todoTasks || 0} task`}
                 strokeColor="#faad14"
               />
               <div style={{ marginTop: 8 }}>Chưa hoàn thành</div>

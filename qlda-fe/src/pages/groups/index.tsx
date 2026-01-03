@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Button, Empty, Skeleton, Card } from 'antd';
 import { PlusOutlined, TeamOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
@@ -12,7 +12,6 @@ import { useState } from 'react';
 import { usePageContentHeight } from '@/hooks/usePageContentHeight';
 
 const GroupsPage = () => {
-  const queryClient = useQueryClient();
   const [openModal, setOpenModal] = useState(false);
   const [openJoinModal, setOpenJoinModal] = useState(false);
   const { minHeight } = usePageContentHeight();
@@ -44,12 +43,8 @@ const GroupsPage = () => {
       style={{ height: '100%' }}
     >
       <Card style={{ minHeight }}>
-        <GroupPendingList
-          onUpdate={() => queryClient.invalidateQueries({ queryKey: ['myGroups'] })}
-        />
-        <GroupPendingApprovalsList
-          onUpdate={() => queryClient.invalidateQueries({ queryKey: ['myGroups'] })}
-        />
+        <GroupPendingList />
+        <GroupPendingApprovalsList />
 
         {isLoading ? (
           <Skeleton active paragraph={{ rows: 4 }} />

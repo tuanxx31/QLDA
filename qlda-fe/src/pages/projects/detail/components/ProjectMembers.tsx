@@ -2,7 +2,6 @@ import { message, Tabs } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { projectMemberService } from '@/services/project.services';
 import { ProjectMembersTable } from './ProjectMembersTable ';
-import type { ProjectMember } from '@/types/project.type';
 import { useProjectPermission } from '@/hooks/useProjectPermission';
 interface Props {
   projectId: string;
@@ -11,12 +10,12 @@ interface Props {
 const ProjectMembers = ({ projectId }: Props) => {
   const qc = useQueryClient();
 
-  const { data: projectMembers, isLoading } = useQuery({
+  const { data: projectMembers } = useQuery({
     queryKey: ['projectMembers', projectId],
     queryFn: async () => await projectMemberService.getProjectMebers(projectId),
   });
 
-  const removeMutation = useMutation({
+  useMutation({
     mutationFn: (userId: string) => projectMemberService.remove(projectId, userId),
     onSuccess: () => {
       message.success('Đã xóa thành viên');

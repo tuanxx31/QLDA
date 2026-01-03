@@ -61,7 +61,7 @@ export default function DeadlineAnalyticsTable({ data, deadlineSummary, loading 
           dataSource={data.overdueTasksList}
           rowKey="taskId"
           pagination={{ pageSize: 10 }}
-          emptyText={<Empty description="Không có nhiệm vụ quá hạn" />}
+          locale={{ emptyText: <Empty description="Không có nhiệm vụ quá hạn" /> }}
         />
       ),
     },
@@ -74,7 +74,7 @@ export default function DeadlineAnalyticsTable({ data, deadlineSummary, loading 
           dataSource={data.dueSoonTasksList}
           rowKey="taskId"
           pagination={{ pageSize: 10 }}
-          emptyText={<Empty description="Không có nhiệm vụ sắp đến hạn" />}
+          locale={{ emptyText: <Empty description="Không có nhiệm vụ sắp đến hạn" /> }}
         />
       ),
     },
@@ -87,7 +87,7 @@ export default function DeadlineAnalyticsTable({ data, deadlineSummary, loading 
           dataSource={data.completedOnTimeList}
           rowKey="taskId"
           pagination={{ pageSize: 10 }}
-          emptyText={<Empty description="Không có nhiệm vụ hoàn thành đúng hạn" />}
+          locale={{ emptyText: <Empty description="Không có nhiệm vụ hoàn thành đúng hạn" /> }}
         />
       ),
     },
@@ -100,7 +100,7 @@ export default function DeadlineAnalyticsTable({ data, deadlineSummary, loading 
           dataSource={data.completedLateList}
           rowKey="taskId"
           pagination={{ pageSize: 10 }}
-          emptyText={<Empty description="Không có nhiệm vụ hoàn thành trễ hạn" />}
+          locale={{ emptyText: <Empty description="Không có nhiệm vụ hoàn thành trễ hạn" /> }}
         />
       ),
     },

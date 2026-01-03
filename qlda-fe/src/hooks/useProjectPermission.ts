@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { projectService } from '@/services/project.services';
+import { projectService, projectMemberService } from '@/services/project.services';
 import useAuth from './useAuth';
 import type { ProjectPermission, ProjectRole } from '@/types/permission.type';
 import {
@@ -17,11 +17,20 @@ export function useProjectPermission(projectId: string | undefined) {
   const auth = useAuth();
   const userId = auth.authUser?.id;
 
-  const { data: project, isLoading } = useQuery({
+  const { data: project, isLoading: projectLoading } = useQuery({
     queryKey: ['project', projectId],
     queryFn: async () => {
       if (!projectId) return null;
       return await projectService.getById(projectId);
+    },
+    enabled: !!projectId,
+  });
+
+  const { data: members = [], isLoading: membersLoading } = useQuery({
+    queryKey: ['projectMembers', projectId],
+    queryFn: async () => {
+      if (!projectId) return [];
+      return await projectMemberService.getProjectMebers(projectId);
     },
     enabled: !!projectId,
   });
@@ -46,7 +55,7 @@ export function useProjectPermission(projectId: string | undefined) {
       role = 'leader';
     } else {
       
-      const member = project.members?.find((m) => m.user?.id === userId);
+      const member = members.find((m) => m.user?.id === userId);
       role = member ? (member.role as ProjectRole) : null;
     }
 
@@ -60,11 +69,11 @@ export function useProjectPermission(projectId: string | undefined) {
       canEditColumns: canEditColumnsFn(role),
       canView: canViewProject(role),
     };
-  }, [project, userId]);
+  }, [project, members, userId]);
 
   return {
     ...permission,
-    isLoading,
+    isLoading: projectLoading || membersLoading,
   };
 }
 

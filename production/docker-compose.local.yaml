@@ -1,0 +1,12 @@
+services:
+  qlda-be:
+    build:
+      context: ../be
+      dockerfile: Dockerfile
+    image: registry.gitlab.com/tuanxx31/qlda/qlda-be:latest
+
+  qlda-fe:
+    build:
+      context: ../qlda-fe
+      dockerfile: Dockerfile
+    image: registry.gitlab.com/tuanxx31/qlda/qlda-fe:latest

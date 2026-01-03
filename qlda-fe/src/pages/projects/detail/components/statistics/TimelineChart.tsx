@@ -1,6 +1,6 @@
 import { Card, Select, DatePicker, Space, Empty } from 'antd';
 import { Line } from '@ant-design/charts';
-import dayjs, { type Dayjs } from 'dayjs';
+import { type Dayjs } from 'dayjs';
 import { useState, useMemo } from 'react';
 import type { TimelineStatistics } from '@/types/statistics.type';
 
