@@ -31,7 +31,7 @@ services:
     restart: unless-stopped
     environment:
       - PORT=8081
-      - VITE_API_BASE=https://qlda-api.sclould.com
+      - API_BASE=https://qlda-api.sclould.com
       - TZ=Asia/Ho_Chi_Minh
     expose:
       - "8081"

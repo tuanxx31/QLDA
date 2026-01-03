@@ -14,6 +14,10 @@ RUN rm -rf node_modules package-lock.json
 # Cài đặt các phụ thuộc của ứng dụng
 RUN npm install
 
+# Nhận VITE_API_BASE từ build args
+ARG VITE_API_BASE
+ENV VITE_API_BASE=$VITE_API_BASE
+
 # Xây dựng ứng dụng Vite
 RUN npm run build
 

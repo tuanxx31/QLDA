@@ -9,4 +9,6 @@ services:
     build:
       context: ../qlda-fe
       dockerfile: Dockerfile
+      args:
+        VITE_API_BASE: https://qlda-api.sclould.com
     image: registry.gitlab.com/tuanxx31/qlda/qlda-fe:latest
