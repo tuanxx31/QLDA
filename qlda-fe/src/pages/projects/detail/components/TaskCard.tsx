@@ -1,4 +1,4 @@
-import { Card, Avatar, Tooltip, theme, Badge } from 'antd';
+import { Card, Avatar, Tooltip, theme, Badge, Tag } from 'antd';
 import {
   CheckCircleFilled,
   ClockCircleOutlined,
@@ -127,6 +127,21 @@ export default function TaskCard({ task }: Props) {
       ? task.description.substring(0, 80) + '...'
       : task.description
     : null;
+
+  const getPriorityConfig = (priority: 'low' | 'medium' | 'high') => {
+    switch (priority) {
+      case 'low':
+        return { color: 'default' as const, label: 'Thấp' };
+      case 'medium':
+        return { color: 'orange' as const, label: 'Trung bình' };
+      case 'high':
+        return { color: 'red' as const, label: 'Cao' };
+      default:
+        return { color: 'default' as const, label: 'Trung bình' };
+    }
+  };
+
+  const priorityConfig = task.priority ? getPriorityConfig(task.priority) : null;
 
   return (
     <Card
@@ -274,7 +289,7 @@ export default function TaskCard({ task }: Props) {
       )}
 
       {}
-      {(dueDateInfo || subtasksProgress || (task.assignees && task.assignees.length > 0)) && (
+      {(dueDateInfo || subtasksProgress || priorityConfig || (task.assignees && task.assignees.length > 0)) && (
         <div
           style={{
             display: 'flex',
@@ -284,6 +299,15 @@ export default function TaskCard({ task }: Props) {
             flexWrap: 'wrap',
           }}
         >
+          {}
+          {priorityConfig && (
+            <Tooltip title={`Mức độ ưu tiên: ${priorityConfig.label}`}>
+              <Tag color={priorityConfig.color} style={{ fontSize: 12 }}>
+                {priorityConfig.label}
+              </Tag>
+            </Tooltip>
+          )}
+
           {}
           {dueDateInfo && (
             <Tooltip

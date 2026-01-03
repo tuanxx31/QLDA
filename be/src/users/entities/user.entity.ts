@@ -22,8 +22,14 @@ export class User {
   @Column({ unique: true, name: 'email' })
   email: string;
 
-  @Column({ nullable: false, name: 'password' })
+  @Column({ nullable: true, name: 'password', type: 'varchar' })
   password: string;
+
+  @Column({ nullable: true, unique: true, name: 'google_id' })
+  googleId: string;
+
+  @Column({ nullable: true, name: 'provider' })
+  provider: 'local' | 'google';
 
   @Column({ nullable: true ,name: 'date_of_birth'})
   dateOfBirth?: Date;
