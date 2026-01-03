@@ -11,14 +11,23 @@ services:
       - DATABASE_HOST=db-mysql
       - DATABASE_PORT=3306
       - DATABASE_USERNAME=root
-      - DATABASE_PASSWORD=Tuan3132004@
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - DATABASE_NAME=qlda
       - DATABASE_TYPE=mysql
 
-      - JWT_SECRET=b90b207145af29a93f0194d6dc6e7336
+      - JWT_SECRET=${JWT_SECRET}
       - TZ=Asia/Ho_Chi_Minh
+
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=https://qlda-api.sclould.com/auth/google/callback
+      - FRONTEND_URL=https://qlda.sclould.com
+
     expose:
       - "3100"
+    volumes:
+      # Mount volume external để lưu trữ file uploads
+      - qlda-uploads:/qlda/be/uploads
     networks:
       shared-network:
         aliases:
@@ -39,6 +48,11 @@ services:
       shared-network:
         aliases:
           - qlda-fe
+
+volumes:
+  # Volume external để lưu trữ file uploads (avatar, comment attachments)
+  qlda-uploads:
+    external: true
 
 networks:
   shared-network:

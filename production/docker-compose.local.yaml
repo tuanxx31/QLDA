@@ -4,6 +4,9 @@ services:
       context: ../be
       dockerfile: Dockerfile
     image: registry.gitlab.com/tuanxx31/qlda/qlda-be:latest
+    volumes:
+      # Mount volume external để lưu trữ file uploads
+      - qlda-uploads:/qlda/be/uploads
 
   qlda-fe:
     build:
@@ -12,3 +15,8 @@ services:
       args:
         VITE_API_BASE: https://qlda-api.sclould.com
     image: registry.gitlab.com/tuanxx31/qlda/qlda-fe:latest
+
+volumes:
+  # Volume external để lưu trữ file uploads (avatar, comment attachments)
+  qlda-uploads:
+    external: true

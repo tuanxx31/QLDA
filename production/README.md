@@ -42,7 +42,14 @@ JWT_SECRET=your-secret-jwt-key-change-this-in-production
 FE_PORT=80
 ```
 
-### 2. Build và khởi động services
+### 2. Tạo volume external cho file uploads
+
+```bash
+# Tạo volume external để lưu trữ file uploads
+docker volume create qlda-uploads
+```
+
+### 3. Build và khởi động services
 
 ```bash
 # Build và start tất cả services
@@ -57,7 +64,7 @@ docker compose logs -f qlda-fe
 docker compose logs -f db
 ```
 
-### 3. Chạy migrations (nếu cần)
+### 4. Chạy migrations (nếu cần)
 
 ```bash
 # Vào container backend
@@ -67,7 +74,7 @@ docker compose exec be sh
 npm run migration:run
 ```
 
-### 4. Truy cập ứng dụng
+### 5. Truy cập ứng dụng
 
 - **Frontend**: http://localhost (hoặc port bạn đã cấu hình trong FE_PORT)
 - **Backend API**: http://localhost:3000/api (hoặc port bạn đã cấu hình trong BE_PORT)
@@ -109,10 +116,10 @@ docker compose up -d be
 - Port: 3306 (mặc định)
 - Volume: `mysql_data` (lưu trữ dữ liệu)
 
-### 2. **be** - NestJS Backend
-- Build từ: `../be/Dockerfile`
-- Port: 3000 (mặc định)
-- Volume: `be_uploads` (lưu trữ file upload)
+### 2. **qlda-be** - NestJS Backend
+- Image: `registry.gitlab.com/tuanxx31/qlda/qlda-be:latest`
+- Port: 3100 (exposed)
+- Volume: `qlda-uploads:/qlda/be/uploads` (external volume cho file uploads)
 - Environment variables:
   - `DATABASE_HOST=db`
   - `DATABASE_PORT=3306`
@@ -127,14 +134,45 @@ docker compose up -d be
 
 ## Network
 
-Tất cả services chạy trong network `qlda-network` (bridge), cho phép:
-- Frontend truy cập backend qua service name `be:3000`
-- Backend truy cập database qua service name `db:3306`
+Tất cả services chạy trong network `shared-network` (external), cho phép:
+- Frontend truy cập backend qua service name `qlda-be:3100`
+- Backend truy cập database qua service name `db-mysql:3306`
+
+**Tạo network external (nếu chưa có):**
+
+```bash
+docker network create shared-network
+```
 
 ## Volumes
 
-- `mysql_data`: Lưu trữ dữ liệu MySQL
-- `be_uploads`: Lưu trữ các file upload từ backend
+### Volume External cho File Uploads
+
+Hệ thống sử dụng volume external `qlda-uploads` để lưu trữ các file upload (avatar, comment attachments). 
+
+**Tạo volume external trước khi chạy docker-compose:**
+
+```bash
+# Tạo volume external
+docker volume create qlda-uploads
+
+# Kiểm tra volume đã được tạo
+docker volume ls | grep qlda-uploads
+
+# Xem thông tin chi tiết volume
+docker volume inspect qlda-uploads
+```
+
+**Mount point:** Volume được mount vào `/qlda/be/uploads` trong container backend.
+
+**Lưu ý:**
+- Volume external tồn tại độc lập với docker-compose, dữ liệu sẽ không bị xóa khi chạy `docker compose down`
+- Để xóa volume (⚠️ sẽ mất tất cả file uploads): `docker volume rm qlda-uploads`
+- Để backup volume: Copy dữ liệu từ mount point của volume (thường ở `/var/lib/docker/volumes/qlda-uploads/_data` trên Linux)
+
+### Các volumes khác
+
+- `mysql_data`: Lưu trữ dữ liệu MySQL (nếu có)
 
 ## Troubleshooting
 
