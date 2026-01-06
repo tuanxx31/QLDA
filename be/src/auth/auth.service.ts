@@ -66,7 +66,6 @@ export class AuthService {
 
   async validateGoogleUser(googleUser: any) {
     const { googleId, email, name, avatar } = googleUser;
-
     if (!email) {
       throw new BadRequestException('Không thể lấy email từ Google');
     }
@@ -108,10 +107,10 @@ export class AuthService {
     } else {
       // User đã tồn tại, cập nhật thông tin nếu có thay đổi
       const updateData: any = {};
-      if (avatar && avatar !== user.avatar) {
+      if (!user.avatar && avatar) {
         updateData.avatar = avatar;
       }
-      if (name && name !== user.name) {
+      if (!user.name && name) {
         updateData.name = name;
       }
       if (Object.keys(updateData).length > 0) {
