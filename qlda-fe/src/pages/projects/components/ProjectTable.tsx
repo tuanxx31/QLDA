@@ -16,7 +16,7 @@ interface Props {
 const getStatusLabel = (status: string): string => {
   const statusMap: Record<string, string> = {
     todo: 'Chưa bắt đầu',
-    doing: 'Đang làm',
+    doing: 'Đang thực hiện',
     done: 'Hoàn thành',
   };
   return statusMap[status] || status;

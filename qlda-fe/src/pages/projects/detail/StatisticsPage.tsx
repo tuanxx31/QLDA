@@ -90,7 +90,7 @@ export default function StatisticsPage() {
   });
 
   const handleRefresh = async () => {
-    message.loading({ content: 'Đang làm mới dữ liệu...', key: 'refresh' });
+    message.loading({ content: 'Đang thực hiện mới dữ liệu...', key: 'refresh' });
     await Promise.all([
       refetchOverview(),
       refetchProjectProgress(),

@@ -51,7 +51,7 @@ export default function DayView({ date, tasks, loading }: DayViewProps) {
             title={`📅 ${date.format('dddd, DD/MM/YYYY')}`}
             extra={
                 <Space>
-                    <Tag color="processing">{todoCount} đang làm</Tag>
+                    <Tag color="processing">{todoCount} Đang thực hiện</Tag>
                     <Tag color="success">{doneCount} hoàn thành</Tag>
                 </Space>
             }
@@ -109,7 +109,7 @@ export default function DayView({ date, tasks, loading }: DayViewProps) {
                                             {priority.label}
                                         </Tag>
                                         <Tag color={task.status === 'done' ? 'success' : 'processing'}>
-                                            {task.status === 'done' ? 'Xong' : 'Đang làm'}
+                                            {task.status === 'done' ? 'Xong' : 'Đang thực hiện'}
                                         </Tag>
                                     </Space>
                                 </div>

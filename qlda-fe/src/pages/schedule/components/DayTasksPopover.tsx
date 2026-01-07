@@ -33,7 +33,7 @@ export default function DayTasksPopover({ tasks, date, children, onViewDay }: Da
         <div style={{ width: 320, maxHeight: 400, overflow: 'auto' }}>
             {/* Summary */}
             <Space style={{ marginBottom: 8 }}>
-                <Tag color="processing">{todoTasks.length} đang làm</Tag>
+                <Tag color="processing">{todoTasks.length} Đang thực hiện</Tag>
                 <Tag color="success">{doneTasks.length} hoàn thành</Tag>
             </Space>
 

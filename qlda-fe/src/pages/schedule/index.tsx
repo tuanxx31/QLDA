@@ -229,7 +229,7 @@ export default function SchedulePage() {
                                             style={{ width: 140 }}
                                             options={[
                                                 { label: 'Tất cả trạng thái', value: 'all' },
-                                                { label: 'Đang làm', value: 'todo' },
+                                                { label: 'Đang thực hiện', value: 'todo' },
                                                 { label: 'Hoàn thành', value: 'done' },
                                             ]}
                                         />
