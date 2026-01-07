@@ -597,4 +597,40 @@ export class TaskService {
     });
   }
 
+  async getMySchedule(userId: string, startDate: Date, endDate: Date) {
+    const tasks = await this.taskRepo
+      .createQueryBuilder('task')
+      .innerJoin('task.assignees', 'assignee', 'assignee.id = :userId', { userId })
+      .leftJoinAndSelect('task.column', 'column')
+      .leftJoinAndSelect('column.project', 'project')
+      .leftJoinAndSelect('task.labels', 'labels')
+      .leftJoinAndSelect('task.assignees', 'allAssignees')
+      .where(
+        '(task.startDate BETWEEN :startDate AND :endDate OR task.dueDate BETWEEN :startDate AND :endDate)',
+        { startDate, endDate },
+      )
+      .orWhere(
+        '(task.startDate <= :startDate AND task.dueDate >= :endDate)',
+        { startDate, endDate },
+      )
+      .orderBy('task.dueDate', 'ASC')
+      .getMany();
+
+    return tasks.map((task) => ({
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      startDate: task.startDate,
+      dueDate: task.dueDate,
+      status: task.status,
+      priority: task.priority,
+      progress: task.progress,
+      projectId: task.column?.project?.id,
+      projectName: task.column?.project?.name,
+      columnName: task.column?.name,
+      labels: task.labels,
+      assignees: task.assignees,
+    }));
+  }
+
 }

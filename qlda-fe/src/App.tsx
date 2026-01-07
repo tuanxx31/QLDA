@@ -14,6 +14,7 @@ import ProjectPage from '@/pages/projects';
 import ProjectDetailPage from '@/pages/projects/detail';
 import ProjectBoardPage from '@/pages/projects/detail/ProjectBoardPage';
 import StatisticsPage from '@/pages/projects/detail/StatisticsPage';
+import SchedulePage from '@/pages/schedule';
 import ForbiddenPage from '@/pages/errors/ForbiddenPage';
 import '@ant-design/v5-patch-for-react-19';
 import './styles/app.css';
@@ -41,6 +42,8 @@ export default function App() {
           <Route path="dashboard" element={<Dashboard />} />
 
           <Route path="settings" element={<SettingsPage />} />
+
+          <Route path="schedule" element={<SchedulePage />} />
 
           <Route path="forbidden" element={<ForbiddenPage />} />
 

@@ -4,6 +4,7 @@ import {
   LogoutOutlined,
   TeamOutlined,
   ProjectOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons';
 import { ProLayout } from '@ant-design/pro-components';
 import { Avatar, Dropdown, Space, theme, type MenuProps } from 'antd';
@@ -37,6 +38,7 @@ export default function AppLayout() {
   const routes = {
     routes: [
       { path: '/dashboard', name: 'Bảng điều khiển', icon: <DashboardOutlined /> },
+      { path: '/schedule', name: 'Lịch làm việc', icon: <CalendarOutlined /> },
       { path: '/groups', name: 'Nhóm', icon: <TeamOutlined /> },
       { path: '/projects', name: 'Dự án', icon: <ProjectOutlined /> },
     ],

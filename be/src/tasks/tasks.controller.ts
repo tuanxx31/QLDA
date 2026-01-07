@@ -9,13 +9,14 @@ import {
   Req,
   UseGuards,
   ForbiddenException,
+  Query,
 } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { AssignUsersDto, AssignLabelsDto, UnassignUsersDto } from './dto/assign.dto';
 import { TaskService } from './tasks.service';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Tasks')
@@ -23,6 +24,29 @@ import { ApiTags } from '@nestjs/swagger';
 @UseGuards(AuthGuard)
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
+
+  @Get('schedule/my')
+  @ApiBearerAuth('jwt')
+  @ApiOperation({ summary: 'Lấy lịch làm việc của user hiện tại' })
+  @ApiQuery({ name: 'startDate', required: true, type: String, description: 'Ngày bắt đầu (YYYY-MM-DD)' })
+  @ApiQuery({ name: 'endDate', required: true, type: String, description: 'Ngày kết thúc (YYYY-MM-DD)' })
+  @ApiResponse({ status: 200, description: 'Lịch làm việc đã được lấy thành công' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  getMySchedule(
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+    @Req() req,
+  ) {
+    const userId = req.user?.sub as string;
+    if (!userId) {
+      throw new ForbiddenException('Không xác định được người dùng');
+    }
+    return this.taskService.getMySchedule(
+      userId,
+      new Date(startDate),
+      new Date(endDate),
+    );
+  }
 
   @Get(':id')
   @ApiBearerAuth('jwt')
