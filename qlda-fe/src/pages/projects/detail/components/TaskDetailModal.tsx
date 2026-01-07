@@ -11,6 +11,7 @@ import {
   Spin,
   Tag,
   Popconfirm,
+  theme,
 } from "antd";
 import {
   ClockCircleOutlined,
@@ -19,6 +20,10 @@ import {
   PlusOutlined,
   TagsOutlined,
   CheckCircleFilled,
+  UserOutlined,
+  FileTextOutlined,
+  FlagOutlined,
+  CommentOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
@@ -65,8 +70,9 @@ export default function TaskDetailModal({
   const { projectId } = useParams<{ projectId: string }>();
   const { authUser } = useAuth();
   const { canDeleteTasks, canEditTasks } = useProjectPermission(projectId);
+  const { token } = theme.useToken();
   const [taskData, setTaskData] = useState<Task | null>(task);
-  
+
   const { data: project } = useQuery({
     queryKey: ["project", projectId],
     queryFn: () => projectService.getById(projectId!),
@@ -75,6 +81,7 @@ export default function TaskDetailModal({
   const [description, setDescription] = useState("");
   const [editingTitle, setEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState("");
+  const [editingDescription, setEditingDescription] = useState(false);
 
   const [labelOpen, setLabelOpen] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
@@ -91,10 +98,10 @@ export default function TaskDetailModal({
         labels: prev.labels.map((lb) =>
           lb.id === label.id
             ? {
-                ...lb,
-                name: label.name,
-                color: label.color,
-              }
+              ...lb,
+              name: label.name,
+              color: label.color,
+            }
             : lb,
         ),
       };
@@ -111,7 +118,7 @@ export default function TaskDetailModal({
     });
   };
 
-  
+
   const {
     data: fetchedTask,
   } = useQuery({
@@ -121,7 +128,7 @@ export default function TaskDetailModal({
     staleTime: 30000,
   });
 
-  
+
   const {
     data: assignees = [],
     isLoading: assigneesLoading,
@@ -132,7 +139,7 @@ export default function TaskDetailModal({
     enabled: !!task?.id && open,
     staleTime: 30000,
     retry: (failureCount, error) => {
-      
+
       if (isForbiddenError(error)) {
         return false;
       }
@@ -149,7 +156,7 @@ export default function TaskDetailModal({
     enabled: !!taskData?.id && open,
     refetchInterval: 2500,
     retry: (failureCount, error) => {
-      
+
       if (isForbiddenError(error)) {
         return false;
       }
@@ -157,7 +164,7 @@ export default function TaskDetailModal({
     },
   });
 
-  
+
   useEffect(() => {
     if (fetchedTask) {
       setTaskData(fetchedTask);
@@ -174,22 +181,22 @@ export default function TaskDetailModal({
     }
   }, [fetchedTask, task?.id]);
 
-  
+
   useEffect(() => {
     if (open && taskData?.id && authUser?.id) {
       markTaskAsRead(taskData.id, authUser.id);
-      
-      queryClient.invalidateQueries({ 
+
+      queryClient.invalidateQueries({
         queryKey: ['comments', taskData.id],
-        refetchType: 'active', 
+        refetchType: 'active',
       });
-      
+
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['columns'] });
     }
   }, [open, taskData?.id, authUser?.id, queryClient]);
 
-  
+
   const dueInfo = useMemo(() => {
     if (!taskData?.dueDate) return null;
     const d = dayjs(taskData.dueDate);
@@ -199,7 +206,7 @@ export default function TaskDetailModal({
     };
   }, [taskData]);
 
-  
+
   const updateTaskMutation = useMutation({
     mutationFn: (payload: Partial<Task> & { id: string }) =>
       taskService.update(payload.id, payload),
@@ -226,7 +233,7 @@ export default function TaskDetailModal({
     onError: () => message.error("Lỗi cập nhật"),
   });
 
-  
+
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: "todo" | "done" }) =>
       taskService.updateStatus(id, status),
@@ -257,19 +264,19 @@ export default function TaskDetailModal({
         invalidateStatisticsQueries(queryClient, projectId);
       }
 
-    
+
     },
 
     onError: () => message.error("Lỗi cập nhật trạng thái"),
   });
 
-  
+
   const saveDescription = async () => {
     if (!taskData?.id) return;
     await updateTaskMutation.mutateAsync({ id: taskData.id, description });
   };
 
-  
+
   const handleSaveTitle = async () => {
     if (!taskData?.id) return;
     const newTitle = tempTitle.trim();
@@ -281,7 +288,7 @@ export default function TaskDetailModal({
     setEditingTitle(false);
   };
 
-  
+
   const deleteTaskMutation = useMutation({
     mutationFn: () => taskService.delete(taskData!.id),
     onSuccess: () => {
@@ -296,10 +303,10 @@ export default function TaskDetailModal({
     },
   });
 
-  
-  
-  
-  
+
+
+
+
   const visibleAssignees = assignees.length
     ? assignees
     : fetchedTask?.assignees?.length
@@ -325,10 +332,10 @@ export default function TaskDetailModal({
 
   if (!taskData) return null;
 
-  
+
   const getStatusColor = () => {
     if (taskData.status === "done") return "#52c41a";
-  
+
   };
 
   return (
@@ -346,7 +353,7 @@ export default function TaskDetailModal({
         }}
         title={
           <div style={{ position: "relative", paddingBottom: 16, paddingRight: 40 }}>
-            {}
+            { }
             {taskData.status !== "done" && (
               <div
                 style={{
@@ -366,15 +373,15 @@ export default function TaskDetailModal({
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                
+
               }}
             >
-              {}
+              { }
               <CheckCircleFilled
                 onClick={(e) => {
                   e.stopPropagation();
                   if (!taskData?.id) return;
-                  
+
                   const currentStatus = taskData.status;
                   const newStatus: "todo" | "done" =
                     currentStatus === "done" ? "todo" : "done";
@@ -398,42 +405,93 @@ export default function TaskDetailModal({
                 }}
               />
 
-              {}
+              {/* Task Title */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 {editingTitle ? (
-                  <Input
-                    value={tempTitle}
-                    onChange={(e) => setTempTitle(e.target.value)}
-                    onBlur={handleSaveTitle}
-                    onPressEnter={handleSaveTitle}
-                    autoFocus
-                    style={{
-                      fontSize: 18,
-                      fontWeight: 600,
-                      width: "100%",
-                    }}
-                  />
+                  <div style={{ position: "relative" }}>
+                    <Input.TextArea
+                      value={tempTitle}
+                      onChange={(e) => setTempTitle(e.target.value)}
+                      onBlur={handleSaveTitle}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSaveTitle();
+                        }
+                        if (e.key === "Escape") {
+                          setTempTitle(taskData.title);
+                          setEditingTitle(false);
+                        }
+                      }}
+                      autoFocus
+                      autoSize={{ minRows: 1, maxRows: 4 }}
+                      style={{
+                        fontSize: 18,
+                        fontWeight: 600,
+                        width: "100%",
+                        resize: "none",
+                        borderRadius: 6,
+                        padding: "8px 12px",
+                      }}
+                      placeholder="Nhập tên nhiệm vụ..."
+                    />
+                    <div style={{
+                      marginTop: 8,
+                      display: "flex",
+                      gap: 8,
+                      alignItems: "center",
+                    }}>
+                      <Button
+                        type="primary"
+                        size="small"
+                        onClick={handleSaveTitle}
+                        loading={updateTaskMutation.isPending}
+                        style={{ borderRadius: 6 }}
+                      >
+                        Lưu
+                      </Button>
+                      <Button
+                        size="small"
+                        onClick={() => {
+                          setTempTitle(taskData.title);
+                          setEditingTitle(false);
+                        }}
+                        style={{ borderRadius: 6 }}
+                      >
+                        Hủy
+                      </Button>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Enter để lưu, Esc để hủy
+                      </Text>
+                    </div>
+                  </div>
                 ) : (
                   <div
                     style={{
                       display: "flex",
-                      alignItems: "center",
+                      alignItems: "flex-start",
                       gap: 8,
                     }}
-                    onDoubleClick={canEditTasks ? () => setEditingTitle(true) : undefined}
                   >
-                    <Title 
-                      level={4} 
-                      style={{ 
-                        margin: 0, 
-                        flex: 1,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {taskData.title}
-                    </Title>
+                    <Tooltip title={taskData.title}>
+                      <Title
+                        level={4}
+                        style={{
+                          margin: 0,
+                          flex: 1,
+                          overflow: "hidden",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          lineHeight: "1.4",
+                          wordBreak: "break-word",
+                          cursor: canEditTasks ? "pointer" : "default",
+                        }}
+                        onClick={canEditTasks ? () => setEditingTitle(true) : undefined}
+                      >
+                        {taskData.title}
+                      </Title>
+                    </Tooltip>
 
                     {canEditTasks && (
                       <Tooltip title="Sửa tên">
@@ -442,7 +500,11 @@ export default function TaskDetailModal({
                           size="small"
                           icon={<EditOutlined />}
                           onClick={() => setEditingTitle(true)}
-                          style={{ color: "#999", flexShrink: 0 }}
+                          style={{
+                            color: token.colorTextTertiary,
+                            flexShrink: 0,
+                            marginTop: 2,
+                          }}
                         />
                       </Tooltip>
                     )}
@@ -478,38 +540,53 @@ export default function TaskDetailModal({
             minHeight: 400,
           }}
         >
-          {}
+          {/* Left column - Main content */}
           <div style={{ flex: 2, overflowY: "auto", paddingRight: 8 }}>
-            {}
+            {/* Metadata Section */}
             <div
               style={{
-                display: "flex",
-                gap: 8,
-                flexWrap: "wrap",
-                marginBottom: 16,
+                background: token.colorFillQuaternary,
+                borderRadius: 8,
+                padding: 16,
+                marginBottom: 20,
               }}
             >
-              <Button
-                size="small"
-                icon={<TagsOutlined />}
-                onClick={() => setLabelOpen(true)}
+              {/* Quick actions row */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  flexWrap: "wrap",
+                  marginBottom: 16,
+                  paddingBottom: 16,
+                  borderBottom: `1px solid ${token.colorBorderSecondary}`,
+                }}
               >
-                Nhãn
-              </Button>
-              <Button
-                size="small"
-                icon={<TagsOutlined />}
-                onClick={() => setPriorityOpen(true)}
-              >
-                Mức độ ưu tiên
-              </Button>
-              <Button
-                size="small"
-                icon={<ClockCircleOutlined />}
-                onClick={() => setDueDateOpen(true)}
-              >
-                Ngày hết hạn
-              </Button>
+                <Button
+                  size="small"
+                  icon={<TagsOutlined />}
+                  onClick={() => setLabelOpen(true)}
+                  style={{ borderRadius: 6 }}
+                >
+                  Nhãn
+                </Button>
+                <Button
+                  size="small"
+                  icon={<FlagOutlined />}
+                  onClick={() => setPriorityOpen(true)}
+                  style={{ borderRadius: 6 }}
+                >
+                  Mức độ ưu tiên
+                </Button>
+                <Button
+                  size="small"
+                  icon={<ClockCircleOutlined />}
+                  onClick={() => setDueDateOpen(true)}
+                  style={{ borderRadius: 6 }}
+                >
+                  Ngày hết hạn
+                </Button>
+              </div>
 
               <DueDateModal
                 task={taskData}
@@ -517,219 +594,332 @@ export default function TaskDetailModal({
                 onClose={() => setDueDateOpen(false)}
                 onSave={(updated) => setTaskData(updated)}
               />
-            </div>
 
-            {}
-            {taskData.dueDate && (
-              <div style={{ marginBottom: 16 }}>
-                <Text strong style={{ fontSize: 13, color: "#666" }}>
-                  Ngày hết hạn:
-                </Text>
-                <Space
+              {/* Due date info */}
+              {taskData.dueDate && (
+                <div
                   style={{
-                    marginTop: 6,
-                    padding: "4px 12px",
-                    borderRadius: 6,
-                    background: "#f5f5f5",
-                    cursor: "pointer",
-                    display: "inline-flex",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    marginBottom: 12,
                   }}
-                  onClick={() => setDueDateOpen(true)}
                 >
-                  <ClockCircleOutlined style={{ color: "#999" }} />
-                  <span style={{ fontSize: 13 }}>{taskData.startDate ? dayjs(taskData.startDate).format("DD/MM" )+ " - " : "" } {dueInfo?.formatted}</span>
-
-                  {taskData.status === "done" && dueInfo?.isOverdue ? (
-                    <Tag color="orange" style={{ borderRadius: 4, margin: 0 }}>
-                      Hoàn thành trễ
-                    </Tag>
-                  ) : taskData.status === "done" ? (
-                    <Tag color="green" style={{ borderRadius: 4, margin: 0 }}>
-                      Hoàn thành
-                    </Tag>
-                  ) : dueInfo?.isOverdue ? (
-                    <Tag color="red" style={{ borderRadius: 4, margin: 0 }}>
-                      Quá hạn
-                    </Tag>
-                  ) : null}
-                </Space>
-              </div>
-            )}
-
-            {}
-            {taskData.labels?.length ? (
-              <div style={{ marginBottom: 16 , display: "flex", alignItems: "center", gap: 8}}>
-                <Text strong style={{ fontSize: 13, color: "#666" }}>
-                  Nhãn:
-                </Text>
-                <div style={{ display: "flex" }}>
-                  {taskData.labels.map((lb) => (
-                    <Tag 
-                      key={lb.id} 
-                      color={lb.color} 
+                  <ClockCircleOutlined style={{ color: token.colorTextTertiary, fontSize: 14 }} />
+                  <div style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 12, color: token.colorTextTertiary, display: "block" }}>
+                      Ngày hết hạn
+                    </Text>
+                    <Space
                       style={{
-                        minWidth: 56,
-                        height: 24,
-                        textAlign: "center",
+                        padding: "4px 10px",
+                        borderRadius: 6,
+                        background: token.colorBgContainer,
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        marginTop: 4,
+                        border: `1px solid ${token.colorBorderSecondary}`,
                       }}
+                      onClick={() => setDueDateOpen(true)}
                     >
-                      {lb.name || ""}
-                    </Tag>
-                  ))}
+                      <span style={{ fontSize: 13 }}>
+                        {taskData.startDate ? dayjs(taskData.startDate).format("DD/MM") + " - " : ""}
+                        {dueInfo?.formatted}
+                      </span>
+                      {taskData.status === "done" && dueInfo?.isOverdue ? (
+                        <Tag color="orange" style={{ borderRadius: 4, margin: 0 }}>
+                          Hoàn thành trễ
+                        </Tag>
+                      ) : taskData.status === "done" ? (
+                        <Tag color="green" style={{ borderRadius: 4, margin: 0 }}>
+                          Hoàn thành
+                        </Tag>
+                      ) : dueInfo?.isOverdue ? (
+                        <Tag color="red" style={{ borderRadius: 4, margin: 0 }}>
+                          Quá hạn
+                        </Tag>
+                      ) : null}
+                    </Space>
+                  </div>
                 </div>
-              </div>
-            ) : null}
+              )}
 
-            {}
-            {taskData.priority && (
-              <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-                <Text strong style={{ fontSize: 13, color: "#666" }}>
-                  Mức độ ưu tiên:
-                </Text>
-                <Tag
-                  color={
-                    taskData.priority === 'low' ? 'default' :
-                    taskData.priority === 'medium' ? 'orange' : 'red'
-                  }
+              {/* Labels */}
+              {taskData.labels?.length ? (
+                <div
                   style={{
-                    cursor: canEditTasks ? 'pointer' : 'default',
-                    minWidth: 70,
-                    textAlign: 'center',
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    marginBottom: 12,
                   }}
-                  onClick={canEditTasks ? () => setPriorityOpen(true) : undefined}
                 >
-                  {taskData.priority === 'low' ? 'Thấp' :
-                   taskData.priority === 'medium' ? 'Trung bình' : 'Cao'}
-                </Tag>
-              </div>
-            )}
+                  <TagsOutlined style={{ color: token.colorTextTertiary, fontSize: 14 }} />
+                  <div style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 12, color: token.colorTextTertiary, display: "block", marginBottom: 4 }}>
+                      Nhãn
+                    </Text>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                      {taskData.labels.map((lb) => (
+                        <Tag
+                          key={lb.id}
+                          color={lb.color}
+                          style={{
+                            minWidth: 48,
+                            height: 22,
+                            textAlign: "center",
+                            borderRadius: 4,
+                            margin: 0,
+                          }}
+                        >
+                          {lb.name || ""}
+                        </Tag>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
-            {}
-            <div style={{ marginBottom: 16 }}>
-              <Text strong style={{ fontSize: 13, color: "#666" }}>
-                Thành viên:
-              </Text>
-              <Space size={6} style={{ marginTop: 6 }}>
-                {assigneesLoading ? (
-                  <Spin size="small" />
-                ) : (
-                  visibleAssignees.map((u: any) => {
-                    const avatarElement = (
-                      <Avatar
-                        size={24}
-                        src={getAvatarUrl(u?.avatar)}
-                        style={{
-                          border: "1px solid #eee",
-                          backgroundColor: "#1677ff",
-                          color: "#fff",
-                          cursor: canEditTasks ? "pointer" : "default",
-                        }}
-                      >
-                        {(u.name || u.email)?.[0]?.toUpperCase()}
-                      </Avatar>
-                    );
+              {/* Priority */}
+              {taskData.priority && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    marginBottom: 12,
+                  }}
+                >
+                  <FlagOutlined style={{ color: token.colorTextTertiary, fontSize: 14 }} />
+                  <div style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 12, color: token.colorTextTertiary, display: "block", marginBottom: 4 }}>
+                      Mức độ ưu tiên
+                    </Text>
+                    <Tag
+                      color={
+                        taskData.priority === 'low' ? 'default' :
+                          taskData.priority === 'medium' ? 'orange' : 'red'
+                      }
+                      style={{
+                        cursor: canEditTasks ? 'pointer' : 'default',
+                        minWidth: 70,
+                        textAlign: 'center',
+                        borderRadius: 4,
+                        margin: 0,
+                      }}
+                      onClick={canEditTasks ? () => setPriorityOpen(true) : undefined}
+                    >
+                      {taskData.priority === 'low' ? 'Thấp' :
+                        taskData.priority === 'medium' ? 'Trung bình' : 'Cao'}
+                    </Tag>
+                  </div>
+                </div>
+              )}
 
-                    return canEditTasks ? (
-                      <Popconfirm
-                        key={u.id}
-                        title="Hủy gán thành viên này?"
-                        onConfirm={() => unassignUsersMutation.mutate([u.id])}
-                        okText="Xác nhận"
-                        cancelText="Hủy"
-                      >
-                        <Tooltip title={u.name || u.email}>
-                          {avatarElement}
-                        </Tooltip>
-                      </Popconfirm>
+              {/* Members */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 12,
+                }}
+              >
+                <UserOutlined style={{ color: token.colorTextTertiary, fontSize: 14, marginTop: 2 }} />
+                <div style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 12, color: token.colorTextTertiary, display: "block", marginBottom: 6 }}>
+                    Thành viên
+                  </Text>
+                  <Space size={6} wrap>
+                    {assigneesLoading ? (
+                      <Spin size="small" />
                     ) : (
-                      <Tooltip key={u.id} title={u.name || u.email}>
-                        {avatarElement}
-                      </Tooltip>
-                    );
-                  })
-                )}
+                      visibleAssignees.map((u: any) => {
+                        const avatarElement = (
+                          <Avatar
+                            size={28}
+                            src={getAvatarUrl(u?.avatar)}
+                            style={{
+                              border: `1px solid ${token.colorBorderSecondary}`,
+                              backgroundColor: token.colorPrimary,
+                              color: "#fff",
+                              cursor: canEditTasks ? "pointer" : "default",
+                            }}
+                          >
+                            {(u.name || u.email)?.[0]?.toUpperCase()}
+                          </Avatar>
+                        );
 
-                <Tooltip title="Thêm thành viên">
-                  <Avatar
-                    size={24}
-                    style={{
-                      backgroundColor: "#2f2f2f",
-                      color: "#fff",
-                      cursor: "pointer",
-                      border: "1px solid #eee",
-                    }}
-                    onClick={() => setMemberModalOpen(true)}
-                  >
-                    <PlusOutlined style={{ fontSize: 12 }} />
-                  </Avatar>
-                </Tooltip>
-              </Space>
-
-              {assigneesError && !isForbiddenError(assigneesError) && (
-                <div style={{ color: "red", marginTop: 6, fontSize: 12 }}>
-                  Không thể tải danh sách thành viên
+                        return canEditTasks ? (
+                          <Popconfirm
+                            key={u.id}
+                            title="Hủy gán thành viên này?"
+                            onConfirm={() => unassignUsersMutation.mutate([u.id])}
+                            okText="Xác nhận"
+                            cancelText="Hủy"
+                          >
+                            <Tooltip title={u.name || u.email}>
+                              {avatarElement}
+                            </Tooltip>
+                          </Popconfirm>
+                        ) : (
+                          <Tooltip key={u.id} title={u.name || u.email}>
+                            {avatarElement}
+                          </Tooltip>
+                        );
+                      })
+                    )}
+                    <Tooltip title="Thêm thành viên">
+                      <Avatar
+                        size={28}
+                        style={{
+                          backgroundColor: token.colorFillSecondary,
+                          color: token.colorTextSecondary,
+                          cursor: "pointer",
+                          border: `1px dashed ${token.colorBorder}`,
+                        }}
+                        onClick={() => setMemberModalOpen(true)}
+                      >
+                        <PlusOutlined style={{ fontSize: 12 }} />
+                      </Avatar>
+                    </Tooltip>
+                  </Space>
+                  {assigneesError && !isForbiddenError(assigneesError) && (
+                    <div style={{ color: token.colorError, marginTop: 6, fontSize: 12 }}>
+                      Không thể tải danh sách thành viên
+                    </div>
+                  )}
+                  {assigneesError && isForbiddenError(assigneesError) && (
+                    <div style={{ color: token.colorTextTertiary, marginTop: 6, fontSize: 12 }}>
+                      Không có quyền xem danh sách thành viên
+                    </div>
+                  )}
                 </div>
-              )}
-              {assigneesError && isForbiddenError(assigneesError) && (
-                <div style={{ color: "#999", marginTop: 6, fontSize: 12 }}>
-                  Không có quyền xem danh sách thành viên
-                </div>
-              )}
+              </div>
             </div>
 
-            <Divider style={{ margin: "16px 0" }} />
+            {/* Description Section */}
+            <div
+              style={{
+                background: token.colorFillQuaternary,
+                borderRadius: 8,
+                padding: 16,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <FileTextOutlined style={{ color: token.colorTextTertiary, fontSize: 14 }} />
+                  <Text strong style={{ fontSize: 13, color: token.colorTextSecondary }}>
+                    Mô tả
+                  </Text>
+                </div>
+                {!editingDescription && canEditTasks && (
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={() => setEditingDescription(true)}
+                    style={{ color: token.colorTextTertiary }}
+                  >
+                    Chỉnh sửa
+                  </Button>
+                )}
+              </div>
 
-            {}
-            <div>
-              <Text strong style={{ fontSize: 13, color: "#666" }}>
-                Mô tả:
-              </Text>
-              <Input.TextArea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Thêm mô tả..."
-                autoSize={{ minRows: 4 }}
-                style={{
-                  marginTop: 8,
-                  borderRadius: 6,
-                }}
-              />
-
-              <Space style={{ marginTop: 8 }}>
-                <Button
-                  type="primary"
-                  size="small"
-                  onClick={saveDescription}
-                  loading={updateTaskMutation.isPending}
+              {editingDescription ? (
+                <>
+                  <Input.TextArea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Thêm mô tả cho nhiệm vụ này..."
+                    autoSize={{ minRows: 3, maxRows: 10 }}
+                    autoFocus
+                    style={{
+                      borderRadius: 6,
+                      border: `1px solid ${token.colorBorderSecondary}`,
+                    }}
+                  />
+                  <Space style={{ marginTop: 12 }}>
+                    <Button
+                      type="primary"
+                      size="small"
+                      onClick={() => {
+                        saveDescription();
+                        setEditingDescription(false);
+                      }}
+                      loading={updateTaskMutation.isPending}
+                      style={{ borderRadius: 6 }}
+                    >
+                      Lưu
+                    </Button>
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        setDescription(taskData.description ?? "");
+                        setEditingDescription(false);
+                      }}
+                      style={{ borderRadius: 6 }}
+                    >
+                      Hủy
+                    </Button>
+                  </Space>
+                </>
+              ) : (
+                <div
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 6,
+                    background: token.colorBgContainer,
+                    border: `1px solid ${token.colorBorderSecondary}`,
+                    minHeight: 60,
+                    cursor: canEditTasks ? "pointer" : "default",
+                  }}
+                  onClick={canEditTasks ? () => setEditingDescription(true) : undefined}
                 >
-                  Lưu mô tả
-                </Button>
-                <Button
-                  size="small"
-                  onClick={() =>
-                    setDescription(taskData.description ?? "")
-                  }
-                >
-                  Hủy
-                </Button>
-              </Space>
+                  {taskData.description ? (
+                    <Text style={{
+                      fontSize: 13,
+                      color: token.colorText,
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-word",
+                    }}>
+                      {taskData.description}
+                    </Text>
+                  ) : (
+                    <Text type="secondary" style={{ fontSize: 13 }}>
+                      {canEditTasks ? "Nhấp để thêm mô tả..." : "Chưa có mô tả"}
+                    </Text>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
-          {}
+          {/* Right column - Comments */}
           <div
             style={{
               flex: 1,
-              paddingLeft: 16,
-              borderLeft: "1px solid #eee",
+              paddingLeft: 20,
+              borderLeft: `1px solid ${token.colorBorderSecondary}`,
               display: "flex",
               flexDirection: "column",
               maxHeight: "600px",
             }}
           >
-            <Title level={5} style={{ fontSize: 14, marginBottom: 12 }}>
-              Bình luận
-            </Title>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 16,
+                paddingBottom: 12,
+                borderBottom: `1px solid ${token.colorBorderSecondary}`,
+              }}
+            >
+              <CommentOutlined style={{ color: token.colorTextSecondary, fontSize: 16 }} />
+              <Title level={5} style={{ fontSize: 14, margin: 0 }}>
+                Bình luận
+              </Title>
+            </div>
 
             <div style={{ flex: 1, overflowY: "auto", marginBottom: 12 }}>
               {commentsError && isForbiddenError(commentsError) ? (
@@ -764,14 +954,14 @@ export default function TaskDetailModal({
         </div>
       </Modal>
 
-      {}
+      { }
       <LabelPicker
         open={labelOpen}
         onClose={() => setLabelOpen(false)}
         taskId={taskData.id}
         selectedIds={taskData.labels?.map((lb) => lb.id) ?? []}
         onTaskUpdate={(updatedTask) => {
-          
+
           setTaskData(updatedTask);
           onEdit?.(updatedTask);
         }}
@@ -779,7 +969,7 @@ export default function TaskDetailModal({
         onLabelDelete={handleLabelDelete}
       />
 
-      {}
+      { }
       <MemberAddTaskModal
         open={memberModalOpen}
         onClose={() => setMemberModalOpen(false)}
@@ -793,7 +983,7 @@ export default function TaskDetailModal({
         }}
       />
 
-      {}
+      { }
       <PriorityPicker
         task={taskData}
         open={priorityOpen}

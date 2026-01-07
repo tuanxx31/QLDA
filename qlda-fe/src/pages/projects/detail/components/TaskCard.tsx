@@ -3,6 +3,7 @@ import {
   CheckCircleFilled,
   ClockCircleOutlined,
   CommentOutlined,
+  LoadingOutlined,
 } from '@ant-design/icons';
 import type { Task } from '@/types/task.type';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
@@ -31,25 +32,25 @@ export default function TaskCard({ task }: Props) {
   const { authUser } = useAuth();
   const { role, canEditTasks } = useProjectPermission(projectId);
 
-  
+
   const { updateKey } = useTaskReadStatus(task.id, authUser?.id);
 
-  
+
   const { data: commentsData } = useQuery({
     queryKey: ['comments', task.id],
     queryFn: () => commentService.getComments(task.id, 1, 50),
-    staleTime: 0, 
+    staleTime: 0,
     refetchOnWindowFocus: true,
-    refetchOnMount: true, 
+    refetchOnMount: true,
   });
 
-  
+
   const totalCommentsCount = useMemo(() => {
     return commentsData?.data?.length || 0;
   }, [commentsData?.data]);
 
-  
-  
+
+
   const unreadCount = useMemo(() => {
     if (!authUser?.id || !commentsData?.data || commentsData.data.length === 0) return 0;
     const count = getUnreadCount(task.id, authUser.id, commentsData.data);
@@ -72,10 +73,10 @@ export default function TaskCard({ task }: Props) {
   });
 
   const canUpdateStatus = useMemo(() => {
-    
+
     if (canEditTasks) return true;
 
-    
+
     if (role === 'viewer') {
       const assigneeIds = task.assignees?.map((a) => a.id) || [];
       return assigneeIds.includes(authUser?.id || '');
@@ -157,7 +158,7 @@ export default function TaskCard({ task }: Props) {
       hoverable
       bodyStyle={{ padding: 10 }}
     >
-      {}
+      { }
       {totalCommentsCount > 0 && (
         <div
           style={{
@@ -170,7 +171,7 @@ export default function TaskCard({ task }: Props) {
             gap: 4,
           }}
         >
-          {}
+          { }
           {unreadCount > 0 ? (
             <Badge
               count={unreadCount}
@@ -191,7 +192,7 @@ export default function TaskCard({ task }: Props) {
               />
             </Badge>
           ) : (
-            
+
             <Tooltip title={`${totalCommentsCount} bình luận`}>
               <div
                 style={{
@@ -213,7 +214,7 @@ export default function TaskCard({ task }: Props) {
         </div>
       )}
 
-      {}
+      { }
       {task.labels && task.labels.length > 0 && (
         <div
           style={{
@@ -241,22 +242,34 @@ export default function TaskCard({ task }: Props) {
         </div>
       )}
 
-      {}
+      { }
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-        <CheckCircleFilled
-          onClick={handleCheckboxChange}
-          style={{
-            fontSize: 18,
-            cursor: canUpdateStatus ? 'pointer' : 'not-allowed',
-            color: task.status === 'done' ? '#52c41a' : 'white',
-            border: `1px solid ${token.colorBorder}`,
-            borderRadius: '50%',
-            transition: 'color 0.2s',
-            marginTop: 2,
-            flexShrink: 0,
-            opacity: canUpdateStatus ? 1 : 0.5,
-          }}
-        />
+        {updateStatusMutation.isPending ? (
+          <LoadingOutlined
+            style={{
+              fontSize: 18,
+              color: '#1890ff',
+              marginTop: 2,
+              flexShrink: 0,
+            }}
+            spin
+          />
+        ) : (
+          <CheckCircleFilled
+            onClick={handleCheckboxChange}
+            style={{
+              fontSize: 18,
+              cursor: canUpdateStatus ? 'pointer' : 'not-allowed',
+              color: task.status === 'done' ? '#52c41a' : 'white',
+              border: `1px solid ${token.colorBorder}`,
+              borderRadius: '50%',
+              transition: 'color 0.2s',
+              marginTop: 2,
+              flexShrink: 0,
+              opacity: canUpdateStatus ? 1 : 0.5,
+            }}
+          />
+        )}
 
         <div
           style={{
@@ -273,7 +286,7 @@ export default function TaskCard({ task }: Props) {
         </div>
       </div>
 
-      {}
+      { }
       {descriptionPreview && (
         <div
           style={{
@@ -288,7 +301,7 @@ export default function TaskCard({ task }: Props) {
         </div>
       )}
 
-      {}
+      { }
       {(dueDateInfo || subtasksProgress || priorityConfig || (task.assignees && task.assignees.length > 0)) && (
         <div
           style={{
@@ -299,7 +312,7 @@ export default function TaskCard({ task }: Props) {
             flexWrap: 'wrap',
           }}
         >
-          {}
+          { }
           {priorityConfig && (
             <Tooltip title={`Mức độ ưu tiên: ${priorityConfig.label}`}>
               <Tag color={priorityConfig.color} style={{ fontSize: 12 }}>
@@ -308,18 +321,17 @@ export default function TaskCard({ task }: Props) {
             </Tooltip>
           )}
 
-          {}
+          { }
           {dueDateInfo && (
             <Tooltip
-              title={`Hạn chót: ${dueDateInfo.fullDate}${
-                dueDateInfo.isCompletedLate
-                  ? ' (Hoàn thành trễ)'
-                  : dueDateInfo.isCompleted
-                    ? ' (Hoàn thành)'
-                    : dueDateInfo.isOverdueNotDone
-                      ? ' (Quá hạn)'
-                      : ''
-              }`}
+              title={`Hạn chót: ${dueDateInfo.fullDate}${dueDateInfo.isCompletedLate
+                ? ' (Hoàn thành trễ)'
+                : dueDateInfo.isCompleted
+                  ? ' (Hoàn thành)'
+                  : dueDateInfo.isOverdueNotDone
+                    ? ' (Quá hạn)'
+                    : ''
+                }`}
             >
               <div
                 style={{
@@ -338,8 +350,8 @@ export default function TaskCard({ task }: Props) {
                   fontSize: 12,
                   fontWeight:
                     dueDateInfo.isCompletedLate ||
-                    dueDateInfo.isCompleted ||
-                    dueDateInfo.isOverdueNotDone
+                      dueDateInfo.isCompleted ||
+                      dueDateInfo.isOverdueNotDone
                       ? 500
                       : 400,
                   color: dueDateInfo.isCompletedLate
@@ -366,13 +378,13 @@ export default function TaskCard({ task }: Props) {
             </Tooltip>
           )}
 
-          {}
-          {}
+          { }
+          { }
 
-          {}
+          { }
           <div style={{ flex: 1 }} />
 
-          {}
+          { }
           {task.assignees && task.assignees.length > 0 && (
             <div
               style={{
