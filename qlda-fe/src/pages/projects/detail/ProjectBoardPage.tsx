@@ -49,13 +49,13 @@ export default function ProjectBoardPage() {
   const queryClient = useQueryClient();
   const { minHeight } = usePageContentHeight();
   const { role, canEditColumns, canEditTasks } = useProjectPermission(projectId);
-  
+
   const { data: project, isError: isProjectError, error: projectError } = useQuery({
     queryKey: ['project', projectId],
     queryFn: async () => await projectService.getById(projectId!),
     enabled: !!projectId,
     retry: (failureCount, error) => {
-      
+
       if (isForbiddenError(error)) {
         return false;
       }
@@ -84,7 +84,7 @@ export default function ProjectBoardPage() {
     queryFn: () => columnService.getColumns(projectId!),
     enabled: !!projectId,
     retry: (failureCount, error) => {
-      
+
       if (isForbiddenError(error)) {
         return false;
       }
@@ -374,8 +374,8 @@ export default function ProjectBoardPage() {
       ].filter(Boolean)}
     >
       <Card
-        style={{ 
-          minHeight, 
+        style={{
+          minHeight,
           display: 'flex',
           flexDirection: 'column',
         }}

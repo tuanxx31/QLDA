@@ -31,6 +31,7 @@ export default function AddColumnCard({
 
   return (
     <ProCard
+      className="add-column-card"
       bordered
       style={{
         minWidth: 280,
