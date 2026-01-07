@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
 import { App } from 'antd';
@@ -8,23 +8,32 @@ export default function GoogleCallback() {
   const { login, logout } = useAuth();
   const { message } = App.useApp();
   const navigate = useNavigate();
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
+    // Đảm bảo chỉ xử lý một lần, ngay cả khi StrictMode chạy useEffect 2 lần
+    if (hasProcessed.current) {
+      return;
+    }
+
     const token = searchParams.get('token');
     const userParam = searchParams.get('user');
 
     if (token && userParam) {
       try {
+        hasProcessed.current = true;
         const user = JSON.parse(decodeURIComponent(userParam));
         logout();
         login(token, user);
         message.success('Đăng nhập bằng Google thành công!');
         navigate('/dashboard', { replace: true });
-      } catch (error) {
+      } catch {
+        hasProcessed.current = true;
         message.error('Đăng nhập thất bại. Vui lòng thử lại!');
         navigate('/login', { replace: true });
       }
     } else {
+      hasProcessed.current = true;
       message.error('Đăng nhập thất bại. Vui lòng thử lại!');
       navigate('/login', { replace: true });
     }

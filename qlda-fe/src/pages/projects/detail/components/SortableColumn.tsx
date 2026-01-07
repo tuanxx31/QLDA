@@ -112,7 +112,10 @@ export default function SortableColumn({
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition: isDragging ? 'none' : (transition ?? 'transform 0.2s ease'),
-    minWidth: 300,
+    width: 340,
+    minWidth: 340,
+    maxWidth: 340,
+    flexShrink: 0,
     opacity: isDragging ? 0.4 : 1,
   };
 
