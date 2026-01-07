@@ -3,11 +3,13 @@ import {
   ProFormText,
   ProFormDatePicker,
   ProFormSelect,
+  type ProFormInstance,
 } from '@ant-design/pro-components';
 import { projectService } from '@/services/project.services';
 import { groupService } from '@/services/group.services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { message, Space } from 'antd';
+import { useRef, useEffect, useCallback } from 'react';
 import type { UpdateProjectDto, Project } from '@/types/project.type';
 import type { Group } from '@/types/group.type';
 
@@ -20,6 +22,7 @@ interface Props {
 
 const ProjectEditModal = ({ open, onClose, project, onUpdate }: Props) => {
   const qc = useQueryClient();
+  const formRef = useRef<ProFormInstance<UpdateProjectDto>>(null);
 
   const { data: groups, isLoading } = useQuery({
     queryKey: ['groups', 'for-project'],
@@ -40,12 +43,45 @@ const ProjectEditModal = ({ open, onClose, project, onUpdate }: Props) => {
     },
   });
 
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Chỉ submit khi nhấn Enter và không phải trong textarea hoặc select đang mở
+    if (e.key === 'Enter' && !e.shiftKey) {
+      const target = e.target as HTMLElement;
+      // Không submit nếu đang trong textarea hoặc select dropdown đang mở
+      if (
+        target.tagName === 'TEXTAREA' ||
+        target.closest('.ant-select-dropdown') ||
+        target.closest('.ant-picker-dropdown')
+      ) {
+        return;
+      }
+      e.preventDefault();
+      formRef.current?.submit();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [open, handleKeyDown]);
+
   return (
     <ModalForm<UpdateProjectDto>
+      formRef={formRef}
       title="Chỉnh sửa dự án"
       open={open}
       modalProps={{ onCancel: onClose, destroyOnClose: true }}
       initialValues={project}
+      submitter={{
+        searchConfig: {
+          submitText: 'Cập nhật',
+          resetText: 'Hủy',
+        },
+      }}
       onFinish={async values => {
         await mutation.mutateAsync({
           ...values,
