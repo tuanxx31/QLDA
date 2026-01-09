@@ -48,11 +48,11 @@ const ProjectFormModal = ({ open, onClose }: Props) => {
         name="status"
         label="Trạng thái"
         options={[
-          { label: 'To Do', value: 'todo' },
-          { label: 'Doing', value: 'doing' },
-          { label: 'Done', value: 'done' },
+          { label: 'Chưa bắt đầu', value: 'todo' },
+          { label: 'Đang thực hiện', value: 'doing' },
+          { label: 'Hoàn thành', value: 'done' },
         ]}
-        initialValue="todo"
+        initialValue="doing"
       />
 
       <ProFormSelect
