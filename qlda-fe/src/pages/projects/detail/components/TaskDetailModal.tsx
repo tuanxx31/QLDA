@@ -405,7 +405,7 @@ export default function TaskDetailModal({
                 }}
               />
 
-              {/* Task Title */}
+              {}
               <div style={{ flex: 1, minWidth: 0 }}>
                 {editingTitle ? (
                   <div style={{ position: "relative" }}>
@@ -540,9 +540,9 @@ export default function TaskDetailModal({
             minHeight: 400,
           }}
         >
-          {/* Left column - Main content */}
+          {}
           <div style={{ flex: 2, overflowY: "auto", paddingRight: 8 }}>
-            {/* Metadata Section */}
+            {}
             <div
               style={{
                 background: token.colorFillQuaternary,
@@ -551,7 +551,7 @@ export default function TaskDetailModal({
                 marginBottom: 20,
               }}
             >
-              {/* Quick actions row */}
+              {}
               <div
                 style={{
                   display: "flex",
@@ -595,7 +595,7 @@ export default function TaskDetailModal({
                 onSave={(updated) => setTaskData(updated)}
               />
 
-              {/* Due date info */}
+              {}
               {taskData.dueDate && (
                 <div
                   style={{
@@ -644,7 +644,7 @@ export default function TaskDetailModal({
                 </div>
               )}
 
-              {/* Labels */}
+              {}
               {taskData.labels?.length ? (
                 <div
                   style={{
@@ -680,7 +680,7 @@ export default function TaskDetailModal({
                 </div>
               ) : null}
 
-              {/* Priority */}
+              {}
               {taskData.priority && (
                 <div
                   style={{
@@ -716,7 +716,7 @@ export default function TaskDetailModal({
                 </div>
               )}
 
-              {/* Members */}
+              {}
               <div
                 style={{
                   display: "flex",
@@ -797,7 +797,7 @@ export default function TaskDetailModal({
               </div>
             </div>
 
-            {/* Description Section */}
+            {}
             <div
               style={{
                 background: token.colorFillQuaternary,
@@ -894,7 +894,7 @@ export default function TaskDetailModal({
             </div>
           </div>
 
-          {/* Right column - Comments */}
+          {}
           <div
             style={{
               flex: 1,

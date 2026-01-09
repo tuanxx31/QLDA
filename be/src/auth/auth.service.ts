@@ -70,15 +70,15 @@ export class AuthService {
       throw new BadRequestException('Không thể lấy email từ Google');
     }
 
-    // Tìm user theo googleId hoặc email
+    
     let user = await this.usersService.findOneByGoogleId(googleId);
     
     if (!user) {
-      // Kiểm tra xem email đã tồn tại chưa
+      
       const existingUser = await this.usersService.findOneByEmail(email);
       
       if (existingUser) {
-        // Nếu email đã tồn tại nhưng chưa có googleId, cập nhật
+        
         if (!existingUser.googleId) {
           const updatedUser = await this.usersService.updateGoogleInfo(existingUser.id, {
             googleId,
@@ -91,11 +91,11 @@ export class AuthService {
           }
           user = updatedUser;
         } else {
-          // Email đã tồn tại và đã có googleId khác
+          
           throw new BadRequestException('Email này đã được liên kết với tài khoản Google khác');
         }
       } else {
-        // Tạo user mới từ Google
+        
         user = await this.usersService.create({
           email,
           name: name || email.split('@')[0],
@@ -105,7 +105,7 @@ export class AuthService {
         });
       }
     } else {
-      // User đã tồn tại, cập nhật thông tin nếu có thay đổi
+      
       const updateData: any = {};
       if (!user.avatar && avatar) {
         updateData.avatar = avatar;

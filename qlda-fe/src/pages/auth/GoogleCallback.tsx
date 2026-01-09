@@ -11,7 +11,7 @@ export default function GoogleCallback() {
   const hasProcessed = useRef(false);
 
   useEffect(() => {
-    // Đảm bảo chỉ xử lý một lần, ngay cả khi StrictMode chạy useEffect 2 lần
+    
     if (hasProcessed.current) {
       return;
     }

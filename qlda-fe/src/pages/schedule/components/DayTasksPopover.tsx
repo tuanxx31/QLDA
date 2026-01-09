@@ -31,7 +31,7 @@ export default function DayTasksPopover({ tasks, date, children, onViewDay }: Da
 
     const content = (
         <div style={{ width: 320, maxHeight: 400, overflow: 'auto' }}>
-            {/* Summary */}
+            {}
             <Space style={{ marginBottom: 8 }}>
                 <Tag color="processing">{todoTasks.length} Đang thực hiện</Tag>
                 <Tag color="success">{doneTasks.length} hoàn thành</Tag>
@@ -39,7 +39,7 @@ export default function DayTasksPopover({ tasks, date, children, onViewDay }: Da
 
             <Divider style={{ margin: '8px 0' }} />
 
-            {/* Task List */}
+            {}
             <List
                 size="small"
                 dataSource={tasks.slice(0, 5)}
@@ -56,7 +56,7 @@ export default function DayTasksPopover({ tasks, date, children, onViewDay }: Da
                             onClick={() => task.projectId && navigate(`/projects/${task.projectId}/board`)}
                         >
                             <div style={{ width: '100%' }}>
-                                {/* Title */}
+                                {}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     {task.status === 'done' && (
                                         <CheckCircleOutlined style={{ color: '#52c41a' }} />
@@ -72,14 +72,14 @@ export default function DayTasksPopover({ tasks, date, children, onViewDay }: Da
                                     </Text>
                                 </div>
 
-                                {/* Project */}
+                                {}
                                 {task.projectName && (
                                     <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>
                                         <ProjectOutlined /> {task.projectName}
                                     </div>
                                 )}
 
-                                {/* Tags */}
+                                {}
                                 <div style={{ marginTop: 6, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                                     <Tag color={priority.color} style={{ margin: 0 }}>
                                         {priority.label}
@@ -100,7 +100,7 @@ export default function DayTasksPopover({ tasks, date, children, onViewDay }: Da
                 }}
             />
 
-            {/* View all button */}
+            {}
             {(tasks.length > 5 || onViewDay) && (
                 <Button
                     type="link"

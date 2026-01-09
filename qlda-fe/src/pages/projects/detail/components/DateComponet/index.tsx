@@ -21,7 +21,7 @@ interface Props {
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
 
-// Quick date range options with default times
+
 const quickDateRanges = [
   { 
     label: "Hôm nay", 
@@ -53,7 +53,7 @@ const quickDateRanges = [
   },
 ];
 
-// Quick time presets
+
 const quickTimePresets = [
   { label: "8:00", hour: 8, minute: 0 },
   { label: "12:00", hour: 12, minute: 0 },
@@ -61,7 +61,7 @@ const quickTimePresets = [
   { label: "23:59", hour: 23, minute: 59 },
 ];
 
-// Calculate duration between two datetime
+
 const getDuration = (start: Dayjs | null, end: Dayjs | null): string | null => {
   if (!start || !end) return null;
 
@@ -166,7 +166,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
 
   const disabledDate: RangePickerProps["disabledDate"] = (current) => {
     if (!current) return false;
-    // RangePicker tự động xử lý validation, nhưng có thể thêm logic tùy chỉnh ở đây
+    
     return false;
   };
 
@@ -209,7 +209,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
       centered
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingTop: 8 }}>
-        {/* Duration info */}
+        {}
         {duration && (
           <div style={{
             display: "flex",
@@ -223,7 +223,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
           </div>
         )}
 
-        {/* Date Time Range Section */}
+        {}
         <div>
           <Text strong style={{ display: "block", marginBottom: 8 }}>Khoảng thời gian</Text>
 
@@ -241,7 +241,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
               style={{ width: "100%" }}
             />
 
-            {/* Quick date range buttons */}
+            {}
             <Space size={[4, 4]} wrap>
               {quickDateRanges.map((qdr) => (
                 <Tag
@@ -254,7 +254,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
               ))}
             </Space>
 
-            {/* Quick time presets */}
+            {}
             {form.dateTimeRange[0] && form.dateTimeRange[1] && (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <div>
@@ -307,7 +307,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
           </div>
         </div>
 
-        {/* Action buttons */}
+        {}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 4 }}>
           <Button onClick={onClose}>Hủy</Button>
           <Button

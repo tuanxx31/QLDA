@@ -35,7 +35,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Đăng nhập bằng Google' })
   async googleAuth() {
-    // Passport sẽ tự động redirect đến Google
+    
   }
 
   @Get('google/callback')
@@ -43,7 +43,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Callback từ Google OAuth' })
   async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
     const result = await this.authService.validateGoogleUser(req.user);
-    // Redirect về frontend với token trong query params
+    
     const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
     const redirectUrl = `${frontendUrl}/auth/google/callback?token=${result.access_token}&user=${encodeURIComponent(JSON.stringify(result.user))}`;
     res.redirect(redirectUrl);

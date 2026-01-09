@@ -18,6 +18,6 @@ export interface ScheduleTask {
 }
 
 export interface CalendarEvent {
-  date: string; // YYYY-MM-DD format
+  date: string; 
   tasks: ScheduleTask[];
 }

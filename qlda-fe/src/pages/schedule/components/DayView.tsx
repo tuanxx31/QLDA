@@ -36,7 +36,7 @@ export default function DayView({ date, tasks, loading }: DayViewProps) {
         );
     }
 
-    // Sort by time
+    
     const sortedTasks = [...tasks].sort((a, b) => {
         const aTime = a.dueDate ? dayjs(a.dueDate).valueOf() : Infinity;
         const bTime = b.dueDate ? dayjs(b.dueDate).valueOf() : Infinity;

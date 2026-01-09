@@ -14,7 +14,7 @@ interface CalendarViewProps {
 }
 
 export default function CalendarView({ tasks, loading, onMonthChange, currentMonth, onSelectDate }: CalendarViewProps) {
-    // Group tasks by date
+    
     const tasksByDate = useMemo(() => {
         const map = new Map<string, ScheduleTask[]>();
 
@@ -69,7 +69,7 @@ export default function CalendarView({ tasks, loading, onMonthChange, currentMon
         return (
             <DayTasksPopover tasks={dayTasks} date={date} onViewDay={() => onSelectDate?.(date)}>
                 <div style={{ cursor: 'pointer', minHeight: 50 }}>
-                    {/* Priority badges */}
+                    {}
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 4 }}>
                         {highCount > 0 && (
                             <Badge count={highCount} color="#ff4d4f" size="small" />
@@ -82,7 +82,7 @@ export default function CalendarView({ tasks, loading, onMonthChange, currentMon
                         )}
                     </div>
 
-                    {/* Completion status */}
+                    {}
                     {doneTasks.length > 0 && (
                         <div style={{ fontSize: 11, color: '#52c41a' }}>
                             ✓ {doneTasks.length}/{dayTasks.length}

@@ -29,7 +29,7 @@ export default function SchedulePage() {
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
 
-    // Calculate date range for query
+    
     const { startDate, endDate } = useMemo(() => {
         if (viewMode === 'day') {
             return {
@@ -50,7 +50,7 @@ export default function SchedulePage() {
         queryFn: () => scheduleService.getMySchedule(startDate, endDate),
     });
 
-    // Apply filters
+    
     const filteredTasks = useMemo(() => {
         return tasks.filter(task => {
             if (statusFilter !== 'all' && task.status !== statusFilter) return false;
@@ -59,7 +59,7 @@ export default function SchedulePage() {
         });
     }, [tasks, statusFilter, priorityFilter]);
 
-    // Statistics (based on all tasks, not filtered)
+    
     const stats = useMemo(() => {
         const total = tasks.length;
         const done = tasks.filter(t => t.status === 'done').length;
@@ -73,7 +73,7 @@ export default function SchedulePage() {
         return { total, done, todo, overdue };
     }, [tasks]);
 
-    // Tasks for selected day (in day view)
+    
     const dayTasks = useMemo(() => {
         if (viewMode !== 'day') return [];
         const dateKey = currentDate.format('YYYY-MM-DD');
@@ -130,7 +130,7 @@ export default function SchedulePage() {
             <Spin spinning={isLoading} tip="Đang tải dữ liệu...">
                 <Card style={{ minHeight }}>
                     <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                        {/* Overview Section */}
+                        {}
                         <Card title="Tổng quan công việc của tôi" size="small" loading={isLoading}>
                             <Row gutter={16} style={{ marginBottom: 16 }}>
                                 <Col span={24}>
@@ -181,10 +181,10 @@ export default function SchedulePage() {
                             </Row>
                         </Card>
 
-                        {/* Controls */}
+                        {}
                         <Card size="small">
                             <Row gutter={[16, 16]} align="middle">
-                                {/* View Mode */}
+                                {}
                                 <Col>
                                     <Segmented
                                         value={viewMode}
@@ -196,7 +196,7 @@ export default function SchedulePage() {
                                     />
                                 </Col>
 
-                                {/* Navigation */}
+                                {}
                                 <Col>
                                     <Space>
                                         <Button icon={<LeftOutlined />} onClick={handlePrevious} />
@@ -220,7 +220,7 @@ export default function SchedulePage() {
                                     </Space>
                                 </Col>
 
-                                {/* Filters */}
+                                {}
                                 <Col flex="auto">
                                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
                                         <Select
@@ -249,7 +249,7 @@ export default function SchedulePage() {
                             </Row>
                         </Card>
 
-                        {/* Legend (only in month view) */}
+                        {}
                         {viewMode === 'month' && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
                                 <Text type="secondary">Mức độ ưu tiên:</Text>
@@ -262,7 +262,7 @@ export default function SchedulePage() {
                             </div>
                         )}
 
-                        {/* Calendar or Day View */}
+                        {}
                         {viewMode === 'month' ? (
                             filteredTasks.length === 0 && !isLoading ? (
                                 <Empty

@@ -44,10 +44,10 @@ const ProjectEditModal = ({ open, onClose, project, onUpdate }: Props) => {
   });
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    // Chỉ submit khi nhấn Enter và không phải trong textarea hoặc select đang mở
+    
     if (e.key === 'Enter' && !e.shiftKey) {
       const target = e.target as HTMLElement;
-      // Không submit nếu đang trong textarea hoặc select dropdown đang mở
+      
       if (
         target.tagName === 'TEXTAREA' ||
         target.closest('.ant-select-dropdown') ||
