@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Modal, DatePicker, TimePicker, Button, Space, Typography, message, Tag } from "antd";
+import { Modal, DatePicker, Button, Space, Typography, message, Tag } from "antd";
 import { ClockCircleOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
+import type { RangePickerProps } from "antd/es/date-picker";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { invalidateStatisticsQueries } from "@/utils/invalidateStatistics";
@@ -18,32 +19,53 @@ interface Props {
 }
 
 const { Text } = Typography;
-const getZeroTime = () => dayjs("00:00", "HH:mm");
+const { RangePicker } = DatePicker;
 
-// Quick date options
-const quickDates = [
-  { label: "Hôm nay", getValue: () => dayjs() },
-  { label: "Ngày mai", getValue: () => dayjs().add(1, "day") },
-  { label: "Tuần sau", getValue: () => dayjs().add(1, "week") },
+// Quick date range options with default times
+const quickDateRanges = [
+  { 
+    label: "Hôm nay", 
+    getValue: () => [
+      dayjs().hour(8).minute(0).second(0), 
+      dayjs().hour(17).minute(0).second(0)
+    ] as [Dayjs, Dayjs]
+  },
+  { 
+    label: "Ngày mai", 
+    getValue: () => [
+      dayjs().add(1, "day").hour(8).minute(0).second(0), 
+      dayjs().add(1, "day").hour(17).minute(0).second(0)
+    ] as [Dayjs, Dayjs]
+  },
+  { 
+    label: "Tuần này", 
+    getValue: () => [
+      dayjs().startOf("week").hour(8).minute(0).second(0), 
+      dayjs().endOf("week").hour(17).minute(0).second(0)
+    ] as [Dayjs, Dayjs]
+  },
+  { 
+    label: "Tuần sau", 
+    getValue: () => [
+      dayjs().add(1, "week").startOf("week").hour(8).minute(0).second(0), 
+      dayjs().add(1, "week").endOf("week").hour(17).minute(0).second(0)
+    ] as [Dayjs, Dayjs]
+  },
 ];
 
-// Quick time options
-const quickTimes = [
-  { label: "8:00", value: dayjs("08:00", "HH:mm") },
-  { label: "12:00", value: dayjs("12:00", "HH:mm") },
-  { label: "17:00", value: dayjs("17:00", "HH:mm") },
-  { label: "23:59", value: dayjs("23:59", "HH:mm") },
+// Quick time presets
+const quickTimePresets = [
+  { label: "8:00", hour: 8, minute: 0 },
+  { label: "12:00", hour: 12, minute: 0 },
+  { label: "17:00", hour: 17, minute: 0 },
+  { label: "23:59", hour: 23, minute: 59 },
 ];
 
-// Calculate duration between two dates with time
-const getDuration = (start: Dayjs | null, startTime: Dayjs | null, end: Dayjs | null, endTime: Dayjs | null): string | null => {
+// Calculate duration between two datetime
+const getDuration = (start: Dayjs | null, end: Dayjs | null): string | null => {
   if (!start || !end) return null;
 
-  // Combine date and time
-  const startDateTime = start.hour(startTime?.hour() ?? 0).minute(startTime?.minute() ?? 0);
-  const endDateTime = end.hour(endTime?.hour() ?? 0).minute(endTime?.minute() ?? 0);
-
-  const diffMinutes = endDateTime.diff(startDateTime, "minute");
+  const diffMinutes = end.diff(start, "minute");
   if (diffMinutes < 0) return null;
 
   const days = Math.floor(diffMinutes / (24 * 60));
@@ -61,28 +83,25 @@ const getDuration = (start: Dayjs | null, startTime: Dayjs | null, end: Dayjs | 
 export default function DueDateModal({ task, open, onClose, onSave }: Props) {
   const qc = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();
+  
+  const getInitialDateTimeRange = (): [Dayjs | null, Dayjs | null] => {
+    const start = task.startDate ? dayjs(task.startDate) : null;
+    const due = task.dueDate ? dayjs(task.dueDate) : null;
+    return [start, due];
+  };
+
   const [form, setForm] = useState({
-    startDate: task.startDate ? dayjs(task.startDate) : null,
-    startTime: task.startDate ? dayjs(task.startDate) : getZeroTime(),
-    showStartPicker: !!task.startDate,
-
-    dueDate: task.dueDate ? dayjs(task.dueDate) : null,
-    dueTime: task.dueDate ? dayjs(task.dueDate) : getZeroTime(),
-
+    dateTimeRange: getInitialDateTimeRange() as [Dayjs | null, Dayjs | null],
     repeat: (task as any).repeat ?? "never",
     remind: (task as any).remind ?? "none",
   });
 
   useEffect(() => {
     if (open) {
+      const start = task.startDate ? dayjs(task.startDate) : null;
+      const due = task.dueDate ? dayjs(task.dueDate) : null;
       setForm({
-        startDate: task.startDate ? dayjs(task.startDate) : null,
-        startTime: task.startDate ? dayjs(task.startDate) : getZeroTime(),
-        showStartPicker: !!task.startDate,
-
-        dueDate: task.dueDate ? dayjs(task.dueDate) : null,
-        dueTime: task.dueDate ? dayjs(task.dueDate) : getZeroTime(),
-
+        dateTimeRange: [start, due],
         repeat: (task as any).repeat ?? "never",
         remind: (task as any).remind ?? "none",
       });
@@ -102,89 +121,70 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
     onError: () => message.error("Lỗi khi cập nhật"),
   });
 
-  const handleStartDateChange = (value: Dayjs | null) => {
-    if (!value) {
+  const handleDateTimeRangeChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+    if (!dates || !dates[0] || !dates[1]) {
       setForm((f) => ({
         ...f,
-        startDate: null,
-        startTime: getZeroTime(),
-        showStartPicker: false,
+        dateTimeRange: [null, null],
       }));
       return;
     }
 
-    if (form.dueDate && value.isAfter(form.dueDate, "day")) {
-      message.warning("Ngày bắt đầu không được lớn hơn ngày hết hạn");
+    const [start, due] = dates;
+    if (start && due && start.isAfter(due)) {
+      message.warning("Thời gian bắt đầu không được lớn hơn thời gian hết hạn");
       return;
     }
-    setForm((f) => ({ ...f, startDate: value }));
+
+    setForm((f) => ({
+      ...f,
+      dateTimeRange: [start, due],
+    }));
   };
 
-  const handleDueDateChange = (value: Dayjs | null) => {
-    if (!value) {
+  const handleQuickDateRange = (range: [Dayjs, Dayjs]) => {
+    setForm((f) => ({
+      ...f,
+      dateTimeRange: range,
+    }));
+  };
+
+  const handleQuickTime = (type: "start" | "due", hour: number, minute: number) => {
+    const [start, due] = form.dateTimeRange;
+    if (type === "start" && start) {
       setForm((f) => ({
         ...f,
-        dueDate: null,
-        dueTime: getZeroTime(),
+        dateTimeRange: [start.hour(hour).minute(minute).second(0), f.dateTimeRange[1]],
       }));
-      return;
-    }
-
-    if (form.startDate && value.isBefore(form.startDate, "day")) {
-      message.warning("Ngày hết hạn phải lớn hơn hoặc bằng ngày bắt đầu");
-      return;
-    }
-    setForm((f) => ({ ...f, dueDate: value }));
-  };
-
-  const handleQuickDate = (type: "start" | "due", date: Dayjs) => {
-    if (type === "start") {
-      handleStartDateChange(date);
-      setForm((f) => ({ ...f, showStartPicker: true }));
-    } else {
-      handleDueDateChange(date);
+    } else if (type === "due" && due) {
+      setForm((f) => ({
+        ...f,
+        dateTimeRange: [f.dateTimeRange[0], due.hour(hour).minute(minute).second(0)],
+      }));
     }
   };
 
-  const handleQuickTime = (type: "start" | "due", time: Dayjs) => {
-    if (type === "start") {
-      setForm((f) => ({ ...f, startTime: time }));
-    } else {
-      setForm((f) => ({ ...f, dueTime: time }));
-    }
-  };
-
-  const startDisabledDate = (current: Dayjs) => {
-    if (!current || !form.dueDate) return false;
-    return current.isAfter(form.dueDate, "day");
-  };
-
-  const dueDisabledDate = (current: Dayjs) => {
-    if (!current || !form.startDate) return false;
-    return current.isBefore(form.startDate, "day");
+  const disabledDate: RangePickerProps["disabledDate"] = (current) => {
+    if (!current) return false;
+    // RangePicker tự động xử lý validation, nhưng có thể thêm logic tùy chỉnh ở đây
+    return false;
   };
 
   const handleSave = () => {
+    const [startDateTime, dueDateTime] = form.dateTimeRange;
+    
     let finalStart: string | null = null;
-    if (form.startDate && form.startTime) {
-      finalStart = dayjs(form.startDate)
-        .hour(form.startTime.hour())
-        .minute(form.startTime.minute())
-        .second(0)
-        .toISOString();
+    if (startDateTime) {
+      finalStart = startDateTime.second(0).millisecond(0).toISOString();
     }
 
     let finalDue: string | null = null;
-    if (form.dueDate && form.dueTime) {
-      finalDue = dayjs(form.dueDate)
-        .hour(form.dueTime.hour())
-        .minute(form.dueTime.minute())
-        .second(0)
-        .toISOString();
+    if (dueDateTime) {
+      finalDue = dueDateTime.second(0).millisecond(0).toISOString();
     }
 
     if (finalStart && finalDue && dayjs(finalStart).isAfter(dayjs(finalDue))) {
-      message.warning("Ngày bắt đầu không được lớn hơn ngày hết hạn");
+      message.warning("Thời gian bắt đầu không được lớn hơn thời gian hết hạn");
       return;
     }
 
@@ -197,7 +197,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
     onClose();
   };
 
-  const duration = getDuration(form.startDate, form.startTime, form.dueDate, form.dueTime);
+  const duration = getDuration(form.dateTimeRange[0], form.dateTimeRange[1]);
 
   return (
     <Modal
@@ -223,118 +223,86 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
           </div>
         )}
 
-        {/* Start Date Section */}
+        {/* Date Time Range Section */}
         <div>
-          <Text strong style={{ display: "block", marginBottom: 8 }}>Ngày bắt đầu</Text>
-
-          {form.showStartPicker ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <Space wrap>
-                <DatePicker
-                  value={form.startDate}
-                  onChange={handleStartDateChange}
-                  disabledDate={startDisabledDate}
-                  allowClear
-                  placeholder="Chọn ngày"
-                  style={{ width: 160 }}
-                />
-                <TimePicker
-                  value={form.startTime}
-                  onChange={(v) => setForm((f) => ({ ...f, startTime: v ?? getZeroTime() }))}
-                  format="HH:mm"
-                  disabled={!form.startDate}
-                  placeholder="Giờ"
-                  style={{ width: 100 }}
-                />
-              </Space>
-              {/* Quick date buttons */}
-              <Space size={[4, 4]} wrap>
-                {quickDates.map((qd) => (
-                  <Tag
-                    key={qd.label}
-                    style={{ cursor: "pointer", margin: 0 }}
-                    onClick={() => handleQuickDate("start", qd.getValue())}
-                  >
-                    {qd.label}
-                  </Tag>
-                ))}
-              </Space>
-              {/* Quick time buttons */}
-              {form.startDate && (
-                <Space size={[4, 4]} wrap>
-                  {quickTimes.map((qt) => (
-                    <Tag
-                      key={qt.label}
-                      color={form.startTime?.format("HH:mm") === qt.label ? "blue" : undefined}
-                      style={{ cursor: "pointer", margin: 0 }}
-                      onClick={() => handleQuickTime("start", qt.value)}
-                    >
-                      {qt.label}
-                    </Tag>
-                  ))}
-                </Space>
-              )}
-            </div>
-          ) : (
-            <Button
-              type="dashed"
-              block
-              onClick={() => setForm((f) => ({ ...f, showStartPicker: true }))}
-            >
-              + Thêm ngày bắt đầu
-            </Button>
-          )}
-        </div>
-
-        {/* Due Date Section */}
-        <div>
-          <Text strong style={{ display: "block", marginBottom: 8 }}>Ngày hết hạn</Text>
+          <Text strong style={{ display: "block", marginBottom: 8 }}>Khoảng thời gian</Text>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <Space wrap>
-              <DatePicker
-                value={form.dueDate}
-                onChange={handleDueDateChange}
-                disabledDate={dueDisabledDate}
-                allowClear
-                placeholder="Chọn ngày"
-                style={{ width: 160 }}
-              />
-              <TimePicker
-                value={form.dueDate ? form.dueTime : null}
-                onChange={(v) => setForm((f) => ({ ...f, dueTime: v ?? getZeroTime() }))}
-                format="HH:mm"
-                disabled={!form.dueDate}
-                placeholder="Giờ"
-                style={{ width: 100 }}
-              />
-            </Space>
-            {/* Quick date buttons */}
+            <RangePicker
+              showTime={{
+                format: "HH:mm",
+              }}
+              format="DD/MM/YYYY HH:mm"
+              value={form.dateTimeRange}
+              onChange={handleDateTimeRangeChange}
+              disabledDate={disabledDate}
+              allowClear
+              placeholder={["Ngày bắt đầu", "Ngày hết hạn"]}
+              style={{ width: "100%" }}
+            />
+
+            {/* Quick date range buttons */}
             <Space size={[4, 4]} wrap>
-              {quickDates.map((qd) => (
+              {quickDateRanges.map((qdr) => (
                 <Tag
-                  key={qd.label}
+                  key={qdr.label}
                   style={{ cursor: "pointer", margin: 0 }}
-                  onClick={() => handleQuickDate("due", qd.getValue())}
+                  onClick={() => handleQuickDateRange(qdr.getValue())}
                 >
-                  {qd.label}
+                  {qdr.label}
                 </Tag>
               ))}
             </Space>
-            {/* Quick time buttons */}
-            {form.dueDate && (
-              <Space size={[4, 4]} wrap>
-                {quickTimes.map((qt) => (
-                  <Tag
-                    key={qt.label}
-                    color={form.dueTime?.format("HH:mm") === qt.label ? "blue" : undefined}
-                    style={{ cursor: "pointer", margin: 0 }}
-                    onClick={() => handleQuickTime("due", qt.value)}
-                  >
-                    {qt.label}
-                  </Tag>
-                ))}
-              </Space>
+
+            {/* Quick time presets */}
+            {form.dateTimeRange[0] && form.dateTimeRange[1] && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div>
+                  <Text type="secondary" style={{ display: "block", marginBottom: 4, fontSize: 12 }}>
+                    Giờ bắt đầu nhanh
+                  </Text>
+                  <Space size={[4, 4]} wrap>
+                    {quickTimePresets.map((qt) => (
+                      <Tag
+                        key={qt.label}
+                        color={
+                          form.dateTimeRange[0]?.hour() === qt.hour && 
+                          form.dateTimeRange[0]?.minute() === qt.minute 
+                            ? "blue" 
+                            : undefined
+                        }
+                        style={{ cursor: "pointer", margin: 0 }}
+                        onClick={() => handleQuickTime("start", qt.hour, qt.minute)}
+                      >
+                        {qt.label}
+                      </Tag>
+                    ))}
+                  </Space>
+                </div>
+
+                <div>
+                  <Text type="secondary" style={{ display: "block", marginBottom: 4, fontSize: 12 }}>
+                    Giờ hết hạn nhanh
+                  </Text>
+                  <Space size={[4, 4]} wrap>
+                    {quickTimePresets.map((qt) => (
+                      <Tag
+                        key={qt.label}
+                        color={
+                          form.dateTimeRange[1]?.hour() === qt.hour && 
+                          form.dateTimeRange[1]?.minute() === qt.minute 
+                            ? "blue" 
+                            : undefined
+                        }
+                        style={{ cursor: "pointer", margin: 0 }}
+                        onClick={() => handleQuickTime("due", qt.hour, qt.minute)}
+                      >
+                        {qt.label}
+                      </Tag>
+                    ))}
+                  </Space>
+                </div>
+              </div>
             )}
           </div>
         </div>

@@ -584,7 +584,7 @@ export default function TaskDetailModal({
                   onClick={() => setDueDateOpen(true)}
                   style={{ borderRadius: 6 }}
                 >
-                  Ngày hết hạn
+                  Thời hạn
                 </Button>
               </div>
 
