@@ -5,8 +5,6 @@ import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/vi';
 import type { ScheduleTask } from '@/types/schedule.type';
 
-dayjs.locale('vi');
-
 const { Text } = Typography;
 
 interface DayViewProps {
@@ -21,6 +19,11 @@ const priorityConfig: Record<string, { color: string; label: string }> = {
     low: { color: '#52c41a', label: 'Thấp' },
 };
 
+// Helper function to format date with Vietnamese locale
+const formatDateVi = (date: Dayjs) => {
+    return date.locale('vi').format('dddd, DD/MM/YYYY');
+};
+
 export default function DayView({ date, tasks, loading }: DayViewProps) {
     const navigate = useNavigate();
 
@@ -30,7 +33,7 @@ export default function DayView({ date, tasks, loading }: DayViewProps) {
 
     if (tasks.length === 0) {
         return (
-            <Card title={`📅 ${date.format('dddd, DD/MM/YYYY')}`}>
+            <Card title={formatDateVi(date)}>
                 <Empty
                     description="Không có công việc nào trong ngày này"
                     style={{ padding: 40 }}
@@ -51,7 +54,7 @@ export default function DayView({ date, tasks, loading }: DayViewProps) {
 
     return (
         <Card
-            title={`📅 ${date.format('dddd, DD/MM/YYYY')}`}
+            title={formatDateVi(date)}
             extra={
                 <Space>
                     <Tag color="processing">{todoCount} Đang thực hiện</Tag>
