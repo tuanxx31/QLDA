@@ -10,6 +10,7 @@ import { invalidateStatisticsQueries } from "@/utils/invalidateStatistics";
 import { invalidateProgressQueries } from "@/utils/invalidateProgress";
 import type { Task } from "@/types/task.type";
 import { taskService } from "@/services/task.services";
+import { invalidateTaskQueries } from "@/utils/invalidateTaskQueries";
 
 interface Props {
   task: Task;
@@ -23,31 +24,31 @@ const { RangePicker } = DatePicker;
 
 
 const quickDateRanges = [
-  { 
-    label: "Hôm nay", 
+  {
+    label: "Hôm nay",
     getValue: () => [
-      dayjs().hour(8).minute(0).second(0), 
+      dayjs().hour(8).minute(0).second(0),
       dayjs().hour(17).minute(0).second(0)
     ] as [Dayjs, Dayjs]
   },
-  { 
-    label: "Ngày mai", 
+  {
+    label: "Ngày mai",
     getValue: () => [
-      dayjs().add(1, "day").hour(8).minute(0).second(0), 
+      dayjs().add(1, "day").hour(8).minute(0).second(0),
       dayjs().add(1, "day").hour(17).minute(0).second(0)
     ] as [Dayjs, Dayjs]
   },
-  { 
-    label: "Tuần này", 
+  {
+    label: "Tuần này",
     getValue: () => [
-      dayjs().startOf("week").hour(8).minute(0).second(0), 
+      dayjs().startOf("week").hour(8).minute(0).second(0),
       dayjs().endOf("week").hour(17).minute(0).second(0)
     ] as [Dayjs, Dayjs]
   },
-  { 
-    label: "Tuần sau", 
+  {
+    label: "Tuần sau",
     getValue: () => [
-      dayjs().add(1, "week").startOf("week").hour(8).minute(0).second(0), 
+      dayjs().add(1, "week").startOf("week").hour(8).minute(0).second(0),
       dayjs().add(1, "week").endOf("week").hour(17).minute(0).second(0)
     ] as [Dayjs, Dayjs]
   },
@@ -59,6 +60,15 @@ const quickTimePresets = [
   { label: "12:00", hour: 12, minute: 0 },
   { label: "17:00", hour: 17, minute: 0 },
   { label: "23:59", hour: 23, minute: 59 },
+];
+
+// Quick duration presets - starts from "now"
+const quickDurationPresets = [
+  { label: "30 phút", minutes: 30 },
+  { label: "1 tiếng", minutes: 60 },
+  { label: "2 tiếng", minutes: 120 },
+  { label: "4 tiếng", minutes: 240 },
+  { label: "8 tiếng", minutes: 480 },
 ];
 
 
@@ -81,9 +91,10 @@ const getDuration = (start: Dayjs | null, end: Dayjs | null): string | null => {
 };
 
 export default function DueDateModal({ task, open, onClose, onSave }: Props) {
+
   const qc = useQueryClient();
   const { projectId } = useParams<{ projectId: string }>();
-  
+
   const getInitialDateTimeRange = (): [Dayjs | null, Dayjs | null] => {
     const start = task.startDate ? dayjs(task.startDate) : null;
     const due = task.dueDate ? dayjs(task.dueDate) : null;
@@ -113,6 +124,8 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
     onSuccess: (updated: Task) => {
       onSave(updated);
       qc.invalidateQueries({ queryKey: ["columns"] });
+      qc.invalidateQueries({ queryKey: ["tasks", task.id] });
+
       if (projectId) {
         invalidateProgressQueries(qc, projectId);
         invalidateStatisticsQueries(qc, projectId);
@@ -164,15 +177,25 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
     }
   };
 
+  // Handle quick duration - set start to now, end to now + duration
+  const handleQuickDuration = (minutes: number) => {
+    const now = dayjs();
+    const endTime = now.add(minutes, "minute");
+    setForm((f) => ({
+      ...f,
+      dateTimeRange: [now, endTime],
+    }));
+  };
+
   const disabledDate: RangePickerProps["disabledDate"] = (current) => {
     if (!current) return false;
-    
+
     return false;
   };
 
   const handleSave = () => {
     const [startDateTime, dueDateTime] = form.dateTimeRange;
-    
+
     let finalStart: string | null = null;
     if (startDateTime) {
       finalStart = startDateTime.second(0).millisecond(0).toISOString();
@@ -209,7 +232,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
       centered
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingTop: 8 }}>
-        {}
+        { }
         {duration && (
           <div style={{
             display: "flex",
@@ -223,7 +246,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
           </div>
         )}
 
-        {}
+        { }
         <div>
           <Text strong style={{ display: "block", marginBottom: 8 }}>Khoảng thời gian</Text>
 
@@ -241,7 +264,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
               style={{ width: "100%" }}
             />
 
-            {}
+            { }
             <Space size={[4, 4]} wrap>
               {quickDateRanges.map((qdr) => (
                 <Tag
@@ -254,7 +277,30 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
               ))}
             </Space>
 
-            {}
+            {/* Quick duration presets - starts from now */}
+            <div style={{
+              borderTop: "1px dashed #d9d9d9",
+              paddingTop: 8,
+              marginTop: 4
+            }}>
+              <Text type="secondary" style={{ display: "block", marginBottom: 4, fontSize: 12 }}>
+                Chọn nhanh (bắt đầu từ bây giờ)
+              </Text>
+              <Space size={[4, 4]} wrap>
+                {quickDurationPresets.map((qdp) => (
+                  <Tag
+                    key={qdp.label}
+                    color="green"
+                    style={{ cursor: "pointer", margin: 0 }}
+                    onClick={() => handleQuickDuration(qdp.minutes)}
+                  >
+                    {qdp.label}
+                  </Tag>
+                ))}
+              </Space>
+            </div>
+
+            { }
             {form.dateTimeRange[0] && form.dateTimeRange[1] && (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <div>
@@ -266,9 +312,9 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
                       <Tag
                         key={qt.label}
                         color={
-                          form.dateTimeRange[0]?.hour() === qt.hour && 
-                          form.dateTimeRange[0]?.minute() === qt.minute 
-                            ? "blue" 
+                          form.dateTimeRange[0]?.hour() === qt.hour &&
+                            form.dateTimeRange[0]?.minute() === qt.minute
+                            ? "blue"
                             : undefined
                         }
                         style={{ cursor: "pointer", margin: 0 }}
@@ -289,9 +335,9 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
                       <Tag
                         key={qt.label}
                         color={
-                          form.dateTimeRange[1]?.hour() === qt.hour && 
-                          form.dateTimeRange[1]?.minute() === qt.minute 
-                            ? "blue" 
+                          form.dateTimeRange[1]?.hour() === qt.hour &&
+                            form.dateTimeRange[1]?.minute() === qt.minute
+                            ? "blue"
                             : undefined
                         }
                         style={{ cursor: "pointer", margin: 0 }}
@@ -307,7 +353,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
           </div>
         </div>
 
-        {}
+        { }
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 4 }}>
           <Button onClick={onClose}>Hủy</Button>
           <Button

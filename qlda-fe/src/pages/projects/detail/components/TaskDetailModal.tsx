@@ -54,7 +54,7 @@ type TaskLabel = NonNullable<Task["labels"]>[number];
 interface Props {
   open: boolean;
   onClose: () => void;
-  task: Task | null;
+  taskId: string | null;
   onEdit?: (task: Task) => void;
   onDelete?: (task: Task) => void;
 }
@@ -62,7 +62,7 @@ interface Props {
 export default function TaskDetailModal({
   open,
   onClose,
-  task,
+  taskId,
   onEdit,
   onDelete,
 }: Props) {
@@ -71,13 +71,14 @@ export default function TaskDetailModal({
   const { authUser } = useAuth();
   const { canDeleteTasks, canEditTasks } = useProjectPermission(projectId);
   const { token } = theme.useToken();
-  const [taskData, setTaskData] = useState<Task | null>(task);
+  const [taskData, setTaskData] = useState<Task | null>(null);
 
   const { data: project } = useQuery({
     queryKey: ["project", projectId],
     queryFn: () => projectService.getById(projectId!),
     enabled: !!projectId,
   });
+
   const [description, setDescription] = useState("");
   const [editingTitle, setEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState("");
@@ -121,11 +122,13 @@ export default function TaskDetailModal({
 
   const {
     data: fetchedTask,
+    isLoading: isTaskLoading,
   } = useQuery({
-    queryKey: ["task", task?.id],
-    queryFn: () => taskService.getById(task!.id),
-    enabled: !!task?.id && open,
-    staleTime: 30000,
+    queryKey: ["task", taskId],
+    queryFn: () => taskService.getById(taskId!),
+    enabled: !!taskId && open,
+    staleTime: 0, // Always consider data stale to ensure fresh fetch
+    refetchOnMount: 'always', // Force refetch when modal opens
   });
 
 
@@ -134,9 +137,9 @@ export default function TaskDetailModal({
     isLoading: assigneesLoading,
     isError: assigneesError,
   } = useQuery({
-    queryKey: ["taskAssignees", task?.id],
-    queryFn: () => taskService.getAssignees(task!.id),
-    enabled: !!task?.id && open,
+    queryKey: ["taskAssignees", taskId],
+    queryFn: () => taskService.getAssignees(taskId!),
+    enabled: !!taskId && open,
     staleTime: 30000,
     retry: (failureCount, error) => {
 
@@ -170,16 +173,12 @@ export default function TaskDetailModal({
       setTaskData(fetchedTask);
       setDescription(fetchedTask.description ?? "");
       setTempTitle(fetchedTask.title ?? "");
-    } else if (task) {
-      setTaskData(task);
-      setDescription(task.description ?? "");
-      setTempTitle(task.title ?? "");
-    } else {
+    } else if (!taskId) {
       setTaskData(null);
       setDescription("");
       setTempTitle("");
     }
-  }, [fetchedTask, task?.id]);
+  }, [fetchedTask, taskId]);
 
 
   useEffect(() => {
@@ -311,7 +310,7 @@ export default function TaskDetailModal({
     ? assignees
     : fetchedTask?.assignees?.length
       ? fetchedTask.assignees
-      : task?.assignees ?? [];
+      : [];
 
   const unassignUsersMutation = useMutation({
     mutationFn: (userIds: string[]) =>
@@ -329,6 +328,28 @@ export default function TaskDetailModal({
     },
     onError: () => message.error("Lỗi khi hủy gán thành viên"),
   });
+
+  // Show loading state while fetching task
+  if (isTaskLoading || (!taskData && taskId)) {
+    return (
+      <Modal
+        open={open}
+        onCancel={onClose}
+        footer={null}
+        width={"70vw"}
+        styles={{
+          body: {
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: 400,
+          },
+        }}
+      >
+        <Spin size="large" tip="Đang tải..." />
+      </Modal>
+    );
+  }
 
   if (!taskData) return null;
 
@@ -405,7 +426,7 @@ export default function TaskDetailModal({
                 }}
               />
 
-              {}
+              { }
               <div style={{ flex: 1, minWidth: 0 }}>
                 {editingTitle ? (
                   <div style={{ position: "relative" }}>
@@ -540,9 +561,9 @@ export default function TaskDetailModal({
             minHeight: 400,
           }}
         >
-          {}
+          { }
           <div style={{ flex: 2, overflowY: "auto", paddingRight: 8 }}>
-            {}
+            { }
             <div
               style={{
                 background: token.colorFillQuaternary,
@@ -551,7 +572,7 @@ export default function TaskDetailModal({
                 marginBottom: 20,
               }}
             >
-              {}
+              { }
               <div
                 style={{
                   display: "flex",
@@ -595,7 +616,7 @@ export default function TaskDetailModal({
                 onSave={(updated) => setTaskData(updated)}
               />
 
-              {}
+              { }
               {taskData.dueDate && (
                 <div
                   style={{
@@ -644,7 +665,7 @@ export default function TaskDetailModal({
                 </div>
               )}
 
-              {}
+              { }
               {taskData.labels?.length ? (
                 <div
                   style={{
@@ -680,7 +701,7 @@ export default function TaskDetailModal({
                 </div>
               ) : null}
 
-              {}
+              { }
               {taskData.priority && (
                 <div
                   style={{
@@ -716,7 +737,7 @@ export default function TaskDetailModal({
                 </div>
               )}
 
-              {}
+              { }
               <div
                 style={{
                   display: "flex",
@@ -797,7 +818,7 @@ export default function TaskDetailModal({
               </div>
             </div>
 
-            {}
+            { }
             <div
               style={{
                 background: token.colorFillQuaternary,
@@ -894,7 +915,7 @@ export default function TaskDetailModal({
             </div>
           </div>
 
-          {}
+          { }
           <div
             style={{
               flex: 1,

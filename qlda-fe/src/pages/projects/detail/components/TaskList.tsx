@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { Space } from 'antd';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import type { Column } from '@/types/project-board';
@@ -11,19 +11,13 @@ export default function TaskList({ column }: { column: Column }) {
   const { projectId } = useParams<{ projectId: string }>();
   const { canEditTasks } = useProjectPermission(projectId);
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
-  
+
   const tasks = column.tasks || [];
   const taskIds = tasks.map(t => t.id);
 
   const handleTaskClick = useCallback((taskId: string) => {
     setOpenTaskId(taskId);
   }, []);
-
-  const openTask = useMemo(() => {
-    if (!openTaskId) return null;
-    const found = tasks.find(t => t.id === openTaskId);
-    return found || null;
-  }, [tasks, openTaskId]);
 
   return (
     <>
@@ -46,8 +40,8 @@ export default function TaskList({ column }: { column: Column }) {
       </div>
 
       <TaskDetailModal
-        open={!!openTask}
-        task={openTask}
+        open={!!openTaskId}
+        taskId={openTaskId}
         onClose={() => setOpenTaskId(null)}
       />
     </>
