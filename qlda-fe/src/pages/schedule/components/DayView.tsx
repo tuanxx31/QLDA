@@ -2,7 +2,10 @@ import { Card, Empty, List, Tag, Space, Typography, Timeline } from 'antd';
 import { CheckCircleOutlined, ClockCircleOutlined, ProjectOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
+import 'dayjs/locale/vi';
 import type { ScheduleTask } from '@/types/schedule.type';
+
+dayjs.locale('vi');
 
 const { Text } = Typography;
 
@@ -14,7 +17,7 @@ interface DayViewProps {
 
 const priorityConfig: Record<string, { color: string; label: string }> = {
     high: { color: '#ff4d4f', label: 'Cao' },
-    medium: { color: '#faad14', label: 'TB' },
+    medium: { color: '#faad14', label: 'Trung bình' },
     low: { color: '#52c41a', label: 'Thấp' },
 };
 
@@ -36,7 +39,7 @@ export default function DayView({ date, tasks, loading }: DayViewProps) {
         );
     }
 
-    
+
     const sortedTasks = [...tasks].sort((a, b) => {
         const aTime = a.dueDate ? dayjs(a.dueDate).valueOf() : Infinity;
         const bTime = b.dueDate ? dayjs(b.dueDate).valueOf() : Infinity;
@@ -105,7 +108,7 @@ export default function DayView({ date, tasks, loading }: DayViewProps) {
                                     </div>
 
                                     <Space>
-                                        <Tag color={priority.label === 'Cao' ? 'error' : priority.label === 'TB' ? 'warning' : 'success'}>
+                                        <Tag color={priority.label === 'Cao' ? 'error' : priority.label === 'Trung bình' ? 'warning' : 'success'}>
                                             {priority.label}
                                         </Tag>
                                         <Tag color={task.status === 'done' ? 'success' : 'processing'}>

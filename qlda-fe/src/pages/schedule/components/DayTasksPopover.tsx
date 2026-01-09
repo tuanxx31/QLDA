@@ -15,7 +15,7 @@ interface DayTasksPopoverProps {
 
 const priorityConfig: Record<string, { color: string; label: string }> = {
     high: { color: 'error', label: 'Cao' },
-    medium: { color: 'warning', label: 'TB' },
+    medium: { color: 'warning', label: 'Trung bình' },
     low: { color: 'success', label: 'Thấp' },
 };
 

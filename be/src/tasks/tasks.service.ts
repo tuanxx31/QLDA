@@ -605,12 +605,8 @@ export class TaskService {
       .leftJoinAndSelect('column.project', 'project')
       .leftJoinAndSelect('task.labels', 'labels')
       .leftJoinAndSelect('task.assignees', 'allAssignees')
-      .where(
-        '(task.startDate BETWEEN :startDate AND :endDate OR task.dueDate BETWEEN :startDate AND :endDate)',
-        { startDate, endDate },
-      )
-      .orWhere(
-        '(task.startDate <= :startDate AND task.dueDate >= :endDate)',
+      .andWhere(
+        '((task.startDate BETWEEN :startDate AND :endDate) OR (task.dueDate BETWEEN :startDate AND :endDate) OR (task.startDate <= :startDate AND task.dueDate >= :endDate))',
         { startDate, endDate },
       )
       .orderBy('task.dueDate', 'ASC')

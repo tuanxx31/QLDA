@@ -41,10 +41,15 @@ export class TaskController {
     if (!userId) {
       throw new ForbiddenException('Không xác định được người dùng');
     }
+    
+    // Adjust endDate to end of day (23:59:59.999)
+    const endDateObj = new Date(endDate);
+    endDateObj.setHours(23, 59, 59, 999);
+    
     return this.taskService.getMySchedule(
       userId,
       new Date(startDate),
-      new Date(endDate),
+      endDateObj,
     );
   }
 
