@@ -15,7 +15,7 @@ export class GroupRoleGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private permissionsService: PermissionsService,
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredRoles = this.reflector.getAllAndOverride<GroupRole[]>(
@@ -34,14 +34,14 @@ export class GroupRoleGuard implements CanActivate {
       throw new ForbiddenException('Không tìm thấy thông tin người dùng.');
     }
 
-    
-    const groupId = request.params.groupId || request.params.id;
 
+    const groupId = request.params.groupId || request.params.id || request.body?.groupId;
+    // console.log('params:', request.params, 'body.groupId:', request.body?.groupId);
     if (!groupId) {
       throw new NotFoundException('Không tìm thấy groupId trong request.');
     }
 
-    
+
     const hasPermission = await this.permissionsService.checkGroupPermission(
       groupId,
       userId,
