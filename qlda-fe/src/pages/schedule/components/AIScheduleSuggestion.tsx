@@ -1,5 +1,5 @@
 import { Card, Typography, Space, Button, Tag, List, Spin, Empty, Alert, Tooltip, message, Checkbox } from 'antd';
-import { RobotOutlined, ReloadOutlined, BulbOutlined, WarningOutlined, ClockCircleOutlined, ThunderboltOutlined, LoadingOutlined } from '@ant-design/icons';
+import { RobotOutlined, ReloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { aiService } from '@/services/ai.services';
 import { taskService } from '@/services/task.services';
@@ -8,25 +8,24 @@ import type { Dayjs } from 'dayjs';
 import { useState, useCallback, useEffect } from 'react';
 import './AIScheduleSuggestion.css';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 interface AIScheduleSuggestionProps {
     currentDate: Dayjs;
 }
 
 const priorityColors: Record<string, string> = {
-    high: '#ff4d4f',
-    medium: '#faad14',
-    low: '#52c41a',
+    high: 'red',
+    medium: 'orange',
+    low: 'green',
 };
 
 const priorityLabels: Record<string, string> = {
     high: 'Cao',
-    medium: 'Trung bình',
+    medium: 'TB',
     low: 'Thấp',
 };
 
-// LocalStorage key for suggestions
 const getSuggestionStorageKey = (date: string) => `ai_suggestions_${date}`;
 
 export default function AIScheduleSuggestion({ currentDate }: AIScheduleSuggestionProps) {
@@ -38,7 +37,6 @@ export default function AIScheduleSuggestion({ currentDate }: AIScheduleSuggesti
     const dateString = currentDate.format('YYYY-MM-DD');
     const storageKey = getSuggestionStorageKey(dateString);
 
-    // Load saved suggestions from localStorage on mount
     useEffect(() => {
         const saved = localStorage.getItem(storageKey);
         if (saved) {
@@ -52,7 +50,6 @@ export default function AIScheduleSuggestion({ currentDate }: AIScheduleSuggesti
         }
     }, [storageKey]);
 
-    // Save suggestions to localStorage whenever they change
     useEffect(() => {
         if (suggestions) {
             const data = {
@@ -64,13 +61,12 @@ export default function AIScheduleSuggestion({ currentDate }: AIScheduleSuggesti
         }
     }, [suggestions, completedTaskIds, storageKey]);
 
-    // Generate suggestions mutation
     const { mutate: generateSuggestions, isPending } = useMutation({
         mutationFn: () => aiService.suggestSchedule(dateString),
         onSuccess: (data) => {
             setSuggestions(data);
-            setCompletedTaskIds(new Set()); // Reset completed tasks on new generation
-            message.success('Đã tạo gợi ý AI thành công!');
+            setCompletedTaskIds(new Set());
+            message.success('Đã tạo gợi ý thành công!');
         },
         onError: () => {
             message.error('Không thể tạo gợi ý. Vui lòng thử lại.');
@@ -81,31 +77,24 @@ export default function AIScheduleSuggestion({ currentDate }: AIScheduleSuggesti
         generateSuggestions();
     }, [generateSuggestions]);
 
-    // Mark task as done in database and remove from suggestions
     const handleCompleteTask = useCallback(async (taskId: string, taskTitle: string) => {
         setCompletingTaskId(taskId);
         try {
             await taskService.updateStatus(taskId, 'done');
-
-            // Add to completed set (will be filtered out)
             setCompletedTaskIds(prev => {
                 const newSet = new Set(prev);
                 newSet.add(taskId);
                 return newSet;
             });
-
-            // Invalidate schedule queries to update calendar view
             queryClient.invalidateQueries({ queryKey: ['schedule'] });
-
             message.success(`Đã hoàn thành: "${taskTitle}"`);
-        } catch (error) {
-            message.error('Không thể cập nhật trạng thái task. Vui lòng thử lại.');
+        } catch {
+            message.error('Không thể cập nhật trạng thái task.');
         } finally {
             setCompletingTaskId(null);
         }
     }, [queryClient]);
 
-    // Filter out completed tasks from display
     const visibleSuggestions = suggestions?.suggestions?.filter(
         s => !completedTaskIds.has(s.taskId)
     ) || [];
@@ -120,38 +109,27 @@ export default function AIScheduleSuggestion({ currentDate }: AIScheduleSuggesti
                 <div className="suggestion-content">
                     <div className="suggestion-header">
                         <div className="suggestion-checkbox">
-                            <Tooltip title="Đánh dấu hoàn thành (cập nhật vào database)">
-                                {isCompleting ? (
-                                    <LoadingOutlined style={{ color: '#1890ff' }} />
-                                ) : (
-                                    <Checkbox
-                                        checked={false}
-                                        onChange={() => handleCompleteTask(suggestion.taskId, suggestion.taskTitle)}
-                                        disabled={isCompleting}
-                                    />
-                                )}
-                            </Tooltip>
+                            {isCompleting ? (
+                                <LoadingOutlined style={{ color: '#1890ff' }} />
+                            ) : (
+                                <Checkbox
+                                    onChange={() => handleCompleteTask(suggestion.taskId, suggestion.taskTitle)}
+                                />
+                            )}
                         </div>
                         <div className="suggestion-order">
                             <span className="order-number">{suggestion.order}</span>
                         </div>
                         <div className="suggestion-details">
                             <div className="suggestion-title-row">
-                                <Text strong className="task-title">{suggestion.taskTitle}</Text>
-                                <Tag color={priorityColors[suggestion.priority]} style={{ marginLeft: 8 }}>
+                                <Text strong>{suggestion.taskTitle}</Text>
+                                <Tag color={priorityColors[suggestion.priority]}>
                                     {priorityLabels[suggestion.priority]}
                                 </Tag>
-                            </div>
-                            <div className="suggestion-meta">
-                                <Tooltip title="Thời gian gợi ý bắt đầu">
-                                    <Tag icon={<ClockCircleOutlined />} color="blue">
-                                        {suggestion.suggestedStartTime}
-                                    </Tag>
-                                </Tooltip>
+                                <Tag>{suggestion.suggestedStartTime}</Tag>
                             </div>
                             <div className="suggestion-reason">
-                                <BulbOutlined style={{ color: '#faad14', marginRight: 6 }} />
-                                <Text type="secondary">{suggestion.reason}</Text>
+                                {suggestion.reason}
                             </div>
                         </div>
                     </div>
@@ -163,13 +141,13 @@ export default function AIScheduleSuggestion({ currentDate }: AIScheduleSuggesti
     if (!expanded) {
         return (
             <Card
+                size="small"
                 className="ai-suggestion-card collapsed"
                 onClick={() => setExpanded(true)}
             >
                 <Space>
-                    <RobotOutlined style={{ fontSize: 18, color: '#1890ff' }} />
-                    <Text strong>🤖 Gợi ý từ AI</Text>
-                    <Text type="secondary">- Click để mở rộng</Text>
+                    <RobotOutlined />
+                    <Text>Gợi ý AI</Text>
                     {hasGenerated && visibleSuggestions.length > 0 && (
                         <Tag color="blue">{visibleSuggestions.length} task</Tag>
                     )}
@@ -180,94 +158,72 @@ export default function AIScheduleSuggestion({ currentDate }: AIScheduleSuggesti
 
     return (
         <Card
-            className="ai-suggestion-card"
+            size="small"
             title={
                 <Space>
-                    <RobotOutlined style={{ fontSize: 20, color: '#1890ff' }} />
-                    <Title level={5} style={{ margin: 0 }}>Gợi ý lịch làm việc hôm nay</Title>
+                    <RobotOutlined />
+                    <span>Gợi ý lịch làm việc</span>
                 </Space>
             }
             extra={
                 <Space>
                     <Button
                         type={hasGenerated ? 'default' : 'primary'}
-                        icon={isPending ? <ReloadOutlined spin /> : <ThunderboltOutlined />}
+                        icon={isPending ? <ReloadOutlined spin /> : <RobotOutlined />}
                         onClick={handleGenerate}
                         disabled={isPending}
                         size="small"
                     >
-                        {hasGenerated ? 'Tạo gợi ý mới' : 'Tạo gợi ý'}
+                        {hasGenerated ? 'Tạo mới' : 'Tạo gợi ý'}
                     </Button>
-                    <Button size="small" onClick={() => setExpanded(false)}>
+                    <Button size="small" type="text" onClick={() => setExpanded(false)}>
                         Thu gọn
                     </Button>
                 </Space>
             }
         >
-            <Spin spinning={isPending} tip="AI đang phân tích...">
+            <Spin spinning={isPending} tip="Đang phân tích...">
                 {!hasGenerated ? (
-                    <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                        <RobotOutlined style={{ fontSize: 48, color: '#bfbfbf', marginBottom: 16 }} />
-                        <div>
-                            <Text type="secondary">
-                                Nhấn <Text strong>"Tạo gợi ý"</Text> để AI phân tích và đề xuất lịch làm việc tối ưu cho bạn.
-                            </Text>
-                        </div>
-                    </div>
+                    <Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description="Nhấn 'Tạo gợi ý' để AI phân tích lịch làm việc"
+                    />
                 ) : suggestions ? (
-                    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                        {/* Summary */}
+                    <Space direction="vertical" size="small" style={{ width: '100%' }}>
                         {suggestions.summary && (
-                            <Alert
-                                type="info"
-                                message={suggestions.summary}
-                                showIcon
-                                icon={<BulbOutlined />}
-                                className="ai-summary"
-                            />
+                            <Alert type="info" message={suggestions.summary} showIcon />
                         )}
 
-                        {/* Completed count */}
                         {completedTaskIds.size > 0 && (
                             <Alert
                                 type="success"
-                                message={`Bạn đã hoàn thành ${completedTaskIds.size} task! Còn ${visibleSuggestions.length} task cần làm.`}
+                                message={`Đã hoàn thành ${completedTaskIds.size} task. Còn ${visibleSuggestions.length} task.`}
                                 showIcon
                             />
                         )}
 
-                        {/* Warnings */}
-                        {suggestions.warnings && suggestions.warnings.length > 0 && (
-                            <div className="ai-warnings">
-                                {suggestions.warnings.map((warning, index) => (
-                                    <Alert
-                                        key={index}
-                                        type="warning"
-                                        message={warning}
-                                        showIcon
-                                        icon={<WarningOutlined />}
-                                        style={{ marginBottom: 8 }}
-                                    />
-                                ))}
-                            </div>
+                        {suggestions.warnings?.length > 0 && (
+                            <Alert
+                                type="warning"
+                                message={suggestions.warnings.join('. ')}
+                                showIcon
+                            />
                         )}
 
-                        {/* Suggestions List */}
                         {visibleSuggestions.length > 0 ? (
                             <List
-                                className="ai-suggestions-list"
                                 dataSource={visibleSuggestions}
                                 renderItem={renderSuggestionItem}
-                                split={false}
+                                split
                             />
                         ) : (
                             <Empty
+                                image={Empty.PRESENTED_IMAGE_SIMPLE}
                                 description={
                                     completedTaskIds.size > 0
-                                        ? "🎉 Tuyệt vời! Bạn đã hoàn thành tất cả task được gợi ý!"
-                                        : "Không có task nào cần làm hôm nay. Hãy nghỉ ngơi hoặc làm trước các task sắp tới!"
+                                        ? "Đã hoàn thành tất cả task!"
+                                        : "Không có task nào cần làm."
                                 }
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
                             />
                         )}
                     </Space>
