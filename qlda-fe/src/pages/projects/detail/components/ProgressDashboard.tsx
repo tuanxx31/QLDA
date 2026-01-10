@@ -5,7 +5,6 @@ import type { UserProgress } from '@/types/project.type';
 import { CheckCircleOutlined, ClockCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { getAvatarUrl } from '@/utils/avatarUtils';
 
-
 interface Props {
   projectId: string;
 }
@@ -36,7 +35,6 @@ export default function ProgressDashboard({ projectId }: Props) {
   });
 
   const isLoading = loadingProgress || loadingColumns || loadingUsers || loadingDeadline;
-
 
   
   const userColumns = [

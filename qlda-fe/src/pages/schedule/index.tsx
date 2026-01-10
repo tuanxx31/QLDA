@@ -29,7 +29,6 @@ export default function SchedulePage() {
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
 
-
     const { startDate, endDate } = useMemo(() => {
         if (viewMode === 'day') {
             return {
@@ -50,7 +49,6 @@ export default function SchedulePage() {
         queryFn: () => scheduleService.getMySchedule(startDate, endDate),
     });
 
-
     const filteredTasks = useMemo(() => {
         return tasks.filter(task => {
             if (statusFilter !== 'all' && task.status !== statusFilter) return false;
@@ -58,7 +56,6 @@ export default function SchedulePage() {
             return true;
         });
     }, [tasks, statusFilter, priorityFilter]);
-
 
     const stats = useMemo(() => {
         const total = tasks.length;
@@ -72,7 +69,6 @@ export default function SchedulePage() {
 
         return { total, done, todo, overdue };
     }, [tasks]);
-
 
     const dayTasks = useMemo(() => {
         if (viewMode !== 'day') return [];

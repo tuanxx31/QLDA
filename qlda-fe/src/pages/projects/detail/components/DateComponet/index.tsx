@@ -22,7 +22,6 @@ interface Props {
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
 
-
 const quickDateRanges = [
   {
     label: "Hôm nay",
@@ -54,7 +53,6 @@ const quickDateRanges = [
   },
 ];
 
-
 const quickTimePresets = [
   { label: "8:00", hour: 8, minute: 0 },
   { label: "12:00", hour: 12, minute: 0 },
@@ -62,7 +60,6 @@ const quickTimePresets = [
   { label: "23:59", hour: 23, minute: 59 },
 ];
 
-// Quick duration presets - starts from "now"
 const quickDurationPresets = [
   { label: "30 phút", minutes: 30 },
   { label: "1 tiếng", minutes: 60 },
@@ -70,7 +67,6 @@ const quickDurationPresets = [
   { label: "4 tiếng", minutes: 240 },
   { label: "8 tiếng", minutes: 480 },
 ];
-
 
 const getDuration = (start: Dayjs | null, end: Dayjs | null): string | null => {
   if (!start || !end) return null;
@@ -177,7 +173,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
     }
   };
 
-  // Handle quick duration - set start to now, end to now + duration
+  
   const handleQuickDuration = (minutes: number) => {
     const now = dayjs();
     const endTime = now.add(minutes, "minute");
@@ -277,7 +273,7 @@ export default function DueDateModal({ task, open, onClose, onSave }: Props) {
               ))}
             </Space>
 
-            {/* Quick duration presets - starts from now */}
+            {}
             <div style={{
               borderTop: "1px dashed #d9d9d9",
               paddingTop: 8,

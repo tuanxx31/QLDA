@@ -32,9 +32,7 @@ export default function TaskCard({ task }: Props) {
   const { authUser } = useAuth();
   const { role, canEditTasks } = useProjectPermission(projectId);
 
-
   const { updateKey } = useTaskReadStatus(task.id, authUser?.id);
-
 
   const { data: commentsData } = useQuery({
     queryKey: ['comments', task.id],
@@ -44,12 +42,9 @@ export default function TaskCard({ task }: Props) {
     refetchOnMount: true,
   });
 
-
   const totalCommentsCount = useMemo(() => {
     return commentsData?.data?.length || 0;
   }, [commentsData?.data]);
-
-
 
   const unreadCount = useMemo(() => {
     if (!authUser?.id || !commentsData?.data || commentsData.data.length === 0) return 0;
@@ -75,7 +70,6 @@ export default function TaskCard({ task }: Props) {
   const canUpdateStatus = useMemo(() => {
 
     if (canEditTasks) return true;
-
 
     if (role === 'viewer') {
       const assigneeIds = task.assignees?.map((a) => a.id) || [];

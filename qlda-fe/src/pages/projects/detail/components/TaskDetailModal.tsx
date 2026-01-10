@@ -119,7 +119,6 @@ export default function TaskDetailModal({
     });
   };
 
-
   const {
     data: fetchedTask,
     isLoading: isTaskLoading,
@@ -127,10 +126,9 @@ export default function TaskDetailModal({
     queryKey: ["task", taskId],
     queryFn: () => taskService.getById(taskId!),
     enabled: !!taskId && open,
-    staleTime: 0, // Always consider data stale to ensure fresh fetch
-    refetchOnMount: 'always', // Force refetch when modal opens
+    staleTime: 0, 
+    refetchOnMount: 'always', 
   });
-
 
   const {
     data: assignees = [],
@@ -167,7 +165,6 @@ export default function TaskDetailModal({
     },
   });
 
-
   useEffect(() => {
     if (fetchedTask) {
       setTaskData(fetchedTask);
@@ -179,7 +176,6 @@ export default function TaskDetailModal({
       setTempTitle("");
     }
   }, [fetchedTask, taskId]);
-
 
   useEffect(() => {
     if (open && taskData?.id && authUser?.id) {
@@ -195,7 +191,6 @@ export default function TaskDetailModal({
     }
   }, [open, taskData?.id, authUser?.id, queryClient]);
 
-
   const dueInfo = useMemo(() => {
     if (!taskData?.dueDate) return null;
     const d = dayjs(taskData.dueDate);
@@ -204,7 +199,6 @@ export default function TaskDetailModal({
       isOverdue: d.isBefore(dayjs()),
     };
   }, [taskData]);
-
 
   const updateTaskMutation = useMutation({
     mutationFn: (payload: Partial<Task> & { id: string }) =>
@@ -231,7 +225,6 @@ export default function TaskDetailModal({
 
     onError: () => message.error("Lỗi cập nhật"),
   });
-
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: "todo" | "done" }) =>
@@ -263,18 +256,15 @@ export default function TaskDetailModal({
         invalidateStatisticsQueries(queryClient, projectId);
       }
 
-
     },
 
     onError: () => message.error("Lỗi cập nhật trạng thái"),
   });
 
-
   const saveDescription = async () => {
     if (!taskData?.id) return;
     await updateTaskMutation.mutateAsync({ id: taskData.id, description });
   };
-
 
   const handleSaveTitle = async () => {
     if (!taskData?.id) return;
@@ -286,7 +276,6 @@ export default function TaskDetailModal({
     await updateTaskMutation.mutateAsync({ id: taskData.id, title: newTitle });
     setEditingTitle(false);
   };
-
 
   const deleteTaskMutation = useMutation({
     mutationFn: () => taskService.delete(taskData!.id),
@@ -301,10 +290,6 @@ export default function TaskDetailModal({
       onClose();
     },
   });
-
-
-
-
 
   const visibleAssignees = assignees.length
     ? assignees
@@ -329,7 +314,7 @@ export default function TaskDetailModal({
     onError: () => message.error("Lỗi khi hủy gán thành viên"),
   });
 
-  // Show loading state while fetching task
+  
   if (isTaskLoading || (!taskData && taskId)) {
     return (
       <Modal
@@ -352,7 +337,6 @@ export default function TaskDetailModal({
   }
 
   if (!taskData) return null;
-
 
   const getStatusColor = () => {
     if (taskData.status === "done") return "#52c41a";

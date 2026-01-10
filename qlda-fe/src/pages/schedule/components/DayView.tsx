@@ -19,7 +19,6 @@ const priorityConfig: Record<string, { color: string; label: string }> = {
     low: { color: '#52c41a', label: 'Thấp' },
 };
 
-// Helper function to format date with Vietnamese locale
 const formatDateVi = (date: Dayjs) => {
     return date.locale('vi').format('dddd, DD/MM/YYYY');
 };
@@ -41,7 +40,6 @@ export default function DayView({ date, tasks, loading }: DayViewProps) {
             </Card>
         );
     }
-
 
     const sortedTasks = [...tasks].sort((a, b) => {
         const aTime = a.dueDate ? dayjs(a.dueDate).valueOf() : Infinity;

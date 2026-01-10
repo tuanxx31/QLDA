@@ -42,7 +42,7 @@ export class TaskController {
       throw new ForbiddenException('Không xác định được người dùng');
     }
     
-    // Adjust endDate to end of day (23:59:59.999)
+    
     const endDateObj = new Date(endDate);
     endDateObj.setHours(23, 59, 59, 999);
     
