@@ -22,7 +22,7 @@ services:
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - GOOGLE_CALLBACK_URL=https://qlda-api.sclould.com/auth/google/callback
       - FRONTEND_URL=https://qlda.sclould.com
-
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     expose:
       - "3100"
     volumes:

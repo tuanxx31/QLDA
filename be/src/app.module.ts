@@ -18,6 +18,7 @@ import { TaskModule } from './tasks/tasks.module';
 import { CommentsModule } from './comments/comments.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { PermissionsModule } from './permissions/permissions.module';
       isGlobal: true,
     }),
     TypeOrmModule.forRoot({
-      
+
       type: 'mysql',
       host: process.env.DATABASE_HOST || 'localhost',
       port: process.env.DATABASE_PORT ? parseInt(process.env.DATABASE_PORT) : 3306,
@@ -48,8 +49,9 @@ import { PermissionsModule } from './permissions/permissions.module';
     LabelsModule,
     CommentsModule,
     StatisticsModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

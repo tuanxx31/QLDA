@@ -14,6 +14,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { scheduleService } from '@/services/schedule.services';
 import CalendarView from './components/CalendarView';
 import DayView from './components/DayView';
+import AIScheduleSuggestion from './components/AIScheduleSuggestion';
 import { usePageContentHeight } from '@/hooks/usePageContentHeight';
 
 const { Text } = Typography;
@@ -175,6 +176,11 @@ export default function SchedulePage() {
                                 </Col>
                             </Row>
                         </Card>
+
+                        {/* AI Schedule Suggestion - Show for day view or today in month view */}
+                        {(viewMode === 'day' || currentDate.isSame(dayjs(), 'day')) && (
+                            <AIScheduleSuggestion currentDate={currentDate} />
+                        )}
 
                         { }
                         <Card size="small">
