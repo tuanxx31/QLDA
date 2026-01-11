@@ -42,7 +42,6 @@ export class WorkloadAnalysisDto {
     endDate: string;
 }
 
-// Response types
 export interface TaskSuggestion {
     taskId: string;
     taskTitle: string;

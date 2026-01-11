@@ -177,7 +177,7 @@ export default function SchedulePage() {
                             </Row>
                         </Card>
 
-                        {/* AI Schedule Suggestion - Show for day view or today in month view */}
+                        {}
                         {(viewMode === 'day' || currentDate.isSame(dayjs(), 'day')) && (
                             <AIScheduleSuggestion currentDate={currentDate} />
                         )}

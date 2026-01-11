@@ -28,13 +28,11 @@ export class AiService {
         }
     }
 
-    /**
-     * Get tasks for a specific user on a specific date
-     */
+    
     private async getUserTasksForDate(userId: string, date: Date): Promise<Task[]> {
         this.logger.log(`Getting tasks for user ${userId} on date ${date.toISOString()}`);
 
-        // Get non-done tasks for this user that have a deadline
+        
         const tasks = await this.taskRepo
             .createQueryBuilder('task')
             .innerJoin('task.assignees', 'assignee', 'assignee.id = :userId', { userId })
@@ -55,9 +53,7 @@ export class AiService {
         return tasks;
     }
 
-    /**
-     * Get tasks for a user in a date range
-     */
+    
     private async getUserTasksForRange(
         userId: string,
         startDate: Date,
@@ -79,9 +75,7 @@ export class AiService {
         return tasks;
     }
 
-    /**
-     * Suggest daily schedule using AI
-     */
+    
     async suggestDailySchedule(
         userId: string,
         date: Date,
@@ -171,7 +165,7 @@ RESPONSE FORMAT (JSON only, no markdown):
 
             const content = response.choices[0]?.message?.content || '';
 
-            // Clean up the response in case it has markdown code blocks
+            
             let cleanContent = content.trim();
             if (cleanContent.startsWith('```json')) {
                 cleanContent = cleanContent.slice(7);
@@ -188,7 +182,7 @@ RESPONSE FORMAT (JSON only, no markdown):
         } catch (error) {
             this.logger.error('Error calling OpenAI:', error);
 
-            // Return a fallback response based on simple priority sorting
+            
             const fallbackSuggestions: TaskSuggestion[] = tasks.map((task, index) => ({
                 taskId: task.id,
                 taskTitle: task.title,
@@ -238,9 +232,7 @@ RESPONSE FORMAT (JSON only, no markdown):
         }
     }
 
-    /**
-     * Analyze workload for a date range
-     */
+    
     async analyzeWorkload(
         userId: string,
         startDate: Date,
@@ -255,7 +247,7 @@ RESPONSE FORMAT (JSON only, no markdown):
             (t) => t.dueDate && new Date(t.dueDate) < now && t.status !== 'done',
         ).length;
 
-        // Get upcoming deadlines (next 3 days)
+        
         const threeDaysFromNow = new Date();
         threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
 
@@ -274,7 +266,7 @@ RESPONSE FORMAT (JSON only, no markdown):
                 priority: t.priority,
             }));
 
-        // Calculate workload level
+        
         const pendingTasks = totalTasks - completedTasks;
         const daysInRange = Math.ceil(
             (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
@@ -292,7 +284,7 @@ RESPONSE FORMAT (JSON only, no markdown):
             workloadLevel = 'overloaded';
         }
 
-        // Generate recommendations
+        
         const recommendations: string[] = [];
 
         if (overdueTasks > 0) {

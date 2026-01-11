@@ -30,17 +30,13 @@ export interface WorkloadAnalysisResponse {
 }
 
 export const aiService = {
-    /**
-     * Get AI-powered schedule suggestions for a specific day
-     */
+    
     suggestSchedule: async (date: string): Promise<ScheduleSuggestionResponse> => {
         const res = await api.post<ScheduleSuggestionResponse>('/ai/suggest-schedule', { date });
         return res.data;
     },
 
-    /**
-     * Analyze workload for a date range
-     */
+    
     getWorkloadAnalysis: async (startDate: string, endDate: string): Promise<WorkloadAnalysisResponse> => {
         const res = await api.get<WorkloadAnalysisResponse>('/ai/workload-analysis', {
             params: { startDate, endDate },
