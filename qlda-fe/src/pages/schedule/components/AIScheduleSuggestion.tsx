@@ -1,4 +1,4 @@
-import { Card, Typography, Space, Button, Tag, List, Spin, Empty, Alert, Tooltip, message, Checkbox } from 'antd';
+import { Card, Typography, Space, Button, Tag, List, Spin, Empty, Alert, message, Checkbox } from 'antd';
 import { RobotOutlined, ReloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { aiService } from '@/services/ai.services';
@@ -42,6 +42,21 @@ export default function AIScheduleSuggestion({ currentDate }: AIScheduleSuggesti
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
+                // Kiểm tra nếu suggestions đã qua ngày
+                if (parsed.savedAt) {
+                    const savedDate = new Date(parsed.savedAt);
+                    const today = new Date();
+                    // So sánh ngày (bỏ qua giờ/phút/giây)
+                    const savedDateStr = savedDate.toISOString().split('T')[0];
+                    const todayStr = today.toISOString().split('T')[0];
+                    
+                    // Nếu khác ngày thì xóa suggestions cũ
+                    if (savedDateStr !== todayStr) {
+                        localStorage.removeItem(storageKey);
+                        return;
+                    }
+                }
+                
                 setSuggestions(parsed.suggestions);
                 setCompletedTaskIds(new Set(parsed.completedTaskIds || []));
             } catch {
