@@ -53,20 +53,20 @@ const GroupProjectTable = ({ groupId }: { groupId: string }) => {
           dataIndex: 'description',
           ellipsis: true,
         },
-        {
-          title: 'Trạng thái',
-          dataIndex: 'status',
-          align: 'center',
-          render: (_, record) => (
-            <Tag
-              color={
-                record.status === 'done' ? 'green' : record.status === 'doing' ? 'blue' : 'default'
-              }
-            >
-              {record.status.toUpperCase()}
-            </Tag>
-          ),
-        },
+        // {
+        //   title: 'Trạng thái',
+        //   dataIndex: 'status',
+        //   align: 'center',
+        //   render: (_, record) => (
+        //     <Tag
+        //       color={
+        //         record.status === 'done' ? 'green' : record.status === 'doing' ? 'blue' : 'default'
+        //       }
+        //     >
+        //       {record.status === 'done' ? 'Hoàn thành' : 'Chưa bắt đầu'}
+        //     </Tag>
+        //   ),
+        // },
         {
           title: 'Ngày bắt đầu',
           dataIndex: 'startDate',

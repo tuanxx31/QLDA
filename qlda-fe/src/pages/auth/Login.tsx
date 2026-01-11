@@ -55,7 +55,7 @@ export default function Login() {
 
   return (
     <LoginFormPage
-      title="Hệ thống quản lý dự án sinh viên 🎓"
+      title="Hệ thống quản lý dự án"
       subTitle="Đăng nhập để bắt đầu"
       onFinish={handleSubmit}
       loading={isSubmitting}
