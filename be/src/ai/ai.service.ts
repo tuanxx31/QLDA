@@ -47,7 +47,7 @@ export class AiService {
 
         this.logger.log(`Found ${tasks.length} non-done tasks for user ${userId}`);
         tasks.forEach(t => {
-            this.logger.log(`Task: "${t.title}", startDate: ${t.startDate}, dueDate: ${t.dueDate}, status: ${t.status}`);
+            this.logger.log(`Task: "${t.title}", startDate: ${t.startDate?.toISOString()}, dueDate: ${t.dueDate?.toISOString()}, status: ${t.status}`);
         });
 
         return tasks;
@@ -121,7 +121,7 @@ NHIỆM VỤ: Sắp xếp các task sau theo thứ tự ưu tiên để làm tro
 CONTEXT:
 - Ngày hiện tại: ${currentDate}
 - Giờ hiện tại: ${currentTime}
-- Thời gian làm việc: 8:00 - 22:00
+
 
 DANH SÁCH TASKS:
 ${JSON.stringify(tasksInfo, null, 2)}
