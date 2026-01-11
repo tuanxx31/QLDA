@@ -50,10 +50,10 @@ export default function MemberPerformanceChart({ data, loading }: Props) {
         legend={{
           position: 'top' as const,
         }}
-        tooltip={{
-          shared: true,
-          showCrosshairs: true,
-        }}
+        // tooltip={{
+        //   shared: true,
+        //   showCrosshairs: true,
+        // }}
         label={{
           position: 'top' as const,
         }}

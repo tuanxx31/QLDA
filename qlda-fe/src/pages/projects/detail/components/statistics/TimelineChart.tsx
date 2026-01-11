@@ -1,5 +1,5 @@
 import { Card, Select, DatePicker, Space, Empty } from 'antd';
-import { Line } from '@ant-design/charts';
+import { Line, type LineConfig } from '@ant-design/charts';
 import { type Dayjs } from 'dayjs';
 import { useState, useMemo } from 'react';
 import type { TimelineStatistics } from '@/types/statistics.type';
@@ -65,6 +65,7 @@ export default function TimelineChart({ data, loading, onFilterChange }: Props) 
     ]);
   }, [data]);
 
+
   if (!data || data.length === 0) {
     return (
       <Card
@@ -95,6 +96,28 @@ export default function TimelineChart({ data, loading, onFilterChange }: Props) 
       </Card>
     );
   }
+  console.log(chartData);
+  
+  
+  const config: LineConfig = {
+    data: chartData,
+    xField: 'date',
+    yField: 'value',
+    seriesField: 'type',
+    smooth: true,
+    colorField: 'type',
+    legend: {
+      position: 'top' as const,
+    },
+    // tooltip: {
+    //   shared: true,
+    //   showCrosshairs: true,
+    // },
+    point: {
+      size: 4,
+      shape: 'circle',
+    },
+  };
 
   return (
     <Card
@@ -122,23 +145,7 @@ export default function TimelineChart({ data, loading, onFilterChange }: Props) 
       }
     >
       <Line
-        data={chartData}
-        xField="date"
-        yField="value"
-        seriesField="type"
-        smooth={true}
-        colorField={"type"}
-        legend={{
-          position: 'top' as const,
-        }}
-        tooltip={{
-          shared: true,
-          showCrosshairs: true,
-        }}
-        point={{
-          size: 4,
-          shape: 'circle',
-        }}
+        {...config}
       />
     </Card>
   );

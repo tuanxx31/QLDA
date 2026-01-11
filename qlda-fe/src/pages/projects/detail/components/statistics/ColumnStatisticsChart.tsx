@@ -85,10 +85,10 @@ export default function ColumnStatisticsChart({ data, columnProgress, loading }:
         legend={{
           position: 'top' as const,
         }}
-        tooltip={{
-          shared: true,
-          showCrosshairs: true,
-        }}
+        // tooltip={{
+        //   shared: true,
+        //   showCrosshairs: true,
+        // }}
       />
     </Card>
   );
