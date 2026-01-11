@@ -83,7 +83,8 @@ export default function AIScheduleSuggestion({ currentDate }: AIScheduleSuggesti
             setCompletedTaskIds(new Set());
             message.success('Đã tạo gợi ý thành công!');
         },
-        onError: () => {
+        onError: (error) => {
+            console.error(error);
             message.error('Không thể tạo gợi ý. Vui lòng thử lại.');
         },
     });

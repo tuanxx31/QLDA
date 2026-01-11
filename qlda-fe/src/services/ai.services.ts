@@ -32,7 +32,9 @@ export interface WorkloadAnalysisResponse {
 export const aiService = {
     
     suggestSchedule: async (date: string): Promise<ScheduleSuggestionResponse> => {
-        const res = await api.post<ScheduleSuggestionResponse>('/ai/suggest-schedule', { date });
+        const res = await api.post<ScheduleSuggestionResponse>('/ai/suggest-schedule', { date }, {
+            timeout: 60000, // 60 giây cho API AI
+        });
         return res.data;
     },
 
@@ -40,6 +42,7 @@ export const aiService = {
     getWorkloadAnalysis: async (startDate: string, endDate: string): Promise<WorkloadAnalysisResponse> => {
         const res = await api.get<WorkloadAnalysisResponse>('/ai/workload-analysis', {
             params: { startDate, endDate },
+            timeout: 60000, // 60 giây cho API AI
         });
         return res.data;
     },
