@@ -106,6 +106,7 @@ export class AiService {
         const tasksInfo = tasks.map((t) => ({
             id: t.id,
             title: t.title,
+            description: t.description || 'Không có mô tả',
             priority: t.priority,
             dueDate: t.dueDate?.toISOString().split('T')[0] || 'Không có',
             startDate: t.startDate?.toISOString().split('T')[0] || 'Không có',
