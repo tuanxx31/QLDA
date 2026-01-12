@@ -131,14 +131,15 @@ export default function TimelineChart({ data, loading, onFilterChange }: Props) 
         legend={{
           position: 'top' as const,
         }}
-        tooltip={{
-          shared: true,
-          showCrosshairs: true,
-        }}
+        // tooltip={{
+        //   shared: true,
+        //   showCrosshairs: true,
+        // }}
         point={{
           size: 4,
           shape: 'circle',
         }}
+        
       />
     </Card>
   );

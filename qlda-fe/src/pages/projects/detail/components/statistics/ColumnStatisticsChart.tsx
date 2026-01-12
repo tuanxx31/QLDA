@@ -89,6 +89,9 @@ export default function ColumnStatisticsChart({ data, columnProgress, loading }:
           shared: true,
           showCrosshairs: true,
         }}
+        label={{
+          position: 'top' as const,
+        }}
       />
     </Card>
   );
